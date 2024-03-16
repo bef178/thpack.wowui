@@ -7,6 +7,7 @@ else
 fi
 cd $TOP
 
+OUT=target
 
 function buildPackage() {
     local packageId=$1
@@ -67,17 +68,47 @@ function installPackage() {
 
 ########################################
 
-packages="thplus thpack.scoreboard"
+# packages="thplus thpack.scoreboard"
 
-for packageId in $packages; do
-    echo "building $packageId[11300] ..."
-    buildPackage $packageId 11300
-done
+# for packageId in $packages; do
+#     echo "building $packageId[11300] ..."
+#     buildPackage $packageId 11300
+# done
 
-if [[ "$1" == "install" ]]; then
-    wowRoot="$HOME/app/World of Warcraft"
-    for f in `\ls out/*.zip`; do
-        echo "installing $f ..."
-        installPackage $f "$wowRoot"
-    done
-fi
+# if [[ "$1" == "install" ]]; then
+#     wowRoot="$HOME/app/World of Warcraft"
+#     for f in `\ls out/*.zip`; do
+#         echo "installing $f ..."
+#         installPackage $f "$wowRoot"
+#     done
+# fi
+
+########################################
+
+function buildPackage() {
+    local packageName="$1"
+    local buildDate=$(date +%Y%m%d)
+
+    local dstPackageRoot=$OUT/$packageName
+    local dstTocFile=$dstPackageRoot/$packageName.toc
+
+    rm -rf $dstPackageRoot
+    mkdir -p $dstPackageRoot
+
+    cp -Lr $packageName/* -t $dstPackageRoot
+
+    sed "s/{BuildDate}/$buildDate/" -i $dstTocFile
+
+    while read line; do
+        if [[ "$line" == \#\#\ Interface:\ * ]]; then
+            interfaceVersion=${line#"## Interface: "}
+            break
+        fi
+    done < $dstTocFile
+
+    pushd $OUT >/dev/null
+    zip -qr $packageName.$interfaceVersion-$buildDate.zip $packageName
+    popd >/dev/null
+}
+
+buildPackage QuietTweaks

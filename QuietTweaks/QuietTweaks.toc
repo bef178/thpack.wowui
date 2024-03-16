@@ -1,0 +1,17 @@
+## Interface: 11200
+## Title: Quiet Tweaks for Vanilla
+## X-BuildDate: {BuildDate}
+
+lib\vanilla-lang.lua
+lib\vanilla-a.lua
+lib\vanilla-a.res.lua
+
+pixel-perfect.lua
+
+auto-repair.lua
+auto-sell.lua
+format-buff-time.lua
+open-all-bags.lua
+show-num-available-bag-slots.lua
+show-target-class.lua
+switch-chat-type-on-tab.lua
