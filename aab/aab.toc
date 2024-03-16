@@ -1,0 +1,25 @@
+## Interface: 11200
+## Title: Adventurer's Assistant Backed for Vanilla
+## X-BuildDate: {BuildDate}
+
+resource/class/ClassIcon_Druid.blp
+resource/class/ClassIcon_Hunter.blp
+resource/class/ClassIcon_Mage.blp
+resource/class/ClassIcon_Paladin.blp
+resource/class/ClassIcon_Priest.blp
+resource/class/ClassIcon_Rogue.blp
+resource/class/ClassIcon_Shaman.blp
+resource/class/ClassIcon_Warlock.blp
+resource/class/ClassIcon_Warrior.blp
+
+vanilla.lua
+
+pixel-perfect.lua
+
+auto-repair.lua
+auto-sell.lua
+format-buff-time.lua
+open-all-bags.lua
+show-num-available-bag-slots.lua
+show-target-class.lua
+switch-chat-type-on-tab.lua
