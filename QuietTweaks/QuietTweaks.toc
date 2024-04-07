@@ -8,6 +8,7 @@ lib\vanilla-a.res.lua
 
 pixel-perfect.lua
 
+add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
