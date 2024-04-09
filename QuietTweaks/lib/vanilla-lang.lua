@@ -112,6 +112,10 @@ end;
 
 Array = Array or {};
 
+Array.add = Array.add or function(a, value)
+    table.insert(a, value);
+end;
+
 Array.clear = Array.clear or function(a)
     Map.clear(a);
 end;
