@@ -15,6 +15,7 @@ auto-sell.lua
 format-buff-time.lua
 open-all-bags.lua
 show-num-available-bag-slots.lua
+show-num-poison-charges.lua
 show-num-reagents.lua
 show-target-class.lua
 switch-chat-type-on-tab.lua
