@@ -14,6 +14,7 @@ auto-repair.lua
 auto-sell.lua
 format-buff-time.lua
 open-all-bags.lua
+shift-drag-to-pick-action.lua
 show-num-available-bag-slots.lua
 show-num-poison-charges.lua
 show-num-reagents.lua
