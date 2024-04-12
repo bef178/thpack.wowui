@@ -4,10 +4,11 @@
 
 lib\vanilla-lang.lua
 lib\vanilla-a.lua
-lib\vanilla-a.res.lua
+lib\vanilla.A.SlotMan.lua
 
 pixel-perfect.lua
 
+add-blessing-slots.lua
 add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua

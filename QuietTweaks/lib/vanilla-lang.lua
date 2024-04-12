@@ -133,6 +133,14 @@ Array.insert = Array.insert or function(a, index, value)
     table.insert(a, index, value);
 end;
 
+Array.map = Array.map or function(a, func)
+    local a1 = {};
+    for i, v in ipairs(a) do
+        Array.add(a1, func(v, i, a));
+    end
+    return a1;
+end;
+
 -- concat
 Array.merge = Array.merge or function(a, a1)
     for i, v1 in ipairs(a1) do

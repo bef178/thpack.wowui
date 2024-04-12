@@ -24,10 +24,17 @@ A.logd = function(...)
     end
 end;
 
-A.addSlashCommand = A.addSlashCommand or function(key, slashCommand, fn)
+A.addSlashCommand = function(key, slashCommand, fn)
     _G["SLASH_" .. key .. "1"] = slashCommand;
     SlashCmdList[key] = fn;
 end;
+
+A.getResource = (function()
+    local addonName = "QuietTweaks";
+    return function(resourceName)
+        return "interface\\addons\\" .. addonName .. "\\resource\\" .. resourceName;
+    end;
+end)();
 
 ----------------------------------------
 
@@ -145,4 +152,36 @@ A.getBagItemByName = function(name)
             end
         end
     end
+end;
+
+A.getSpellByName = function(name)
+    local getSpellIndexByName = function(name)
+        for tabIndex = GetNumSpellTabs(), 1, -1 do
+            local tabName, tabTexture, spellOffset, spellCount = GetSpellTabInfo(tabIndex)
+            for i = spellOffset + spellCount, spellOffset + 1, -1 do
+                local spellName, spellRank = GetSpellName(i, 'spell');
+                local spellNameWithRank = nil;
+                if (spellRank) then
+                    spellNameWithRank = spellName .. "(" .. spellRank .. ")";
+                end
+                if (name == spellName or (spellNameWithRank and name == spellNameWithRank)) then
+                    return i, spellName, spellRank, spellNameWithRank;
+                end
+            end
+        end
+    end;
+
+    local spellIndex, spellName, spellRank, spellNameWithRank = getSpellIndexByName(name);
+    if (not spellIndex) then
+        return;
+    end
+    return {
+        spellId = nil,
+        spellIndex = spellIndex,
+        spellBookType = "spell",
+        spellName = spellName,
+        spellRank = spellRank,
+        spellNameWithRank = spellNameWithRank,
+        spellTexture = GetSpellTexture(spellIndex, "spell"),
+    };
 end;
