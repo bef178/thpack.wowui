@@ -43,6 +43,15 @@ end;
     end);
 end)();
 
+-- bank
+(function()
+    local f = CreateFrame("Frame");
+    f:RegisterEvent("BANKFRAME_OPENED");
+    f:SetScript("OnEvent", function()
+        openAllBags();
+    end);
+end)();
+
 -- mail
 (function()
     local f = CreateFrame("Frame");
