@@ -3,7 +3,7 @@
 ## X-BuildDate: {BuildDate}
 
 lib\vanilla-lang.lua
-lib\vanilla-a.lua
+lib\vanilla.A.lua
 lib\vanilla.A.SlotMan.lua
 
 pixel-perfect.lua
