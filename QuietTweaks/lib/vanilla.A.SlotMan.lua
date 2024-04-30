@@ -76,8 +76,8 @@ A.SlotMan = A.SlotMan or (function()
         topLeftSpotTexture:SetTexture(getResource("tile32"));
         topLeftSpotTexture:SetVertexColor(0.3, 0.85, 0.85);
         topLeftSpotTexture:SetPoint("TOPLEFT", 4, -4);
-        topLeftSpotTexture:SetWidth(3);
-        topLeftSpotTexture:SetHeight(3);
+        topLeftSpotTexture:SetWidth(4);
+        topLeftSpotTexture:SetHeight(4);
         f.topLeftSpotTexture = topLeftSpotTexture;
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil);

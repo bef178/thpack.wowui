@@ -95,7 +95,7 @@ function blessingSlotMan:adoptBlessing(blessing)
         GameTooltip:Hide();
     end;
     model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, model.spellTargetUnit);
+        CastSpellByName(model.spell.spellNameWithRank, model.spellTargetUnit == "player");
     end;
 
     model.onUpdate = function(f, elapsed)
