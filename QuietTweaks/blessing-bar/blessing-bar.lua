@@ -1,23 +1,7 @@
 local hookGlobalFunction = A.hookGlobalFunction;
 local getSpellByName = A.getSpellByName;
+local getUnitBuffIndexByTexture = A.getUnitBuffIndexByTexture;
 local SlotMan = A.SlotMan;
-
-local function getUnitBuffIndexByTexture(unit, texture)
-    for i = 1, 64, 1 do
-        local buffTexture, buffCount = UnitBuff(unit, i);
-        if (not buffTexture) then
-            break;
-        end
-        if (buffTexture == texture) then
-            return i;
-        end
-    end
-end
-
-local function hasBuffByTexture(unit, texture)
-    local i = getUnitBuffIndexByTexture(unit, texture);
-    return i and i > 0;
-end
 
 -- place blessings to the right of ShapeshiftBar
 local blessingSlotMan = SlotMan:new();
@@ -129,7 +113,7 @@ function blessingSlotMan:adoptBlessing(blessing)
         model.enabledTopLeftSpotTexture = spellTargetUnit == "player";
 
         -- checked: if that unit has corresponding buff
-        model.checked = hasBuffByTexture(spellTargetUnit, spell.spellTexture);
+        model.checked = getUnitBuffIndexByTexture(spellTargetUnit, spell.spellTexture) > 0;
 
         local startTime, duration, enabled = GetSpellCooldown(spell.spellIndex, spell.spellBookType);
         if (enabled) then

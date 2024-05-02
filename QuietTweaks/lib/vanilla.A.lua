@@ -185,3 +185,16 @@ A.getSpellByName = function(name)
         spellTexture = GetSpellTexture(spellIndex, "spell"),
     };
 end;
+
+A.getUnitBuffIndexByTexture = function(unit, texture)
+    for i = 1, 64, 1 do
+        local buffTexture, buffCount = UnitBuff(unit, i);
+        if (not buffTexture) then
+            break;
+        end
+        if (buffTexture == texture) then
+            return i;
+        end
+    end
+    return -1;
+end;
