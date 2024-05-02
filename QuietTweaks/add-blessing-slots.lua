@@ -137,6 +137,13 @@ function blessingSlotMan:adoptBlessing(blessing)
         else
             model.timeToCooldown = 0;
         end
+
+        if (model.timeToCooldown > 0) then
+            model.contentVariant = "in_cooldown";
+        else
+            model.contentVariant = nil;
+        end
+
     end;
 
     self:addSlotModel(model);
