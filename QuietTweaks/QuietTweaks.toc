@@ -8,7 +8,6 @@ lib\vanilla.A.SlotMan.lua
 
 pixel-perfect.lua
 
-add-blessing-slots.lua
 add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua
@@ -21,3 +20,5 @@ show-num-poison-charges.lua
 show-num-reagents.lua
 show-target-class.lua
 switch-chat-type-on-tab.lua
+
+blessing\blessing-slots.lua
