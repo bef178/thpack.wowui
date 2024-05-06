@@ -24,7 +24,7 @@ local hookGlobalFunction = A.hookGlobalFunction;
         elseif (m > 9) then
             return string.format("%d\'", m);
         else
-            return string.format("%d:%02d", m, s);
+            return string.format("%d\'%02d", m, s);
         end
     end
 
