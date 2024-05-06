@@ -2,6 +2,7 @@
 ## Title: Quiet Tweaks for Vanilla
 ## X-BuildDate: {BuildDate}
 
+lib\Color.lua
 lib\vanilla-lang.lua
 lib\vanilla.A.lua
 lib\vanilla.A.SlotMan.lua

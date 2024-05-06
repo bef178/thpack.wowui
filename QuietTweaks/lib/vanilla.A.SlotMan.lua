@@ -119,8 +119,9 @@ A.SlotMan = A.SlotMan or (function()
             edgeFile = getResource("glow.tga"),
             edgeSize = borderOffset,
         });
-        glowFrame:SetPoint("TOPLEFT", -borderOffset, borderOffset);
-        glowFrame:SetPoint("BOTTOMRIGHT", borderOffset, -borderOffset);
+        local glowWidth = borderOffset - 1;
+        glowFrame:SetPoint("TOPLEFT", -glowWidth, glowWidth);
+        glowFrame:SetPoint("BOTTOMRIGHT", glowWidth, -glowWidth);
         glowFrame:Hide();
         f.glowFrame = glowFrame;
 
@@ -235,6 +236,13 @@ A.SlotMan = A.SlotMan or (function()
 
         f.timeToLiveBar:SetValue(model.timeToLive or 0);
         f.timeToCooldownBar:SetValue(model.timeToCooldown or 0);
+
+        if (model.glowColor) then
+            f.glowFrame:SetBackdropBorderColor(Color.toVertex(model.glowColor));
+            f.glowFrame:Show();
+        else
+            f.glowFrame:Hide();
+        end
     end
 
     -- public
