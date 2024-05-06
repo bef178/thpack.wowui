@@ -38,6 +38,7 @@ A.SlotMan = A.SlotMan or (function()
         model.numStacks = nil;
         model.timeToLive = nil;
         model.timeToCooldown = nil;
+        model.recommended = false;
         return model;
     end
 
@@ -260,6 +261,13 @@ A.SlotMan = A.SlotMan or (function()
 
         f.timeToLiveBar:SetValue(model.timeToLive or 0);
         f.timeToCooldownBar:SetValue(model.timeToCooldown or 0);
+
+        if (model.recommended) then
+            f.glowFrame:SetBackdropBorderColor(1, 1, 1, 0.8);
+            f.glowFrame:Show();
+        else
+            f.glowFrame:Hide();
+        end
     end
 
     -- public

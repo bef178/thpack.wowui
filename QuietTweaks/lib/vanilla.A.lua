@@ -243,5 +243,16 @@ A.getUnitBuffBySpell = function(unit, spell)
                 return buff;
             end
         end
+        for i = 1, 64, 1 do
+            local buffTexture, buffNumStacks = UnitDebuff(unit, i);
+            if (buffTexture and buffTexture == spell.spellTexture) then
+                local buff = {
+                    debuffIndex = i,
+                    buffTexture = buffTexture,
+                    buffNumStacks = buffNumStacks,
+                };
+                return buff;
+            end
+        end
     end
 end;
