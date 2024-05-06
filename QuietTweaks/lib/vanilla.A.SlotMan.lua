@@ -7,6 +7,7 @@ A.SlotMan = A.SlotMan or (function()
     -- public
     function SlotMan:createSlotModel()
         local model = {};
+        model.visible = true;
         model.hovered = false;
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
@@ -171,6 +172,13 @@ A.SlotMan = A.SlotMan or (function()
     end
 
     function SlotMan:renderSlot(f, model)
+        if (model.visible) then
+            f:Show();
+        else
+            f:Hide();
+            return;
+        end
+
         if (model.contentTexture) then
             f.contentTexture:SetTexture(model.contentTexture);
         end
