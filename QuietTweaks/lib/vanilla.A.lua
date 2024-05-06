@@ -175,6 +175,9 @@ A.getSpellByName = function(name)
     if (not spellIndex) then
         return;
     end
+
+    -- TODO spell mana
+    -- TODO spell reagent
     return {
         spellId = nil,
         spellIndex = spellIndex,
@@ -183,6 +186,24 @@ A.getSpellByName = function(name)
         spellRank = spellRank,
         spellNameWithRank = spellNameWithRank,
         spellTexture = GetSpellTexture(spellIndex, "spell"),
+    };
+end;
+
+-- all temporary states listed
+A.getSpellCastStates = function(spell)
+    local startTime, duration, enabled = GetSpellCooldown(spell.spellIndex, spell.spellBookType);
+
+    local timeToCooldown;
+    if (enabled) then
+        timeToCooldown = startTime + duration - GetTime();
+    else
+        timeToCooldown = 0;
+    end
+
+    -- TODO queuing, casting, channeling
+    -- TODO num charges
+    return {
+        timeToCooldown = timeToCooldown,
     };
 end;
 

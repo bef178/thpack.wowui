@@ -1,5 +1,6 @@
 local hookGlobalFunction = A.hookGlobalFunction;
 local getSpellByName = A.getSpellByName;
+local getSpellCastStates = A.getSpellCastStates;
 local getUnitBuffIndexByTexture = A.getUnitBuffIndexByTexture;
 local SlotMan = A.SlotMan;
 
@@ -115,19 +116,12 @@ function blessingSlotMan:adoptBlessing(blessing)
         -- checked: if that unit has corresponding buff
         model.checked = getUnitBuffIndexByTexture(spellTargetUnit, spell.spellTexture) > 0;
 
-        local startTime, duration, enabled = GetSpellCooldown(spell.spellIndex, spell.spellBookType);
-        if (enabled) then
-            model.timeToCooldown = startTime + duration - GetTime();
-        else
-            model.timeToCooldown = 0;
-        end
-
-        if (model.timeToCooldown > 0) then
+        local spellCastStates = getSpellCastStates(spell);
+        if (spellCastStates.timeToCooldown > 0) then
             model.contentVariant = "in_cooldown";
         else
             model.contentVariant = nil;
         end
-
     end;
 
     self:addSlotModel(model);
