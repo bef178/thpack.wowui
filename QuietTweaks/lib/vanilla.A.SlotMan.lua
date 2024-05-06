@@ -29,13 +29,13 @@ A.SlotMan = A.SlotMan or (function()
         -- f:EnableKeyboard(true);
         -- f:SetPropagateKeyboardInput(true);
 
-        local contentTexture = f:CreateTexture(nil, "BACKGROUND", nil, 1);
+        local contentTexture = f:CreateTexture(nil, "BORDER", nil, 1);
         contentTexture:SetTexCoord(5 / 64, 59 / 64, 5 / 64, 59 / 64);
         contentTexture:SetPoint("TOPLEFT", 2, -2);
         contentTexture:SetPoint("BOTTOMRIGHT", -2, 2);
         f.contentTexture = contentTexture;
 
-        local borderTexture = f:CreateTexture(nil, "BORDER", nil, 1);
+        local borderTexture = f:CreateTexture(nil, "BORDER", nil, 2);
         -- borderTexture:SetTexture(getResource("Interface\\Buttons\\UI-Quickslot2"));
         borderTexture:SetTexture(getResource("slot\\slot32,border"));
         borderTexture:SetAllPoints();
@@ -111,19 +111,34 @@ A.SlotMan = A.SlotMan or (function()
         timeToCooldownBar:SetFrameLevel(timeToLiveBar:GetFrameLevel() + 1);
         f.timeToCooldownBar = timeToCooldownBar;
 
-        local borderOffset = 8;
+        local glowWidth = 8;
         local glowFrame = CreateFrame("Frame", nil, f, nil);
         glowFrame:SetFrameStrata("BACKGROUND");
         glowFrame:SetFrameLevel(1);
         glowFrame:SetBackdrop({
             edgeFile = getResource("glow.tga"),
-            edgeSize = borderOffset,
+            edgeSize = glowWidth,
         });
-        local glowWidth = borderOffset - 1;
-        glowFrame:SetPoint("TOPLEFT", -glowWidth, glowWidth);
-        glowFrame:SetPoint("BOTTOMRIGHT", glowWidth, -glowWidth);
+        local glowOffset = glowWidth + 1;
+        glowFrame:SetPoint("TOPLEFT", -glowOffset, glowOffset);
+        glowFrame:SetPoint("BOTTOMRIGHT", glowOffset, -glowOffset);
         glowFrame:Hide();
         f.glowFrame = glowFrame;
+
+        return f;
+    end
+
+    function SlotMan:createSharpSquareSlot()
+        local f = self:createSlot();
+
+        local backgroundTexture = f:CreateTexture(nil, "BACKGROUND", nil, 1);
+        backgroundTexture:SetTexture(getResource("tile32"));
+        backgroundTexture:SetVertexColor(0, 0, 0, 0.7);
+        backgroundTexture:SetAllPoints();
+        f.backgroundTexture = backgroundTexture;
+
+        f.borderTexture:SetTexture(nil);
+        f.borderPressedTexture:SetTexture(nil);
 
         return f;
     end
@@ -192,7 +207,7 @@ A.SlotMan = A.SlotMan or (function()
             f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
         else
             -- invalid target, out of range, etc
-            f.contentTexture:SetVertexColor(0.4, 0.4, 0.4);
+            f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
             f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
         end
 
