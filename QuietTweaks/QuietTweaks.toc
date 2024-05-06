@@ -21,4 +21,4 @@ show-num-reagents.lua
 show-target-class.lua
 switch-chat-type-on-tab.lua
 
-blessing\blessing-slots.lua
+blessing-bar\blessing-bar.lua
