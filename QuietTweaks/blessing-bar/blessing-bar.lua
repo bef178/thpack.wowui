@@ -50,6 +50,25 @@ function blessingSlotMan:start(blessings)
         end
     end);
 
+    f:SetScript("OnUpdate", (function()
+        local acc = 0;
+        return function(...)
+            local elapsed = arg1;
+            acc = acc + elapsed;
+            if (acc < 0.1) then
+                return;
+            end
+
+            for i, model in ipairs(blessingSlotMan:getAllSlotModels()) do
+                if (model.onElapsed) then
+                    model.onElapsed(acc);
+                end
+            end
+            acc = 0;
+            blessingSlotMan:renderAllSlots();
+        end;
+    end)());
+
     hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
         blessingSlotMan:updateAnchorPosition();
     end);
@@ -83,7 +102,7 @@ function blessingSlotMan:adoptBlessing(blessing)
         CastSpellByName(model.spell.spellNameWithRank, model.spellTargetUnit == "player");
     end;
 
-    model.onUpdate = function(f, elapsed)
+    model.onElapsed = function(elapsed)
         local spell;
         if (not IsShiftKeyDown()) then
             spell = model.spells[1];

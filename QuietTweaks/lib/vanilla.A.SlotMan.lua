@@ -178,13 +178,6 @@ A.SlotMan = A.SlotMan or (function()
             end
             SlotMan:renderSlot(f, model);
         end);
-
-        f:SetScript("OnUpdate", function()
-            if (model.onUpdate) then
-                model.onUpdate(f, arg1);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
     end
 
     function SlotMan:renderSlot(f, model)
@@ -284,6 +277,11 @@ A.SlotMan = A.SlotMan or (function()
     function SlotMan:addSlotModel(model)
         Array.add(self.models, model);
         return Array.size(self.models);
+    end
+
+    -- public
+    function SlotMan:getAllSlotModels()
+        return self.models;
     end
 
     -- public
