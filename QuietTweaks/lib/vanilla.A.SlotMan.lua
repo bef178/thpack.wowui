@@ -296,7 +296,11 @@ A.SlotMan = A.SlotMan or (function()
         for i, model in ipairs(self.models) do
             local slot = self.slots[i];
             if (not slot) then
-                slot = self:createSlot();
+                if (self.slot_style == "sharp_square") then
+                    slot = self:createSharpSquareSlot();
+                else
+                    slot = self:createSlot();
+                end
                 self:attachSlotScripts(slot, model);
                 self:updateSlotPosition(slot, i);
                 Array.add(self.slots, slot);
