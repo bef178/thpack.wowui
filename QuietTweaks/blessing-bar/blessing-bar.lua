@@ -8,6 +8,7 @@ local SlotMan = A.SlotMan;
 local blessingSlotMan = SlotMan:new();
 blessingSlotMan.slot_size = 31;
 blessingSlotMan.slot_margin = 6;
+blessingSlotMan.slot_interactive = true;
 blessingSlotMan.anchor:SetParent(MainMenuBar);
 blessingSlotMan.anchor:ClearAllPoints();
 
@@ -59,13 +60,13 @@ function blessingSlotMan:start(blessings)
                 return;
             end
 
-            for i, model in ipairs(blessingSlotMan:getAllSlotModels()) do
+            blessingSlotMan:renderAllSlots(function(model)
                 if (model.onElapsed) then
                     model.onElapsed(acc);
                 end
-            end
+            end);
+
             acc = 0;
-            blessingSlotMan:renderAllSlots();
         end;
     end)());
 
@@ -143,7 +144,7 @@ function blessingSlotMan:adoptBlessing(blessing)
         end
     end;
 
-    self:addSlotModel(model);
+    self:addSlotModelAndDock(model);
 end
 
 blessingSlotMan:start({

@@ -273,15 +273,9 @@ A.SlotMan = A.SlotMan or (function()
         return setmetatable(o, { __index = self });
     end
 
-    -- public
     function SlotMan:addSlotModel(model)
         Array.add(self.models, model);
         return Array.size(self.models);
-    end
-
-    -- public
-    function SlotMan:getAllSlotModels()
-        return self.models;
     end
 
     -- public
@@ -290,25 +284,36 @@ A.SlotMan = A.SlotMan or (function()
     end
 
     -- public
-    function SlotMan:renderAllSlots()
+    function SlotMan:renderAllSlots(callbackToUpdateModel)
         for i, model in ipairs(self.models) do
-            local slot = self.slots[i];
-            if (not slot) then
-                if (self.slot_style == "sharp_square") then
-                    slot = self:createSharpSquareSlot();
-                else
-                    slot = self:createSlot();
-                end
-                self:attachSlotScripts(slot, model);
-                self:updateSlotPosition(slot, i);
-                Array.add(self.slots, slot);
+            if (callbackToUpdateModel) then
+                callbackToUpdateModel(model);
             end
-            self:renderSlot(slot, model);
+            local f = self.slots[i];
+            self:renderSlot(f, model);
         end
         for i = Array.size(self.models) + 1, Array.size(self.slots), 1 do
-            local slot = self.slots[i];
-            slot:Hide();
+            local f = self.slots[i];
+            f:Hide();
         end
+    end
+
+    -- public
+    function SlotMan:addSlotModelAndDock(model)
+        local i = self:addSlotModel(model);
+        local slot = self.slots[i];
+        if (not slot) then
+            if (self.slot_style == "sharp_square") then
+                slot = self:createSharpSquareSlot();
+            else
+                slot = self:createSlot();
+            end
+            Array.add(self.slots, slot);
+        end
+        if (self.slot_interactive) then
+            self:attachSlotScripts(slot, model);
+        end
+        self:updateSlotPosition(slot, i);
     end
 
     function SlotMan:updateSlotPosition(slot, index)
