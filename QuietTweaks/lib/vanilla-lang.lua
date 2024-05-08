@@ -117,7 +117,9 @@ Array.add = Array.add or function(a, value)
 end;
 
 Array.clear = Array.clear or function(a)
-    Map.clear(a);
+    for i = Array.size(a), 1, -1 do
+        Array.remove(a, i);
+    end
 end;
 
 Array.contains = Array.contains or function(a, value)
