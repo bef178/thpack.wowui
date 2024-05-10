@@ -42,8 +42,8 @@ A.SlotMan = A.SlotMan or (function()
         f.borderTexture = borderTexture;
 
         local borderPressedTexture = f:CreateTexture(nil, "BORDER", nil, 2);
-        -- borderPressedTexture:SetTexture("Interface\\Buttons\\UI-Quickslot-Depress");
-        borderPressedTexture:SetTexture(getResource("slot\\slot32,border,pressed,yellow"));
+        borderPressedTexture:SetTexture("Interface\\Buttons\\UI-Quickslot-Depress");
+        -- borderPressedTexture:SetTexture(getResource("slot\\slot32,border,pressed,yellow"));
         borderPressedTexture:SetAllPoints();
         borderPressedTexture:Hide();
         f.borderPressedTexture = borderPressedTexture;
