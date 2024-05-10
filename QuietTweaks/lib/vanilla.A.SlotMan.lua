@@ -32,7 +32,7 @@ A.SlotMan = A.SlotMan or (function()
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
         model.enabledTopLeftSpot = false;
-        model.glowing = false;
+        model.glowColor = nil;
         model.contentTexture = nil;
         model.numStacks = nil;
         model.timeToLive = nil;
@@ -137,7 +137,7 @@ A.SlotMan = A.SlotMan or (function()
         timeToCooldownBar:SetFrameLevel(timeToLiveBar:GetFrameLevel() + 1);
         f.timeToCooldownBar = timeToCooldownBar;
 
-        local glowWidth = 8;
+        local glowWidth = 4;
         local glowFrame = CreateFrame("Frame", nil, f, nil);
         glowFrame:SetFrameStrata("BACKGROUND");
         glowFrame:SetFrameLevel(1);
@@ -145,7 +145,7 @@ A.SlotMan = A.SlotMan or (function()
             edgeFile = getResource("glow.tga"),
             edgeSize = glowWidth,
         });
-        local glowOffset = glowWidth + 1;
+        local glowOffset = glowWidth - 1;
         glowFrame:SetPoint("TOPLEFT", -glowOffset, glowOffset);
         glowFrame:SetPoint("BOTTOMRIGHT", glowOffset, -glowOffset);
         glowFrame:Hide();
