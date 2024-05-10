@@ -1,8 +1,28 @@
 local getResource = A.getResource;
 
--- manage rounded square action buttons
 A.SlotMan = A.SlotMan or (function()
     local SlotMan = {};
+
+    -- public
+    function SlotMan:new()
+        local o = {
+            slot_size = 32,
+            slot_margin = 4,
+            slot_interactive = true,
+            max_x_slots = 6,
+            anchor = nil,
+            slotModels = {},
+            slots = {},
+        };
+
+        local anchorFrame = CreateFrame("Frame", nil, UIParent, nil);
+        anchorFrame:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0);
+        anchorFrame:SetWidth(4);
+        anchorFrame:SetHeight(4);
+        o.anchor = anchorFrame;
+
+        return setmetatable(o, { __index = self });
+    end
 
     -- public
     function SlotMan:createSlotModel()
@@ -11,18 +31,24 @@ A.SlotMan = A.SlotMan or (function()
         model.hovered = false;
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
-        model.enabledTopLeftSpotTexture = false;
+        model.enabledTopLeftSpot = false;
         model.glowing = false;
         model.contentTexture = nil;
-        model.contentVariant = nil; -- color change as of action button, e.g. when out of mana
         model.numStacks = nil;
         model.timeToLive = nil;
         model.timeToCooldown = nil;
         return model;
     end
 
-    -- rounded square button
-    function SlotMan:createSlot()
+    function SlotMan:createSlotView()
+        if (self.slot_style == "sharp_square") then
+            return self:createSharpSquareSlotView();
+        else
+            return self:createRoundedSquareSlotView();
+        end
+    end
+
+    function SlotMan:createRoundedSquareSlotView()
         local f = CreateFrame("Button", nil, self.anchor);
         f:SetWidth(self.slot_size);
         f:SetHeight(self.slot_size);
@@ -92,13 +118,13 @@ A.SlotMan = A.SlotMan or (function()
         f.timeToLiveBar = timeToLiveBar;
 
         -- stack count for buff or recharge count for action
-        local countText = f:CreateFontString(nil, "OVERLAY", nil);
-        countText:SetFont(DAMAGE_TEXT_FONT, 12, "OUTLINE");
-        countText:SetShadowColor(0, 0, 0, 1);
-        countText:SetShadowOffset(1, 1);
-        countText:SetJustifyH("RIGHT");
-        countText:SetPoint("BOTTOMRIGHT", timeToLiveBar, "TOPRIGHT", -1, 2);
-        f.countText = countText;
+        local numStacksText = f:CreateFontString(nil, "OVERLAY", nil);
+        numStacksText:SetFont(DAMAGE_TEXT_FONT, 12, "OUTLINE");
+        numStacksText:SetShadowColor(0, 0, 0, 1);
+        numStacksText:SetShadowOffset(1, 1);
+        numStacksText:SetJustifyH("RIGHT");
+        numStacksText:SetPoint("BOTTOMRIGHT", timeToLiveBar, "TOPRIGHT", -1, 2);
+        f.numStacksText = numStacksText;
 
         local timeToCooldownBar = CreateFrame("StatusBar", nil, f, nil);
         timeToCooldownBar:SetStatusBarTexture(getResource("tile32"));
@@ -128,8 +154,8 @@ A.SlotMan = A.SlotMan or (function()
         return f;
     end
 
-    function SlotMan:createSharpSquareSlot()
-        local f = self:createSlot();
+    function SlotMan:createSharpSquareSlotView()
+        local f = self:createRoundedSquareSlotView();
 
         local backgroundTexture = f:CreateTexture(nil, "BACKGROUND", nil, 1);
         backgroundTexture:SetTexture(getResource("tile32"));
@@ -143,77 +169,32 @@ A.SlotMan = A.SlotMan or (function()
         return f;
     end
 
-    function SlotMan:attachSlotScripts(f, model)
-        f:SetScript("OnEnter", function()
-            model.hovered = true;
-            if (model.onEnter) then
-                model.onEnter(f);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
-        f:SetScript("OnLeave", function()
-            model.hovered = false;
-            if (model.onLeave) then
-                model.onLeave(f);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
-        f:SetScript("OnMouseDown", function()
-            model.pressed = true;
-            if (model.onMouseDown) then
-                model.onMouseDown(f, arg1);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
-        f:SetScript("OnMouseUp", function()
-            model.pressed = false;
-            if (model.onMouseUp) then
-                model.onMouseUp(f, arg1);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
-        f:SetScript("OnClick", function()
-            if (model.onClick) then
-                model.onClick(f, arg1);
-            end
-            SlotMan:renderSlot(f, model);
-        end);
+    -- public
+    function SlotMan:clearAllSlotModels()
+        Array.clear(self.slotModels);
     end
 
-    function SlotMan:renderSlot(f, model)
+    -- public
+    function SlotMan:renderAllSlotModels(callbackToUpdateModel)
+        for i, model in ipairs(self.slotModels) do
+            if (callbackToUpdateModel) then
+                callbackToUpdateModel(model);
+            end
+            local f = self.slots[i];
+            self:renderSlotModel(model, f);
+        end
+        for i = Array.size(self.slotModels) + 1, Array.size(self.slots), 1 do
+            local f = self.slots[i];
+            f:Hide();
+        end
+    end
+
+    function SlotMan:renderSlotModel(model, f)
         if (model.visible) then
             f:Show();
         else
             f:Hide();
             return;
-        end
-
-        if (model.contentTexture) then
-            f.contentTexture:SetTexture(model.contentTexture);
-        end
-
-        if (not model.contentVariant) then
-            f.contentTexture:SetVertexColor(1, 1, 1);
-            f.borderTexture:SetVertexColor(1, 1, 1);
-        elseif (model.contentVariant == "no_mana") then
-            f.contentTexture:SetVertexColor(0.5, 0.5, 1.0);
-            f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
-        else
-            -- invalid target, out of range, etc
-            f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
-            f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
-        end
-
-        -- if (model.enabled) then
-        --     f.contentTexture:SetDesaturated(false);
-        -- else
-        --     f.contentTexture:SetDesaturated(true);
-        -- end
-
-        if (model.enabledTopLeftSpotTexture) then
-            f.topLeftSpotTexture:Show();
-        else
-            f.topLeftSpotTexture:Hide();
         end
 
         if (model.checked) then
@@ -236,10 +217,37 @@ A.SlotMan = A.SlotMan or (function()
             f.hoveredTexture:Hide();
         end
 
-        if (model.numStacks and model.numStacks > 1) then
-            f.countText:SetText(model.numStacks);
+        if (model.contentTexture) then
+            f.contentTexture:SetTexture(model.contentTexture);
+        end
+
+        if ((model.timeToCooldown or 0) > 0) then
+            f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
+            f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
+        -- elseif no_mana then
+        --     f.contentTexture:SetVertexColor(0.5, 0.5, 1.0);
+        --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
         else
-            f.countText:SetText(nil);
+            f.contentTexture:SetVertexColor(1, 1, 1);
+            f.borderTexture:SetVertexColor(1, 1, 1);
+        end
+
+        -- if (model.enabled) then
+        --     f.contentTexture:SetDesaturated(false);
+        -- else
+        --     f.contentTexture:SetDesaturated(true);
+        -- end
+
+        if (model.enabledTopLeftSpot) then
+            f.topLeftSpotTexture:Show();
+        else
+            f.topLeftSpotTexture:Hide();
+        end
+
+        if (model.numStacks and model.numStacks > 1) then
+            f.numStacksText:SetText(model.numStacks);
+        else
+            f.numStacksText:SetText(nil);
         end
 
         f.timeToLiveBar:SetValue(model.timeToLive or 0);
@@ -254,66 +262,54 @@ A.SlotMan = A.SlotMan or (function()
     end
 
     -- public
-    function SlotMan:new()
-        local o = {
-            slot_size = 32,
-            slot_margin = 4,
-            max_x_slots = 6,
-            models = {},
-            anchor = nil,
-            slots = {},
-        };
-
-        local anchorFrame = CreateFrame("Frame", nil, UIParent, nil);
-        anchorFrame:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0);
-        anchorFrame:SetWidth(4);
-        anchorFrame:SetHeight(4);
-        o.anchor = anchorFrame;
-
-        return setmetatable(o, { __index = self });
-    end
-
-    function SlotMan:addSlotModel(model)
-        Array.add(self.models, model);
-        return Array.size(self.models);
-    end
-
-    -- public
-    function SlotMan:clearAllSlotModels()
-        Array.clear(self.models);
-    end
-
-    -- public
-    function SlotMan:renderAllSlots(callbackToUpdateModel)
-        for i, model in ipairs(self.models) do
-            if (callbackToUpdateModel) then
-                callbackToUpdateModel(model);
-            end
-            local f = self.slots[i];
-            self:renderSlot(f, model);
-        end
-        for i = Array.size(self.models) + 1, Array.size(self.slots), 1 do
-            local f = self.slots[i];
-            f:Hide();
-        end
-    end
-
-    -- public
     function SlotMan:addSlotModelAndDock(model)
-        local i = self:addSlotModel(model);
-        local slot = self.slots[i];
-        if (not slot) then
-            if (self.slot_style == "sharp_square") then
-                slot = self:createSharpSquareSlot();
-            else
-                slot = self:createSlot();
-            end
-            Array.add(self.slots, slot);
+        Array.add(self.slotModels, model);
+        local i = Array.size(self.slotModels);
+        if (i > Array.size(self.slots)) then
+            Array.add(self.slots, self:createSlotView());
         end
+        local f = self.slots[i];
         if (self.slot_interactive) then
-            self:attachSlotScripts(slot, model);
+            self:attachSlotScripts(f, model);
         end
-        self:updateSlotPosition(slot, i);
+        self:updateSlotPosition(f, i);
+    end
+
+    function SlotMan:attachSlotScripts(f, model)
+        f:SetScript("OnEnter", function()
+            model.hovered = true;
+            if (model.onEnter) then
+                model.onEnter(f);
+            end
+            SlotMan:renderSlotModel(model, f);
+        end);
+        f:SetScript("OnLeave", function()
+            model.hovered = false;
+            if (model.onLeave) then
+                model.onLeave(f);
+            end
+            SlotMan:renderSlotModel(model, f);
+        end);
+        f:SetScript("OnMouseDown", function()
+            model.pressed = true;
+            if (model.onMouseDown) then
+                model.onMouseDown(f, arg1);
+            end
+            SlotMan:renderSlotModel(model, f);
+        end);
+        f:SetScript("OnMouseUp", function()
+            model.pressed = false;
+            if (model.onMouseUp) then
+                model.onMouseUp(f, arg1);
+            end
+            SlotMan:renderSlotModel(model, f);
+        end);
+        f:SetScript("OnClick", function()
+            if (model.onClick) then
+                model.onClick(f, arg1);
+            end
+            SlotMan:renderSlotModel(model, f);
+        end);
     end
 
     function SlotMan:updateSlotPosition(slot, index)
@@ -336,13 +332,13 @@ if (debug) then
     local slotManTest = SlotMan:new();
     A.slotManTest = slotManTest;
 
-    local model = slotManTest:createAndAddSlotModel();
+    local model = slotManTest:createSlotModel();
     model.contentTexture = "Interface//Icons//Spell_Holy_Light";
-    model.contextVariant = "no_mana";
+    slotManTest:addSlotModelAndDock(model);
 
-    model = slotManTest:createAndAddSlotModel();
+    model = slotManTest:createSlotModel();
     model.contentTexture = "Interface//Icons//Spell_Holy_Light";
-    model.contextVariant = "out_of_range";
+    slotManTest:addSlotModelAndDock(model);
 
-    slotManTest:renderAllSlots();
+    slotManTest:renderAllSlotModels();
 end

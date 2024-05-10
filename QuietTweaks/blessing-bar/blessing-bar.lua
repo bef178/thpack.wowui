@@ -8,7 +8,6 @@ local SlotMan = A.SlotMan;
 local blessingSlotMan = SlotMan:new();
 blessingSlotMan.slot_size = 31;
 blessingSlotMan.slot_margin = 6;
-blessingSlotMan.slot_interactive = true;
 blessingSlotMan.anchor:SetParent(MainMenuBar);
 blessingSlotMan.anchor:ClearAllPoints();
 
@@ -47,7 +46,7 @@ function blessingSlotMan:start(blessings)
             for i, blessing in ipairs(blessings) do
                 blessingSlotMan:adoptBlessing(blessing);
             end
-            blessingSlotMan:renderAllSlots();
+            blessingSlotMan:renderAllSlotModels();
         end
     end);
 
@@ -60,7 +59,7 @@ function blessingSlotMan:start(blessings)
                 return;
             end
 
-            blessingSlotMan:renderAllSlots(function(model)
+            blessingSlotMan:renderAllSlotModels(function(model)
                 if (model.onElapsed) then
                     model.onElapsed(acc);
                 end
@@ -131,17 +130,13 @@ function blessingSlotMan:adoptBlessing(blessing)
         end
         model.spellTargetUnit = spellTargetUnit;
 
-        model.enabledTopLeftSpotTexture = spellTargetUnit == "player";
+        model.enabledTopLeftSpot = spellTargetUnit == "player";
 
         -- checked: if that unit has corresponding buff
         model.checked = getUnitBuffIndexByTexture(spellTargetUnit, spell.spellTexture) > 0;
 
         local spellCastStates = getSpellCastStates(spell);
-        if (spellCastStates.timeToCooldown > 0) then
-            model.contentVariant = "in_cooldown";
-        else
-            model.contentVariant = nil;
-        end
+        model.timeToCooldown = spellCastStates.timeToCooldown or 0;
     end;
 
     self:addSlotModelAndDock(model);
