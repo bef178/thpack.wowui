@@ -155,6 +155,7 @@ blessingSlotMan:start({
     { "Blessing of Sanctuary", "Great Blessing of Sanctuary" },
     { "Blessing of Salvation", "Great Blessing of Salvation" },
     { "Blessing of Light", "Great Blessing of Light" },
+    { "Blessing of Sacrifice", "Great Blessing of Sacrifice" },
     { "Power Word: Fortitude", "Prayer of Fortitude" },
     { "Divine Spirit", "Prayer of Spirit" },
 });
