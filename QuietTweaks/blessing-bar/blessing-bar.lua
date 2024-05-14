@@ -130,14 +130,9 @@ function blessingSlotMan:adoptBlessing(blessing)
         end
         model.spellTargetUnit = spellTargetUnit;
 
-        model.enabledTopLeftSpot = spellTargetUnit == "player";
-
-        -- glowing: if that unit has corresponding buff
-        if (getUnitBuffIndexByTexture(spellTargetUnit, spell.spellTexture) > 0) then
-            model.glowColor = "#FFCC00";
-        else
-            model.glowColor = nil;
-        end
+        model.targetingPlayer = spellTargetUnit == "player";
+        model.affectingPlayer = getUnitBuffIndexByTexture("player", spell.spellTexture) > 0;
+        model.affectingTarget = getUnitBuffIndexByTexture("target", spell.spellTexture) > 0;
 
         local spellCastStates = getSpellCastStates(spell);
         model.timeToCooldown = spellCastStates.timeToCooldown or 0;

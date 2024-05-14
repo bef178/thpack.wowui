@@ -31,9 +31,10 @@ A.SlotMan = A.SlotMan or (function()
         model.hovered = false;
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
-        model.enabledTopLeftSpot = false;
-        model.glowColor = nil;
         model.contentTexture = nil;
+        model.targetingPlayer = false;
+        model.affectingPlayer = false;
+        model.affectingTarget = false;
         model.numStacks = nil;
         model.timeToLive = nil;
         model.timeToCooldown = nil;
@@ -97,15 +98,29 @@ A.SlotMan = A.SlotMan or (function()
         hoveredTexture:Hide();
         f.hoveredTexture = hoveredTexture;
 
-        -- indicates spell targeting
-        -- e.g. "player", "target", etc
         local topLeftSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 4);
         topLeftSpotTexture:SetTexture(getResource("tile32"));
         topLeftSpotTexture:SetVertexColor(0.3, 0.85, 0.85);
         topLeftSpotTexture:SetPoint("TOPLEFT", 4, -4);
         topLeftSpotTexture:SetWidth(4);
         topLeftSpotTexture:SetHeight(4);
-        f.topLeftSpotTexture = topLeftSpotTexture;
+        f.targetingPlayerSpotTexture = topLeftSpotTexture;
+
+        local affectingPlayerSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        affectingPlayerSpotTexture:SetTexture(getResource("tile32"));
+        affectingPlayerSpotTexture:SetVertexColor(1, 0.8, 0);
+        affectingPlayerSpotTexture:SetPoint("TOPLEFT", 10, -4);
+        affectingPlayerSpotTexture:SetWidth(4);
+        affectingPlayerSpotTexture:SetHeight(4);
+        f.affectingPlayerSpotTexture = affectingPlayerSpotTexture;
+
+        local affectingTargetSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        affectingTargetSpotTexture:SetTexture(getResource("tile32"));
+        affectingTargetSpotTexture:SetVertexColor(1, 0.8, 0);
+        affectingTargetSpotTexture:SetPoint("TOPLEFT", 10, -10);
+        affectingTargetSpotTexture:SetWidth(4);
+        affectingTargetSpotTexture:SetHeight(4);
+        f.affectingTargetSpotTexture = affectingTargetSpotTexture;
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil);
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"));
@@ -238,10 +253,22 @@ A.SlotMan = A.SlotMan or (function()
         --     f.contentTexture:SetDesaturated(true);
         -- end
 
-        if (model.enabledTopLeftSpot) then
-            f.topLeftSpotTexture:Show();
+        if (model.targetingPlayer) then
+            f.targetingPlayerSpotTexture:Show();
         else
-            f.topLeftSpotTexture:Hide();
+            f.targetingPlayerSpotTexture:Hide();
+        end
+
+        if (model.affectingPlayer) then
+            f.affectingPlayerSpotTexture:Show();
+        else
+            f.affectingPlayerSpotTexture:Hide();
+        end
+
+        if (model.affectingTarget) then
+            f.affectingTargetSpotTexture:Show();
+        else
+            f.affectingTargetSpotTexture:Hide();
         end
 
         if (model.numStacks and model.numStacks > 1) then
@@ -252,13 +279,6 @@ A.SlotMan = A.SlotMan or (function()
 
         f.timeToLiveBar:SetValue(model.timeToLive or 0);
         f.timeToCooldownBar:SetValue(model.timeToCooldown or 0);
-
-        if (model.glowColor) then
-            f.glowFrame:SetBackdropBorderColor(Color.toVertex(model.glowColor));
-            f.glowFrame:Show();
-        else
-            f.glowFrame:Hide();
-        end
     end
 
     -- public
