@@ -32,6 +32,7 @@ A.SlotMan = A.SlotMan or (function()
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
         model.contentTexture = nil;
+        model.ready = false;
         model.targetingPlayer = false;
         model.affectingPlayer = false;
         model.affectingTarget = false;
@@ -236,21 +237,16 @@ A.SlotMan = A.SlotMan or (function()
             f.contentTexture:SetTexture(model.contentTexture);
         end
 
-        if ((model.timeToCooldown or 0) > 0) then
-            f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
-            f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
+        f.contentTexture:SetDesaturated(not model.ready);
+        -- if in_cooldown then
+        --     f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
+        --     f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
         -- elseif no_mana then
         --     f.contentTexture:SetVertexColor(0.5, 0.5, 1.0);
         --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
-        else
-            f.contentTexture:SetVertexColor(1, 1, 1);
-            f.borderTexture:SetVertexColor(1, 1, 1);
-        end
-
-        -- if (model.enabled) then
-        --     f.contentTexture:SetDesaturated(false);
         -- else
-        --     f.contentTexture:SetDesaturated(true);
+        --     f.contentTexture:SetVertexColor(1, 1, 1);
+        --     f.borderTexture:SetVertexColor(1, 1, 1);
         -- end
 
         if (model.targetingPlayer) then

@@ -133,9 +133,8 @@ function blessingSlotMan:adoptBlessing(blessing)
         model.targetingPlayer = spellTargetUnit == "player";
         model.affectingPlayer = getUnitBuffIndexByTexture("player", spell.spellTexture) > 0;
         model.affectingTarget = getUnitBuffIndexByTexture("target", spell.spellTexture) > 0;
-
-        local spellCastStates = getSpellCastStates(spell);
-        model.timeToCooldown = spellCastStates.timeToCooldown or 0;
+        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown or 0;
+        model.ready = model.timeToCooldown == 0;
     end;
 
     self:addSlotModelAndDock(model);
