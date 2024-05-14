@@ -1,7 +1,7 @@
 local hookGlobalFunction = A.hookGlobalFunction;
 local getSpellByName = A.getSpellByName;
 local getSpellCastStates = A.getSpellCastStates;
-local getUnitBuffIndexByTexture = A.getUnitBuffIndexByTexture;
+local getUnitBuffBySpell = A.getUnitBuffBySpell;
 local SlotMan = A.SlotMan;
 
 -- place blessings to the right of ShapeshiftBar
@@ -131,8 +131,8 @@ function blessingSlotMan:adoptBlessing(blessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingPlayer = getUnitBuffIndexByTexture("player", spell.spellTexture) > 0;
-        model.affectingTarget = getUnitBuffIndexByTexture("target", spell.spellTexture) > 0;
+        model.affectingPlayer = not not getUnitBuffBySpell("player", spell);
+        model.affectingTarget = not not getUnitBuffBySpell("target", spell);
         model.timeToCooldown = getSpellCastStates(spell).timeToCooldown or 0;
         model.ready = model.timeToCooldown == 0;
     end;

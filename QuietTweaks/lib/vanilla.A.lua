@@ -1,4 +1,5 @@
 A = A or {};
+local A = A;
 
 A.logi = function(...)
     local f = DEFAULT_CHAT_FRAME or ChatFrame1;
@@ -207,15 +208,37 @@ A.getSpellCastStates = function(spell)
     };
 end;
 
-A.getUnitBuffIndexByTexture = function(unit, texture)
-    for i = 1, 64, 1 do
-        local buffTexture, buffCount = UnitBuff(unit, i);
-        if (not buffTexture) then
-            break;
+A.getUnitBuffBySpell = function(unit, spell)
+    if (not spell or not spell.spellTexture) then
+        return;
+    end
+    if (unit == "player") then
+        for i = 0, 63, 1 do
+            local buffTexture = GetPlayerBuffTexture(i);
+            if (buffTexture and buffTexture == spell.spellTexture) then
+                -- return i;
+                local buff = {
+                    playerBuffIndex = i,
+                    buffTexture = buffTexture,
+                    buffNumStacks = GetPlayerBuffApplications(i),
+                    buffTimeToLive = GetPlayerBuffTimeLeft(i) or 0,
+                };
+                local _, lastsUntilCancelled = GetPlayerBuff(i);
+                buff.buffLastsUntilCancelled = lastsUntilCancelled;
+                return buff;
+            end
         end
-        if (buffTexture == texture) then
-            return i;
+    else
+        for i = 1, 64, 1 do
+            local buffTexture, buffNumStacks = UnitBuff(unit, i);
+            if (buffTexture and buffTexture == spell.spellTexture) then
+                local buff = {
+                    buffIndex = i,
+                    buffTexture = buffTexture,
+                    buffNumStacks = buffNumStacks,
+                };
+                return buff;
+            end
         end
     end
-    return -1;
 end;
