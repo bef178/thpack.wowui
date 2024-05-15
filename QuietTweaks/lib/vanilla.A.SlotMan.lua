@@ -34,8 +34,7 @@ A.SlotMan = A.SlotMan or (function()
         model.contentTexture = nil;
         model.ready = false;
         model.targetingPlayer = false;
-        model.affectingPlayer = false;
-        model.affectingTarget = false;
+        model.affectingSpellTarget = false;
         model.numStacks = nil;
         model.timeToLive = nil;
         model.timeToCooldown = nil;
@@ -105,23 +104,15 @@ A.SlotMan = A.SlotMan or (function()
         topLeftSpotTexture:SetPoint("TOPLEFT", 4, -4);
         topLeftSpotTexture:SetWidth(4);
         topLeftSpotTexture:SetHeight(4);
-        f.targetingPlayerSpotTexture = topLeftSpotTexture;
+        f.topLeftSpotTexture = topLeftSpotTexture;
 
-        local affectingPlayerSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
-        affectingPlayerSpotTexture:SetTexture(getResource("tile32"));
-        affectingPlayerSpotTexture:SetVertexColor(1, 0.8, 0);
-        affectingPlayerSpotTexture:SetPoint("TOPLEFT", 10, -4);
-        affectingPlayerSpotTexture:SetWidth(4);
-        affectingPlayerSpotTexture:SetHeight(4);
-        f.affectingPlayerSpotTexture = affectingPlayerSpotTexture;
-
-        local affectingTargetSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
-        affectingTargetSpotTexture:SetTexture(getResource("tile32"));
-        affectingTargetSpotTexture:SetVertexColor(1, 0.8, 0);
-        affectingTargetSpotTexture:SetPoint("TOPLEFT", 10, -10);
-        affectingTargetSpotTexture:SetWidth(4);
-        affectingTargetSpotTexture:SetHeight(4);
-        f.affectingTargetSpotTexture = affectingTargetSpotTexture;
+        local affectingSpellTargetSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        affectingSpellTargetSpotTexture:SetTexture(getResource("tile32"));
+        affectingSpellTargetSpotTexture:SetVertexColor(1, 0.8, 0);
+        affectingSpellTargetSpotTexture:SetPoint("TOPLEFT", 4, 2);
+        affectingSpellTargetSpotTexture:SetWidth(4);
+        affectingSpellTargetSpotTexture:SetHeight(4);
+        f.affectingSpellTargetSpotTexture = affectingSpellTargetSpotTexture;
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil);
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"));
@@ -250,21 +241,15 @@ A.SlotMan = A.SlotMan or (function()
         --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
 
         if (model.targetingPlayer) then
-            f.targetingPlayerSpotTexture:Show();
+            f.topLeftSpotTexture:Show();
         else
-            f.targetingPlayerSpotTexture:Hide();
+            f.topLeftSpotTexture:Hide();
         end
 
-        if (model.affectingPlayer) then
-            f.affectingPlayerSpotTexture:Show();
+        if (model.affectingSpellTarget) then
+            f.affectingSpellTargetSpotTexture:Show();
         else
-            f.affectingPlayerSpotTexture:Hide();
-        end
-
-        if (model.affectingTarget) then
-            f.affectingTargetSpotTexture:Show();
-        else
-            f.affectingTargetSpotTexture:Hide();
+            f.affectingSpellTargetSpotTexture:Hide();
         end
 
         if (model.numStacks and model.numStacks > 1) then

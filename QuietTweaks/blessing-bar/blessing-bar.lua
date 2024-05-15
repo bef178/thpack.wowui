@@ -131,9 +131,8 @@ function blessingSlotMan:adoptBlessing(blessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingPlayer = not not getUnitBuffBySpell("player", spell);
-        model.affectingTarget = not not getUnitBuffBySpell("target", spell);
-        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown or 0;
+        model.affectingSpellTarget = not not getUnitBuffBySpell(spellTargetUnit, spell);
+        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown;
         model.ready = model.timeToCooldown == 0;
     end;
 
