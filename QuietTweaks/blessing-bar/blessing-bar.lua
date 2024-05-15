@@ -87,8 +87,8 @@ function blessingSlotMan:adoptBlessing(blessing)
     end
 
     local model = self:createSlotModel();
+    model.visible = true;
     model.spells = spells;
-
     model.onEnter = function(f)
         -- GameTooltip:SetOwner(slot, "ANCHOR_TOPLEFT");
         GameTooltip_SetDefaultAnchor(GameTooltip, f);

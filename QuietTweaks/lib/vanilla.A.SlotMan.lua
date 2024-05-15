@@ -27,7 +27,7 @@ A.SlotMan = A.SlotMan or (function()
     -- public
     function SlotMan:createSlotModel()
         local model = {};
-        model.visible = true;
+        model.visible = false;
         model.hovered = false;
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
