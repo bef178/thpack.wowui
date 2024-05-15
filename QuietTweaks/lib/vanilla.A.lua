@@ -197,6 +197,9 @@ A.getSpellCastStates = function(spell)
     local timeToCooldown;
     if (enabled) then
         timeToCooldown = startTime + duration - GetTime();
+        if (timeToCooldown < 0) then
+            timeToCooldown = 0;
+        end
     else
         timeToCooldown = 0;
     end
