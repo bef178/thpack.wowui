@@ -237,17 +237,17 @@ A.SlotMan = A.SlotMan or (function()
             f.contentTexture:SetTexture(model.contentTexture);
         end
 
-        f.contentTexture:SetDesaturated(not model.ready);
-        -- if in_cooldown then
-        --     f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
-        --     f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
+        -- f.contentTexture:SetDesaturated(not model.ready);
+        if (model.ready) then
+            f.contentTexture:SetVertexColor(1, 1, 1);
+            f.borderTexture:SetVertexColor(1, 1, 1);
+        else
+            f.contentTexture:SetVertexColor(0.5, 0.5, 0.5);
+            f.borderTexture:SetVertexColor(1.0, 1.0, 1.0);
+        end
         -- elseif no_mana then
         --     f.contentTexture:SetVertexColor(0.5, 0.5, 1.0);
         --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
-        -- else
-        --     f.contentTexture:SetVertexColor(1, 1, 1);
-        --     f.borderTexture:SetVertexColor(1, 1, 1);
-        -- end
 
         if (model.targetingPlayer) then
             f.targetingPlayerSpotTexture:Show();
