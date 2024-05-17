@@ -20,7 +20,7 @@ show-num-available-bag-slots.lua
 show-num-poison-charges.lua
 show-num-reagents.lua
 show-target-class.lua
-switch-chat-type-on-tab.lua
+switch-chat-type.lua
 
 blessing-bar\blessing-bar.lua
 pda\pda.lua

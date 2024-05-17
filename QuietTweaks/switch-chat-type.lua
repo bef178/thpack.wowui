@@ -8,8 +8,7 @@ ChatTypeExtension.getNext = (function()
     local nexts = {
         ["SAY"] = "PARTY",
         ["PARTY"] = "RAID",
-        ["RAID"] = "INSTANCE_CHAT",
-        ["INSTANCE_CHAT"] = "GUILD",
+        ["RAID"] = "GUILD",
         ["GUILD"] = "SAY",
     };
     return function(chatType)
@@ -27,9 +26,6 @@ ChatTypeExtension.isAvailable = (function()
         end,
         ["RAID"] = function()
             return GetNumRaidMembers() > 0;
-        end,
-        ["INSTANCE_CHAT"] = function()
-            return IsInInstance();
         end,
         ["GUILD"] = function()
             return IsInGuild();
