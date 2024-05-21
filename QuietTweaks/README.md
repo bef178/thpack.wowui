@@ -1,6 +1,6 @@
 # Quiet Tweaks for vanilla (1.12)
 
-杂项插件合集。轻量，无配置，全自研。
+杂项插件合集。轻量，快速，无配置。
 
 应用于[龟龟服](https://turtle-wow.org/)，英文，1.12。
 
@@ -10,7 +10,7 @@
 
 - pixel-prefect
     - 自动调整UI缩放，使得像素能锐利对齐
-    - 不能作用于2560x1440分辨率
+    - 不作用于2560x1440分辨率
 - add-cloak-checkbox
     - 给3D全身秀添加显示头盔和披风的复选框
 - auto-dismount
@@ -25,7 +25,7 @@
 - open-all-bags
     - 单击背包时打开/关闭所有包
 - pick-action
-    - shift-drag to pick action from action button, ignoring LOCK_ACTIONBAR option
+    - 按住shift时才可从动作条拖出技能
 - show-num-available-bag-slots
     - 显示背包剩余容量
 - show-num-poison-charges
@@ -49,4 +49,4 @@
 - pda
     - 推荐施法组件，在条件合适时显示相应技能图标，点击可施放
     - pala-a
-        - 防骑单刷A怪循环
+        - 防骑单刷A怪，实时推荐技能

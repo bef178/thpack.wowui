@@ -430,3 +430,41 @@ stun
 #showtooltip
 /cast [nomod] 献祭; 灼热之痛
 ```
+
+## Appendix
+
+item:平静之剑
+    quest:以圣光之名:40:34
+
+item:征服者之剑
+    quest:与圣光同在:42:39
+
+item:天选者印记
+    quest:贱民的指引:48:39
+
+item:痛击之刃
+    quest:大地的污染:51:45
+
+item:弗丁印记
+    quest:恶魔之犬:56:52
+
+item:欧莫克的瘦身腰带
+    quest:比修的装置:59:58
+
+item:黎明守护者
+    quest:档案管理员:60:57
+
+item:风暴护手
+    skill:锻造
+
+item:希望圣物
+    region:厄运之槌
+
+item:阿格曼奇之戒
+    region:厄运之槌
+
+item:正义之手
+    region:黑石深渊
+
+item:黑手饰物
+    quest:达基萨斯将军的命令
