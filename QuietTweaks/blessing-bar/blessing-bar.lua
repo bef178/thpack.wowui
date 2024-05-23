@@ -4,13 +4,14 @@ local getSpellCastStates = A.getSpellCastStates;
 local getUnitBuffBySpell = A.getUnitBuffBySpell;
 local SlotMan = A.SlotMan;
 
--- place blessings to the right of ShapeshiftBar
+-- hold buff spells those can be casted on friendly/neutral units
 local blessingSlotMan = SlotMan:new();
 blessingSlotMan.slot_size = 31;
 blessingSlotMan.slot_margin = 6;
 blessingSlotMan.anchor:SetParent(MainMenuBar);
 blessingSlotMan.anchor:ClearAllPoints();
 
+-- place to the right of ShapeshiftBar
 function blessingSlotMan:updateAnchorPosition()
     local f = self.anchor;
     if (ShapeshiftBarFrame:IsShown()) then
@@ -140,7 +141,6 @@ function blessingSlotMan:adoptBlessing(blessing)
 end
 
 blessingSlotMan:start({
-    -- spells casting on friendly/neutral units
     { "Blessing of Might", "Great Blessing of Might" },
     { "Blessing of Wisdom", "Great Blessing of Wisdom" },
     { "Blessing of Kings", "Great Blessing of Kings" },

@@ -23,5 +23,6 @@ show-target-class.lua
 switch-chat-type.lua
 
 blessing-bar\blessing-bar.lua
+blessing-bar\seal-bar.lua
 pda\pda.lua
 pda\pda.pala-a.lua
