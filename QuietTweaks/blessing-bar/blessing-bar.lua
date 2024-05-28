@@ -141,15 +141,12 @@ function blessingSlotMan:adoptBlessing(blessing)
 end
 
 blessingSlotMan:start({
-    { "Blessing of Might", "Great Blessing of Might" },
-    { "Blessing of Wisdom", "Great Blessing of Wisdom" },
-    { "Blessing of Kings", "Great Blessing of Kings" },
-    { "Blessing of Sanctuary", "Great Blessing of Sanctuary" },
-    { "Blessing of Salvation", "Great Blessing of Salvation" },
-    { "Blessing of Light", "Great Blessing of Light" },
-    { "Blessing of Sacrifice", "Great Blessing of Sacrifice" },
-    { "Power Word: Fortitude", "Prayer of Fortitude" },
-    { "Divine Spirit", "Prayer of Spirit" },
+    { "Blessing of Might", "Greater Blessing of Might" },
+    { "Blessing of Wisdom", "Greater Blessing of Wisdom" },
+    { "Blessing of Kings", "Greater Blessing of Kings" },
+    { "Blessing of Sanctuary", "Greater Blessing of Sanctuary" },
+    { "Blessing of Salvation", "Greater Blessing of Salvation" },
+    { "Blessing of Light", "Greater Blessing of Light" },
 });
 
 local debug = nil;
