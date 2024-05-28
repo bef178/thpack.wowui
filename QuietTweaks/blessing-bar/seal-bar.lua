@@ -119,7 +119,8 @@ sealSlotMan:start({
     "Seal of Light",
     "Seal of Wisdom",
     "Righteous Fury",
-    "Battle Cry",
+    "Battle Shout",
+    "Demoralizing Shout",
 });
 
 local debug = nil;
