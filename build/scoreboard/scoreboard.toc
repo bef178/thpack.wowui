@@ -3,5 +3,5 @@
 ## Description: team fortress styled scoreboard for wow battleground
 ## X-BuildDate: {BuildDate}
 
-scoreboard/bindings.xml
-scoreboard/scoreboard.lua
+bindings.xml
+scoreboard.lua

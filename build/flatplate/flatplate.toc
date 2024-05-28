@@ -13,5 +13,5 @@ src/util/Color.lua
 src/util/A.lua
 src/util/A.Res.lua
 src/util/FrameBook.lua
-flatplate/FlatUnitFrame.lua
-flatplate/FlatPlate.lua
+FlatUnitFrame.lua
+FlatPlate.lua
