@@ -8,9 +8,19 @@
 
 b 重要但低频的技能
 
-c 读条 e aoe f 常用攻击 r 瞬发/dot
+c 读条
 
-g 最重要的控制 t 短效严重失能 v 长效失能
+e aoe
+
+f 高频攻击技能
+
+r 瞬发/dot
+
+g 最重要的控制
+
+t 短效失能
+
+v 长效失能
 
 h 治疗/恢复道具
 
@@ -22,15 +32,15 @@ x 打断
 
 z 位移技能
 
-1-4 治疗 2 瞬发/dot
+1 快速治疗
 
-mouse3 自动前进
+2 瞬发/dot
 
-mouse4 饰品/自利
+3 强效治疗
 
-mouse5 糖/血瓶
+mouse4(backward) 饰品/自利
 
-mouse6-9 按需
+mouse5(forward) 自动前进
 
 alt-w 自动前进
 
@@ -44,7 +54,7 @@ f2 地图
 
 f3 背包
 
-f4 开关姓名板
+f9 开关姓名板
 
 f10 系统菜单
 
@@ -264,7 +274,7 @@ p5 吸血套
 /castsequence reset=1 审判, 命令圣印
 ```
 
-我给你讲个笑话
+给你讲个笑话
 ```
 #showtooltip
 /cast [mod:alt] 圣盾术; 愤怒之锤
@@ -342,31 +352,6 @@ buff2
 /cast [nomod,@player] 庇护祝福; [mod:alt,@player] 强效庇护祝福; 正义之怒
 ```
 
-### 衣品
-
-很美
-```
-/equip 命运
-/equip 斩龙者护肩
-/equip 暴君胸甲
-/equip 野熊之蛮兽护臂
-/equip 哈库的板甲手套
-/equip 杉德尔船长的腰带
-/equip 典狱官热裤
-/equip 夜枭之血纹长靴
-```
-
-反伤
-```
-/equip 魔铸胸甲
-/equip 烈焰披风
-/equip 阿格曼奇之戒
-/equipslot 13 纯焰精华
-/equipslot 14 意志之力
-/equip 爱德华之手
-/equip 骨火
-```
-
 ## 盗贼宏
 
 ```
@@ -438,33 +423,3 @@ item:平静之剑
 
 item:征服者之剑
     quest:与圣光同在:42:39
-
-item:天选者印记
-    quest:贱民的指引:48:39
-
-item:痛击之刃
-    quest:大地的污染:51:45
-
-item:弗丁印记
-    quest:恶魔之犬:56:52
-
-item:欧莫克的瘦身腰带
-    quest:比修的装置:59:58
-
-item:黎明守护者
-    quest:档案管理员:60:57
-
-item:风暴护手
-    skill:锻造
-
-item:希望圣物
-    region:厄运之槌
-
-item:阿格曼奇之戒
-    region:厄运之槌
-
-item:正义之手
-    region:黑石深渊
-
-item:黑手饰物
-    quest:达基萨斯将军的命令
