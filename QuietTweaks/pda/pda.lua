@@ -6,7 +6,7 @@ pda.slot_size = 31;
 pda.slot_margin = 4;
 pda.max_x_slots = 4,
 pda.anchor:ClearAllPoints();
-pda.anchor:SetPoint("TOPLEFT", UIParent, "CENTER", 80, 120);
+pda.anchor:SetPoint("TOPLEFT", UIParent, "CENTER", 390, 120);
 
 pda.adviceBuilds = {};
 
