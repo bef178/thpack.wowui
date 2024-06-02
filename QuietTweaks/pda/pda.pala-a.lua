@@ -13,9 +13,20 @@ local getTargetHealthProportion = function()
     return UnitHealth("target") / UnitHealthMax("target");
 end;
 
+local hasActiveShapeshiftForm = function()
+    local n = GetNumShapeshiftForms(); -- NUM_SHAPESHIFT_SLOTS
+    for i = 1, n, 1 do
+        local texture, name, isActive, isCastable = GetShapeshiftFormInfo(i);
+        if (isActive) then
+            return true;
+        end
+    end
+    return false;
+end;
+
 local build = {
-    id = "a",
-    description = "prot pala solo aoe, turtle wow",
+    id = "pala-a",
+    description = "prot pala solo aoe, for turtle wow",
     initializers = {},
     slotModels = {},
 };
@@ -41,38 +52,39 @@ build.onElapsed = function(elapsed)
     end
 end;
 
--- 惩罚光环
+-- 惩罚光环/庇护祝福/神圣之盾
+-- 这三者是最主要的反伤手段，集成为第一顺位
+-- 另，A怪时惩罚光环优于圣洁光环
 Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Retribution Aura");
-    if (not spell) then
+    local spellRetributionAura = getSpellByName("Retribution Aura");
+    local spellBlessingOfSanctuary = getSpellByName("Blessing of Sanctuary");
+    local spellHolyShield = getSpellByName("Holy Shield");
+    if (not spellRetributionAura and not spellBlessingOfSanctuary and not spellHolyShield) then
         return;
     end
 
-    local function hasActiveShapeshiftForm()
-        local n = GetNumShapeshiftForms(); -- NUM_SHAPESHIFT_SLOTS
-        for i = 1, n, 1 do
-            local texture, name, isActive, isCastable = GetShapeshiftFormInfo(i);
-            if (isActive) then
-                return true;
-            end
-        end
-        return false;
-    end
-
     local model = createSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
     model.targetingPlayer = true;
     model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank);
+        CastSpellByName(model.spell.spellNameWithRank, 1);
     end;
-    model.onElapsed = function(elapsed)
+
+    local function onElapsedWithRetributionAura(model, elapsed)
+        if (not spellRetributionAura) then
+            model.visible = false;
+            return;
+        end
+
+        local spell = spellRetributionAura;
+        model.spell = spell;
+        model.contentTexture = spell.spellTexture;
+
         if (hasActiveShapeshiftForm()) then
             model.visible = false;
             return;
         end
 
-        local inCombat = UnitAffectingCombat("player", 1);
+        local inCombat = UnitAffectingCombat("player");
         local onTarget = targetsAliveEnemy();
         if (not inCombat and not onTarget) then
             model.visible = false;
@@ -81,38 +93,27 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        local inCombat = UnitAffectingCombat("player");
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
 
         model.timeToCooldown = timeToCooldown;
         model.ready = timeToCooldown == 0;
         model.recommended = (inCombat or onTarget) and (timeToCooldown < 0.1);
-    end;
-
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
-
--- 庇护祝福
-Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Blessing of Sanctuary");
-    if (not spell) then
-        return;
+        return true;
     end
 
-    local model = createSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
-    model.targetingPlayer = true;
-    model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, 1);
-    end;
-    model.onElapsed = function(elapsed)
+    local function onElapsedWithBlessingOfSanctuary(model, elapsed)
+        if (not spellBlessingOfSanctuary) then
+            model.visible = false;
+            return;
+        end
+
+        local spell = spellBlessingOfSanctuary;
+        model.spell = spell;
+        model.contentTexture = spell.spellTexture;
+
         local buff = getUnitBuffBySpell("player", spell);
-        local isActive = not not buff;
-        local isSafeActive = isActive and ((buff.buffTimeToLive or 0) > 30);
-        if (isSafeActive) then
+        if (buff and ((buff.buffTimeToLive or 0) > 30)) then
+            -- safe active
             model.visible = false;
             return;
         end
@@ -128,32 +129,23 @@ Array.add(build.initializers, function(createSlotModel)
 
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
 
-        model.affectingSpellTarget = not not getUnitBuffBySpell("player", spell);
+        model.affectingSpellTarget = not (not buff);
         model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
+        model.ready = (timeToCooldown == 0);
         model.recommended = (inCombat or onTarget) and (timeToCooldown < 0.1);
-    end;
-
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
-
--- 神圣之盾
-Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Holy Shield");
-    if (not spell) then
-        return;
+        return true;
     end
 
-    local model = createSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
-    model.targetingPlayer = true;
-    model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank);
-    end;
-    model.onElapsed = function(elapsed)
+    local function onElapsedWithHolyShield(model, elapsed)
+        if (not spellHolyShield) then
+            model.visible = false;
+            return;
+        end
+
+        local spell = spellHolyShield;
+        model.spell = spell;
+        model.contentTexture = spell.spellTexture;
+
         -- TODO check equipped shield
 
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
@@ -171,10 +163,19 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        model.affectingSpellTarget = not (not getUnitBuffBySpell("player", spell));
+        local buff = getUnitBuffBySpell("player", spell);
+
+        model.affectingSpellTarget = not (not buff);
         model.timeToCooldown = timeToCooldown;
         model.ready = model.timeToCooldown == 0;
         model.recommended = (inCombat or onTarget) and (timeToCooldown < 0.1);
+        return true;
+    end
+
+    model.onElapsed = function(elapsed)
+        return onElapsedWithRetributionAura(model, elapsed)
+            or onElapsedWithBlessingOfSanctuary(model, elapsed)
+            or onElapsedWithHolyShield(model, elapsed);
     end;
 
     local a = {};
@@ -183,6 +184,7 @@ Array.add(build.initializers, function(createSlotModel)
 end);
 
 -- 奉献
+-- 最主要的伤害手段，为第二顺位
 Array.add(build.initializers, function(createSlotModel)
     local spell = getSpellByName("Consecration");
     if (not spell) then
@@ -220,7 +222,8 @@ Array.add(build.initializers, function(createSlotModel)
     return a;
 end);
 
--- 智慧圣印/光明圣印/审判
+-- 光明圣印/智慧圣印/审判
+-- 最主要的战时回复手段，为第三顺位
 Array.add(build.initializers, function(createSlotModel)
     local function updateModelWithSeal(model, spell)
         local inCombat = UnitAffectingCombat("player");
@@ -442,8 +445,8 @@ Array.add(build.initializers, function(createSlotModel)
         end)();
 
         local a = {};
-        Array.add(a, sealOfWisdomModel);
         Array.add(a, sealOfLightModel);
+        Array.add(a, sealOfWisdomModel);
         return a;
     elseif (spellSealOfLight or spellSealOfWisdom) then
         -- health or mana recovery strategy
