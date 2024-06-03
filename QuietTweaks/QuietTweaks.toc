@@ -13,6 +13,7 @@ add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
+estimated-time-of-level-up.lua
 format-buff-time.lua
 open-all-bags.lua
 pick-action.lua

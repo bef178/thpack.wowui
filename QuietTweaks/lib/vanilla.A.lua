@@ -142,6 +142,27 @@ A.buildCoinString = function(amount)
     return buildCoinTextString(goldAmount, silverAmount, copperAmount);
 end;
 
+A.buildTimeString = function(seconds)
+    if (seconds <= 0) then
+        return;
+    end
+
+    local d, h, m, s = ChatFrame_TimeBreakDown(seconds);
+    if (d > 0) then
+        return string.format("%dd+", d);
+    elseif (h > 0) then
+        if (h > 2) then
+            return string.format("%dh+", h);
+        else
+            return string.format("%d\'+", h * 60 + m);
+        end
+    elseif (m > 9) then
+        return string.format("%d\'+", m);
+    else
+        return string.format("%d\'%02d", m, s);
+    end
+end;
+
 A.getBagItemByName = function(name)
     for bagId = 0, NUM_BAG_FRAMES do
         for slotId = 1, GetContainerNumSlots(bagId) do
