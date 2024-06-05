@@ -20,6 +20,9 @@
     - 不解释
 - auto-sell
     - 不解释
+- exp-speed
+    - 显示经验/小时
+    - 显示预估升级时间
 - format-buff-time
     - 不解释
 - open-all-bags

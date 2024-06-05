@@ -1,6 +1,7 @@
 local buildTimeString = A.buildTimeString;
 
--- estimated time of level up
+-- show exp points per hour
+-- show ETA of level up
 (function()
     if (UnitLevel("player") == MAX_PLAYER_LEVEL) then
         return;
