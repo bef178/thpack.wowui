@@ -25,6 +25,8 @@
     - 显示预估升级时间
 - format-buff-time
     - 不解释
+- minimap-clock
+    - 显示当前时间(不要玩得太晚！)
 - open-all-bags
     - 单击背包时打开/关闭所有包
 - pick-action
