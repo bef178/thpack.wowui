@@ -35,12 +35,15 @@
     - 显示毒药剩余有效次数(Buff)
 - show-num-reagents
     - 显示包内施法材料数量(ActionButton)
-- show-target-class
-    - 显示目标职业(TargetFrame)
-    - 左键点击可观察目标
 - switch-chat-type
     - 无输入时按`tab`切换频道
     - 依次为`说` - `小队` - `团队` - `公会` - `说`
+- unitframe/name-background
+    - PlayerFrame和TargetFrame的名字文本背景色显示为职业颜色
+- unitframe/reposition
+    - PlayerFrame和TargetFrame现位于居中靠下，便于观察
+- unitframe/target-class-icon
+    - 在TargetFrame上添加了一个圆形按钮，显示为目标职业，点击可观察目标
 
 ### 新立项
 
@@ -57,8 +60,3 @@
     - 推荐施法组件，在条件合适时显示相应技能图标，点击可施放
     - pala-a
         - 防骑单刷A怪，实时推荐技能
-
-- unitframe/reposition
-    - PlayerFrame和TargetFrame现位于居中靠下，便于观察
-- unitframe/name-background
-    - PlayerFrame和TargetFrame的名字文本背景色显示为职业颜色

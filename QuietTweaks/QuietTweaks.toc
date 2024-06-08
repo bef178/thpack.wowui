@@ -20,7 +20,6 @@ pick-action.lua
 show-num-available-bag-slots.lua
 show-num-poison-charges.lua
 show-num-reagents.lua
-show-target-class.lua
 switch-chat-type.lua
 
 blessing-bar\aura-bar.lua
@@ -29,5 +28,6 @@ blessing-bar\blessing-bar.lua
 pda\pda.lua
 pda\pda.pala-a.lua
 
-unitframe\reposition.lua
 unitframe\name-background.lua
+unitframe\reposition.lua
+unitframe\target-class-icon.lua

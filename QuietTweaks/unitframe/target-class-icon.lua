@@ -1,37 +1,37 @@
 local getResource = A.getResource;
 
 (function()
-    local function createRoundButton(parent, size)
-        local button = CreateFrame("Button", nil, parent, nil);
-        button:SetWidth(size);
-        button:SetHeight(size);
+    local function createRoundIcon(parent, size)
+        local f = CreateFrame("Button", nil, parent, nil);
+        f:SetWidth(size);
+        f:SetHeight(size);
 
-        local highlightTexture = button:CreateTexture(nil, "HIGHLIGHT");
+        local highlightTexture = f:CreateTexture(nil, "HIGHLIGHT");
         highlightTexture:SetTexture([[Interface/Minimap/UI-Minimap-ZoomButton-Highlight]]);
-        highlightTexture:SetPoint("TOPLEFT", size * -1/64, size * 1/64);
-        highlightTexture:SetPoint("BOTTOMRIGHT", size * -1/64, size * 1/64);
-        button:SetHighlightTexture(highlightTexture);
+        highlightTexture:SetPoint("TOPLEFT", size * -1 / 64, size * 1 / 64);
+        highlightTexture:SetPoint("BOTTOMRIGHT", size * -1 / 64, size * 1 / 64);
+        f:SetHighlightTexture(highlightTexture);
 
-        local backgroundTexture = button:CreateTexture(nil, "BACKGROUND");
+        local backgroundTexture = f:CreateTexture(nil, "BACKGROUND");
         backgroundTexture:SetTexture([[Interface/Minimap/UI-Minimap-Background]]);
         backgroundTexture:SetVertexColor(0, 0, 0, 0.6);
-        backgroundTexture:SetPoint("TOPLEFT", size * 4/64, "TOPLEFT", size * -4/64);
-        backgroundTexture:SetPoint("BOTTOMRIGHT", size * -4/64, "TOPLEFT", size * 4/64);
+        backgroundTexture:SetPoint("TOPLEFT", size * 4 / 64, "TOPLEFT", size * -4 / 64);
+        backgroundTexture:SetPoint("BOTTOMRIGHT", size * -4 / 64, "TOPLEFT", size * 4 / 64);
 
-        local borderTexture = button:CreateTexture(nil, "OVERLAY");
+        local borderTexture = f:CreateTexture(nil, "OVERLAY");
         borderTexture:SetTexture([[Interface/Minimap/MiniMap-TrackingBorder]]);
-        borderTexture:SetTexCoord(0, 38/64, 0, 38/64);
+        borderTexture:SetTexCoord(0, 38 / 64, 0, 38 / 64);
         borderTexture:SetAllPoints();
 
-        local artworkTexture = button:CreateTexture(nil, "ARTWORK");
-        artworkTexture:SetPoint("TOPLEFT", size * 12/64, size * -10/64);
-        artworkTexture:SetPoint("BOTTOMRIGHT", size * -12/64, size * 14/64);
-        button.artworkTexture = artworkTexture;
+        local artworkTexture = f:CreateTexture(nil, "ARTWORK");
+        artworkTexture:SetPoint("TOPLEFT", size * 12 / 64, size * -10 / 64);
+        artworkTexture:SetPoint("BOTTOMRIGHT", size * -12 / 64, size * 14 / 64);
+        f.artworkTexture = artworkTexture;
 
-        return button;
+        return f;
     end
 
-    local f = createRoundButton(TargetFrame, 40);
+    local f = createRoundIcon(TargetFrame, 40);
     f:SetPoint("TOPLEFT", 115, -3);
     RaiseFrameLevel(f);
 
@@ -40,7 +40,7 @@ local getResource = A.getResource;
         local button = arg1;
         if (button == "LeftButton") then
             local unit = "target";
-            if (UnitIsPlayer(unit)) and not UnitCanAttack("player", unit) then
+            if (UnitIsPlayer(unit) and not UnitCanAttack("player", unit)) then
                 if (InspectFrame and InspectFrame:IsShown()) then
                     InspectFrameCloseButton:Click();
                 else
@@ -66,5 +66,6 @@ local getResource = A.getResource;
     f:RegisterEvent("PLAYER_TARGET_CHANGED");
     f:SetScript("OnEvent", f.refresh);
 
+    -- in case of ReloadUI()
     f:refresh();
 end)();
