@@ -163,6 +163,26 @@ A.buildTimeString = function(seconds)
     end
 end;
 
+A.getClassColor = (function()
+    local classColors = {
+        ["MAGE"] = "#3ec5e9",
+        ["PRIEST"] = "#fefefe",
+        ["WARLOCK"] = "#8686ec",
+        ["DRUID"] = "#fe7b09",
+        ["ROGUE"] = "#fef367",
+        ["HUNTER"] = "#a9d271",
+        ["SHAMAN"] = "#006fdc",
+        ["PALADIN"] = "#f38bb9",
+        ["WARRIOR"] = "#c59a6c",
+        ["DEATHKNIGHT"] = "#c31d39",
+        ["DEMONHUNTER"] = "#a22fc8",
+        ["MONK"] = "#00fe95",
+    };
+    return function(className)
+        return classColors[className];
+    end;
+end)();
+
 A.getBagItemByName = function(name)
     for bagId = 0, NUM_BAG_FRAMES do
         for slotId = 1, GetContainerNumSlots(bagId) do

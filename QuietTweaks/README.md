@@ -60,3 +60,5 @@
 
 - unitframe/reposition
     - PlayerFrame和TargetFrame现位于居中靠下，便于观察
+- unitframe/name-background
+    - PlayerFrame和TargetFrame的名字文本背景色显示为职业颜色

@@ -30,3 +30,4 @@ pda\pda.lua
 pda\pda.pala-a.lua
 
 unitframe\reposition.lua
+unitframe\name-background.lua
