@@ -23,6 +23,7 @@ show-num-reagents.lua
 show-target-class.lua
 switch-chat-type.lua
 
+blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 pda\pda.lua
 pda\pda.pala-a.lua
