@@ -38,12 +38,12 @@
 - switch-chat-type
     - 无输入时按`tab`切换频道
     - 依次为`说` - `小队` - `团队` - `公会` - `说`
-- unitframe/name-background
-    - PlayerFrame和TargetFrame的名字文本背景色显示为职业颜色
 - unitframe/reposition
     - PlayerFrame和TargetFrame现位于居中靠下，便于观察
 - unitframe/target-class-icon
     - 在TargetFrame上添加了一个圆形按钮，显示为目标职业，点击可观察目标
+- unitframe/target-class-texture
+    - PlayerFrame和TargetFrame的名字文本背景色显示为职业颜色
 
 ### 新立项
 

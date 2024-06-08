@@ -2,7 +2,7 @@ local Color = Color;
 local getClassColor = A.getClassColor;
 local hookGlobalFunction = A.hookGlobalFunction;
 
-local enableClassColorTextureOfPlayerFrame = function()
+local enablePlayerClassColorTexture = function()
     local _, className = UnitClass("player");
     local texture = PlayerFrame:CreateTexture(nil, "BORDER");
     texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground");
@@ -12,7 +12,7 @@ local enableClassColorTextureOfPlayerFrame = function()
     texture:SetVertexColor(Color.toVertex(getClassColor(className)));
 end;
 
-local enableClassColorTextureOfTargetFrame = function()
+local enableTargetClassColorTexture = function()
     local texture = TargetFrameNameBackground;
     texture:SetDrawLayer("BORDER");
     hookGlobalFunction("TargetFrame_CheckFaction", "post_hook", function(...)
@@ -27,12 +27,6 @@ local enableClassColorTextureOfTargetFrame = function()
 end;
 
 (function()
-    local f = CreateFrame("Frame", nil, UIParent, nil);
-    f:RegisterEvent("PLAYER_ENTERING_WORLD");
-    f:SetScript("OnEvent", function()
-        f:UnregisterAllEvents();
-        enableClassColorTextureOfPlayerFrame();
-        enableClassColorTextureOfTargetFrame();
-        f:Hide();
-    end);
+    enablePlayerClassColorTexture();
+    enableTargetClassColorTexture();
 end)();

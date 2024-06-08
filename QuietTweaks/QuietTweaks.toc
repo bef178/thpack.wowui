@@ -28,6 +28,6 @@ blessing-bar\blessing-bar.lua
 pda\pda.lua
 pda\pda.pala-a.lua
 
-unitframe\name-background.lua
 unitframe\reposition.lua
 unitframe\target-class-icon.lua
+unitframe\target-class-texture.lua
