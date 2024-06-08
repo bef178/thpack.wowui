@@ -25,5 +25,8 @@ switch-chat-type.lua
 
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
+
 pda\pda.lua
 pda\pda.pala-a.lua
+
+unitframe\reposition.lua

@@ -57,3 +57,6 @@
     - 推荐施法组件，在条件合适时显示相应技能图标，点击可施放
     - pala-a
         - 防骑单刷A怪，实时推荐技能
+
+- unitframe/reposition
+    - PlayerFrame和TargetFrame现位于居中靠下，便于观察
