@@ -40,15 +40,14 @@ end
 function sealSlotMan:start(seals)
     local f = self.anchor;
     f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
     f:SetScript("OnEvent", function(...)
-        if (event == "PLAYER_ENTERING_WORLD") then
-            sealSlotMan:updateAnchorPosition();
-            sealSlotMan:clearAllSlotModels();
-            for i, seal in ipairs(seals) do
-                sealSlotMan:adopt(seal);
-            end
-            sealSlotMan:renderAllSlotModels();
+        sealSlotMan:updateAnchorPosition();
+        sealSlotMan:clearAllSlotModels();
+        for i, seal in ipairs(seals) do
+            sealSlotMan:adopt(seal);
         end
+        sealSlotMan:renderAllSlotModels();
     end);
 
     f:SetScript("OnUpdate", (function()

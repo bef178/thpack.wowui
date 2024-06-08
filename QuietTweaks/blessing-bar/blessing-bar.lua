@@ -40,15 +40,14 @@ end
 function blessingSlotMan:start(blessings)
     local f = self.anchor;
     f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
     f:SetScript("OnEvent", function(...)
-        if (event == "PLAYER_ENTERING_WORLD") then
-            blessingSlotMan:updateAnchorPosition();
-            blessingSlotMan:clearAllSlotModels();
-            for i, blessing in ipairs(blessings) do
-                blessingSlotMan:adoptBlessing(blessing);
-            end
-            blessingSlotMan:renderAllSlotModels();
+        blessingSlotMan:updateAnchorPosition();
+        blessingSlotMan:clearAllSlotModels();
+        for i, blessing in ipairs(blessings) do
+            blessingSlotMan:adoptBlessing(blessing);
         end
+        blessingSlotMan:renderAllSlotModels();
     end);
 
     f:SetScript("OnUpdate", (function()
