@@ -112,7 +112,7 @@ Array.add(build.initializers, function(createSlotModel)
         model.contentTexture = spell.spellTexture;
 
         local buff = getUnitBuffBySpell("player", spell);
-        if (buff and ((buff.buffTimeToLive or 0) > 30)) then
+        if (buff and ((buff.buffTimeToLive or 0) > 10)) then
             -- safe active
             model.visible = false;
             return;
@@ -149,7 +149,7 @@ Array.add(build.initializers, function(createSlotModel)
         -- TODO check equipped shield
 
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        if (timeToCooldown > 2) then
+        if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
         end
@@ -199,7 +199,7 @@ Array.add(build.initializers, function(createSlotModel)
     end;
     model.onElapsed = function(elapsed)
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        if (timeToCooldown > 2) then
+        if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
         end
@@ -253,7 +253,7 @@ Array.add(build.initializers, function(createSlotModel)
         end
 
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        if (timeToCooldown > 2) then
+        if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
         end
@@ -552,7 +552,7 @@ Array.add(build.initializers, function(createSlotModel)
     end;
     model.onElapsed = function(elapsed)
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        if (timeToCooldown > 2) then
+        if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
         end
