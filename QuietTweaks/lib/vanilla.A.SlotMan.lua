@@ -178,6 +178,11 @@ A.SlotMan = A.SlotMan or (function()
     end
 
     -- public
+    function SlotMan:getNumSlotModels()
+        return Array.size(self.slotModels);
+    end
+
+    -- public
     function SlotMan:clearAllSlotModels()
         Array.clear(self.slotModels);
     end
