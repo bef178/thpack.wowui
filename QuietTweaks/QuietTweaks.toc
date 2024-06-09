@@ -22,6 +22,7 @@ show-num-available-bag-slots.lua
 show-num-poison-charges.lua
 show-num-reagents.lua
 switch-chat-type.lua
+tooltip-healthbar.lua
 
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua

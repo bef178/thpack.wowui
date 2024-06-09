@@ -40,6 +40,8 @@
 - switch-chat-type
     - 无输入时按`tab`切换频道
     - 依次为`说` - `小队` - `团队` - `公会` - `说`
+- tooltip-healthbar
+    - 添加GameTooltip血条的背景、边框和文本
 - unitframe/reposition
     - PlayerFrame和TargetFrame现位于居中靠下，便于观察
 - unitframe/target-class-icon
