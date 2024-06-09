@@ -22,6 +22,9 @@
     - 不解释
 - chat-scroll
     - 允许鼠标滚轮
+- chat-switch-type
+    - 无输入时按`tab`切换频道
+    - 依次为`说` - `小队` - `团队` - `公会` - `说`
 - exp-speed
     - 显示经验/小时
     - 显示预估升级时间
@@ -41,9 +44,6 @@
     - 显示毒药剩余有效次数(Buff)
 - show-num-reagents
     - 显示包内施法材料数量(ActionButton)
-- switch-chat-type
-    - 无输入时按`tab`切换频道
-    - 依次为`说` - `小队` - `团队` - `公会` - `说`
 - tooltip-healthbar
     - 添加GameTooltip血条的背景、边框和文本
 - unitframe/reposition
