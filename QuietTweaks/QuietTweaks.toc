@@ -16,6 +16,7 @@ add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
+chat-scroll.lua
 exp-speed.lua
 format-buff-time.lua
 minimap-clock.lua

@@ -20,6 +20,8 @@
     - 不解释
 - auto-sell
     - 不解释
+- chat-scroll
+    - 允许鼠标滚轮
 - exp-speed
     - 显示经验/小时
     - 显示预估升级时间
