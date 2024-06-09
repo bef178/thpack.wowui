@@ -1,0 +1,2 @@
+BINDING_HEADER_QUIET_TWEAKS = "Quiet Tweaks";
+BINDING_NAME_TOGGLE_MACRO_FRAME = "Toggle Macro Frame";

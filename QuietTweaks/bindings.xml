@@ -1,0 +1,12 @@
+<Bindings>
+    <Binding name="TOGGLE_MACRO_FRAME" runOnUp="true" header="QUIET_TWEAKS">
+        if (keystate == "down") then
+            if (MacroFrame and MacroFrame:IsShown()) then
+                MacroFrameCloseButton:Click();
+            else
+                PlaySound("igMainMenuOption");
+                ShowMacroFrame();
+            end
+        end
+    </Binding>
+</Bindings>
