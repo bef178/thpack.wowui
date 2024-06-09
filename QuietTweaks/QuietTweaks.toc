@@ -19,6 +19,7 @@ auto-sell.lua
 exp-speed.lua
 format-buff-time.lua
 minimap-clock.lua
+minimap-zoom.lua
 open-all-bags.lua
 pick-action.lua
 show-num-available-bag-slots.lua
