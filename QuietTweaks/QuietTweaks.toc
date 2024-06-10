@@ -40,3 +40,4 @@ unitframe\target-class-icon.lua
 unitframe\target-class-texture.lua
 
 x\preset-key-bindings.lua
+x\preset-macros.lua

@@ -73,3 +73,5 @@
 
 - x/preset-key-bindings
     - 个人使用的按键设置，默认不启用
+- x/preset-macros
+    - 个人使用的宏
