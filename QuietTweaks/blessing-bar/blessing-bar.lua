@@ -150,7 +150,7 @@ function sealSlotMan:updateAnchorPosition()
     local margin = blessingSlotMan.slot_margin;
     local n = blessingSlotMan:getNumSlotModels();
     local blessingBarWidth = (n == 0) and 0 or (n * size + (n - 1) * margin);
-    local gap = 32;
+    local gap = (blessingBarWidth == 0) and 0 or 32;
     self.anchor:ClearAllPoints();
     self.anchor:SetPoint("TOPLEFT", blessingSlotMan.anchor, "TOPLEFT", blessingBarWidth + gap, 0);
 end
