@@ -233,6 +233,10 @@ end;
 
 -- all temporary states listed
 A.getSpellCastStates = function(spell)
+    if (not spell) then
+        return;
+    end
+
     local startTime, duration, enabled = GetSpellCooldown(spell.spellIndex, spell.spellBookType);
 
     local timeToCooldown;

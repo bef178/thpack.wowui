@@ -14,6 +14,7 @@ local macros = {
 #showtooltip
 /stand
 /cast [mod:alt,@player] [@mouseover,exists,noharm,nodead] [] Cleanse
+/cast [mod:alt,@player] [@mouseover,exists,noharm,nodead] [] Purify
 ]],
         },
         {
@@ -65,6 +66,7 @@ local macros = {
 #showtooltip
 /cast [nomod] Hammer of Wrath
 /cast [mod] Divine Shield
+/cast [mod] Divine Protection
 /use [mod] Hearthstone
 ]],
         },
@@ -98,7 +100,8 @@ local macros = {
         {
             name = ">ham",
             content = [[
-/run local cs=CastSpellByName; for i=1,32 do if(UnitBuff("player",i)) then if(string.find(UnitBuff("player",i),"ThunderBolt")) then cs("Judgement");break;end;else cs("Seal of Righteousness");break;end;end
+#showtooltip Judgement
+/run hammerWithSealOfRighteousness()
 ]],
         },
         {
@@ -146,3 +149,39 @@ end
         A.logi("To load preset macros, type \"/loadpresetmacros\".");
     end);
 end)();
+
+----------------------------------------
+
+local Timer = Timer;
+local getSpellByName = A.getSpellByName;
+local getSpellCastStates = A.getSpellCastStates;
+local getUnitBuffBySpell = A.getUnitBuffBySpell;
+
+-- cannot cast Seal of Righteousness right after Judgement, even with delay via OnUpdate
+function hammerWithSealOfRighteousness()
+    local spellNameSealOfRighteousness = "Seal of Righteousness";
+    local spellNameJudgement = "Judgement";
+
+    local spell = getSpellByName(spellNameSealOfRighteousness);
+    if (not spell) then
+        return;
+    end
+
+    -- if seal is not ready, not cast Judgement either
+    if (getSpellCastStates(spell).timeToCooldown > 0) then
+        return;
+    end
+
+    if (getUnitBuffBySpell("player", spell)) then
+        local spellJudgement = getSpellByName(spellNameJudgement);
+        if (not spellJudgement) then
+            return;
+        end
+
+        if (getSpellCastStates(spellJudgement).timeToCooldown == 0) then
+            CastSpellByName(spellNameJudgement);
+        end
+    else
+        CastSpellByName(spellNameSealOfRighteousness);
+    end
+end
