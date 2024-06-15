@@ -40,22 +40,26 @@ local buildTimeString = A.buildTimeString;
     fontString:SetPoint("RIGHT", -5, 1);
 
     f:RegisterEvent("CHAT_MSG_COMBAT_XP_GAIN");
+    f:RegisterEvent("UNIT_LEVEL");
     f:SetScript("OnEvent", function()
-        local message = arg1;
-        local startIndex, endIndex, pointsString = string.find(message, '(%d+)')
-        local points = tonumber(pointsString);
-        addExpPoints(points);
+        if (event == "CHAT_MSG_COMBAT_XP_GAIN") then
+            local message = arg1;
+            local startIndex, endIndex, pointsString = string.find(message, '(%d+)')
+            local points = tonumber(pointsString);
+            addExpPoints(points);
+        end
         invalidated = true;
     end);
 
     f:SetScript("OnUpdate", (function()
-        local REFRESH_INTERVAL = 10;
+        local REFRESH_INTERVAL = 6;
         local acc = 0;
         return function(...)
             local elapsed = arg1;
             acc = acc + elapsed;
             if (invalidated or (acc > REFRESH_INTERVAL)) then
                 invalidated = false;
+                acc = 0;
                 local pointsOfLastHour = getExpPointsOfLastHour();
                 if (pointsOfLastHour == 0) then
                     fontString:SetText("eta: ...");
@@ -64,8 +68,6 @@ local buildTimeString = A.buildTimeString;
                     fontString:SetText("eta:" .. buildTimeString(secondsToLevelUp));
                 end
             end
-
-            acc = 0;
         end;
     end)());
 
