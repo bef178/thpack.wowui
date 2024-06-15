@@ -88,8 +88,8 @@ function auraSlotMan:adopt(sealName)
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
     model.onEnter = function(f)
-        -- GameTooltip:SetOwner(f, "ANCHOR_TOPLEFT");
-        GameTooltip_SetDefaultAnchor(GameTooltip, f);
+        GameTooltip:SetOwner(f, "ANCHOR_TOPLEFT");
+        -- GameTooltip_SetDefaultAnchor(GameTooltip, f);
         GameTooltip:SetSpell(model.spell.spellIndex, model.spell.spellBookType);
         GameTooltip:Show();
     end;
