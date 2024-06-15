@@ -28,25 +28,12 @@ end)());
 
 function blessingSlotMan:updateAnchorPosition()
     local f = self.anchor;
-
-    local xOffset = 32;
-    local yOffset = 32;
-
     if (MultiBarBottomRight:IsShown()) then
         f:ClearAllPoints();
-        f:SetPoint("BOTTOMLEFT", MultiBarBottomRight, "TOPLEFT", xOffset, yOffset);
+        f:SetPoint("TOPLEFT", MultiBarBottomRight, "TOPLEFT", 32, 36);
     else
-        if (MultiBarBottomLeft.isShowing) then
-            yOffset = yOffset + 45;
-        end
-        if (ReputationWatchBar:IsShown() and MainMenuExpBar:IsShown()) then
-            yOffset = yOffset + 9;
-        end
-        if (MainMenuBarMaxLevelBar:IsShown()) then
-            yOffset = yOffset - 5;
-        end
         f:ClearAllPoints();
-        f:SetPoint("BOTTOMLEFT", MultiBarBottomRight, "TOPRIGHT", xOffset, yOffset);
+        f:SetPoint("TOPLEFT", MultiBarBottomRight, "TOPLEFT", 32, 0);
     end
 end
 

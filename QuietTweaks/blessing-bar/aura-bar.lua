@@ -19,20 +19,12 @@ function auraSlotMan:updateAnchorPosition()
         local lastShapeshiftButton = _G["ShapeshiftButton" .. n];
         f:ClearAllPoints();
         f:SetPoint("TOPLEFT", lastShapeshiftButton, "TOPRIGHT", 32, 0);
-    else
-        local xOffset = 8 + 33;
-        local yOffset = 30;
-        if (MultiBarBottomLeft.isShowing) then
-            yOffset = yOffset + 45;
-        end
-        if (ReputationWatchBar:IsShown() and MainMenuExpBar:IsShown()) then
-            yOffset = yOffset + 9;
-        end
-        if (MainMenuBarMaxLevelBar:IsShown()) then
-            yOffset = yOffset - 5;
-        end
+    elseif (MultiBarBottomLeft:IsShown()) then
         f:ClearAllPoints();
-        f:SetPoint("BOTTOMLEFT", MainMenuBar, "TOPLEFT", xOffset, yOffset);
+        f:SetPoint("TOPLEFT", MultiBarBottomLeft, "TOPLEFT", 32, 36);
+    else
+        f:ClearAllPoints();
+        f:SetPoint("TOPLEFT", MultiBarBottomLeft, "TOPLEFT", 32, 0);
     end
 end
 
