@@ -524,7 +524,7 @@ Array.add(build.initializers, function(createSlotModel)
         end
 
         local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        local holyStrikeTimeToCooldown = spellHolyStrike and getSpellCastStates(spellHolyStrike).timeToCooldown or nil;
+        local holyStrikeTimeToCooldown = spellHolyStrike and getSpellCastStates(spellHolyStrike).timeToCooldown or 86400;
         -- TODO check holy strike casting
 
         model.timeToCooldown = timeToCooldown;
