@@ -17,16 +17,21 @@ local buildTimeString = A.buildTimeString;
         });
     end
 
-    local function getExpPointsOfLastHour()
+    local function estimateExpPerHour()
         local now = GetTime();
         while (Array.size(expQueue) > 0 and (now - expQueue[1].timestamp > 3600)) do
             Array.remove(expQueue, 1);
         end
-        local pointsOfLastHour = 0;
-        for i, item in ipairs(expQueue) do
-            pointsOfLastHour = pointsOfLastHour + item.points;
+        local n = Array.size(expQueue);
+        if (n > 3) then
+            local startTime = expQueue[1].timestamp;
+            local endTime = expQueue[n].timestamp;
+            local points = 0;
+            for i = 2, n, 1 do
+                points = points + expQueue[i].points;
+            end
+            return math.floor(points / (endTime - startTime) * 3600);
         end
-        return pointsOfLastHour;
     end
 
     local f = CreateFrame("Frame", nil, MainMenuExpBar, nil);
@@ -60,20 +65,19 @@ local buildTimeString = A.buildTimeString;
             if (invalidated or (acc > REFRESH_INTERVAL)) then
                 invalidated = false;
                 acc = 0;
-                local pointsOfLastHour = getExpPointsOfLastHour();
-                if (pointsOfLastHour == 0) then
-                    fontString:SetText("eta: ...");
-                else
-                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / pointsOfLastHour * 3600
+                local expPerHour = estimateExpPerHour();
+                if (expPerHour) then
+                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / expPerHour * 3600;
                     fontString:SetText("eta:" .. buildTimeString(secondsToLevelUp));
+                else
+                    fontString:SetText("eta: ...");
                 end
             end
         end;
     end)());
 
     f:SetScript("OnEnter", function()
-        local pointsOfLastHour = getExpPointsOfLastHour();
         GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
-        GameTooltip:SetText(pointsOfLastHour .. "/h", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+        GameTooltip:SetText((estimateExpPerHour() or 0) .. "/h", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
     end);
 end)();
