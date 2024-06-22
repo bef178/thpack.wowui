@@ -39,7 +39,7 @@
             return;
         end
 
-        if (clientHeightInPixels == 1440) then
+        if (clientHeightInPixels >= 1400 and clientHeightInPixels <= 1440) then
             -- on 1440, if pixelsPerPoint being 1 the UI is too small while if 2 it is too large
             -- let it as it is
             -- pixelsPerPoint = 1.6875; scale == 0.9
