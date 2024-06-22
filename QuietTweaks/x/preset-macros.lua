@@ -28,7 +28,9 @@ local macros = {
         {
             name = ">c",
             content = [[
-#showtooltip Crusader Strike
+#showtooltip
+/dismount
+/stand
 /startattack
 /cast [nomod] Holy Strike
 /cast [nomod] Crusader Strike
@@ -47,17 +49,18 @@ local macros = {
             name = ">f",
             content = [[
 #showtooltip
+/dismount
+/stand
 /startattack
-/cast [nomod] Judgement
-/stopmacro [nomod]
-/castsequence reset=26 Seal of Righteousness, Judgement
+/cast [nomod] Judgement; Seal of Righteousness
 ]],
         },
         {
             name = ">g",
             content = [[
 #showtooltip
-/cast [harm,@target,exists] Hammer of Justice; [help,@target,exists] Blessing of Protection
+/cast [@mouseover,exists,harm] [@target,exists,harm] Hammer of Justice
+/cast [@mouseover,exists,help] [@target,exists,help] Blessing of Protection
 ]],
         },
         {
