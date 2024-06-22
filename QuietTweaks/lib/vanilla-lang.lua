@@ -54,6 +54,23 @@ String.substring = String.substring or function(s, i, j)
     return string.sub(s, i, j);
 end;
 
+String.split = String.split or function(s, pattern)
+    local startIndex = 1;
+    local a = {};
+    while (true) do
+        local endIndex = string.find(s, pattern, startIndex, true);
+        if (endIndex == nil) then
+            local s1 = String.substring(s, startIndex);
+            Array.add(a, s1);
+            break;
+        end
+        local s1 = String.substring(s, startIndex, endIndex - 1);
+        Array.add(a, s1);
+        startIndex = endIndex + string.len(pattern);
+    end
+    return a;
+end;
+
 String.trim = String.trim or function(s)
     return string.gsub(s, '^%s*(.-)%s*$', '%1')
 end;

@@ -78,8 +78,8 @@ local function fillPresetKeyBindings(bindings)
     };
 
     for _, s in ipairs(keys) do
-        for k in string.gmatch(s, "([^:]+)") do
-            for m in string.gmatch(modifierKeys, "([^:]*)") do
+        for _, k in ipairs(String.split(s, ":")) do
+            for _, m in ipairs(String.split(modifierKeys, ":")) do
                 local key = string.upper(m .. k);
                 if (not bindings[key]) then
                     bindings[key] = "unbind";
