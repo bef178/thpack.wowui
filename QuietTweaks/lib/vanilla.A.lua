@@ -149,15 +149,15 @@ A.buildTimeString = function(seconds)
 
     local d, h, m, s = ChatFrame_TimeBreakDown(seconds);
     if (d > 0) then
-        return string.format("%dd+", d);
+        return string.format("%dd", d);
     elseif (h > 0) then
         if (h > 2) then
-            return string.format("%dh+", h);
+            return string.format("%dh", h);
         else
-            return string.format("%d\'+", h * 60 + m);
+            return string.format("%d\'", h * 60 + m);
         end
     elseif (m > 9) then
-        return string.format("%d\'+", m);
+        return string.format("%d\'", m);
     else
         return string.format("%d\'%02d", m, s);
     end
