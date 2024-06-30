@@ -196,6 +196,24 @@ A.getBagItemByName = function(name)
     end
 end;
 
+A.getAttacking = (function()
+    local isAttacking = false;
+    local f = CreateFrame("Frame");
+    f:RegisterEvent("PLAYER_ENTER_COMBAT");
+    f:RegisterEvent("PLAYER_LEAVE_COMBAT");
+    f:SetScript("OnEvent", function()
+        local event = event;
+        if (event == "PLAYER_ENTER_COMBAT") then
+            isAttacking = true;
+        elseif (event == "PLAYER_LEAVE_COMBAT") then
+            isAttacking = false;
+        end
+    end);
+    return function()
+        return isAttacking;
+    end;
+end)();
+
 A.getSpellByName = function(name)
     local getSpellIndexByName = function(name)
         for tabIndex = GetNumSpellTabs(), 1, -1 do

@@ -31,7 +31,7 @@ local macros = {
 #showtooltip
 /dismount
 /stand
-/startattack
+/run startAttacking()
 /cast [nomod] Holy Strike
 /cast [nomod] Crusader Strike
 /cast [mod] Holy Strike(Rank 1)
@@ -51,7 +51,7 @@ local macros = {
 #showtooltip
 /dismount
 /stand
-/startattack
+/run startAttacking()
 /cast [nomod] Judgement; Seal of Righteousness
 ]],
         },
@@ -104,6 +104,7 @@ local macros = {
             name = ">ham",
             content = [[
 #showtooltip Judgement
+/run startAttacking()
 /run hammerWithSealOfRighteousness()
 ]],
         },
@@ -155,7 +156,7 @@ end)();
 
 ----------------------------------------
 
-local Timer = Timer;
+local getAttacking = A.getAttacking;
 local getSpellByName = A.getSpellByName;
 local getSpellCastStates = A.getSpellCastStates;
 local getUnitBuffBySpell = A.getUnitBuffBySpell;
@@ -186,5 +187,20 @@ function hammerWithSealOfRighteousness()
         end
     else
         CastSpellByName(spellNameSealOfRighteousness);
+    end
+end
+
+function startAttacking(b)
+    if (b == nil) then
+        b = true;
+    end
+    if (getAttacking()) then
+        if (not b) then
+            CastSpellByName("Attack");
+        end
+    else
+        if (b) then
+            CastSpellByName("Attack");
+        end
     end
 end
