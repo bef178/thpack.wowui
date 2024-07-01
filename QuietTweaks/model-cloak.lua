@@ -2,15 +2,15 @@
 
 local function createCheckboxWithLabel(parentFrame)
     local f = CreateFrame("CheckButton", nil, parentFrame, "OptionsCheckButtonTemplate");
-    f:SetWidth(20);
-    f:SetHeight(20);
+    f:SetWidth(18);
+    f:SetHeight(18);
     f:SetHitRectInsets(1, 1, 1, 1);
-    f:SetToplevel(true);
 
-    local t = f:CreateFontString(nil, "OVERLAY", "NumberFontNormal");
+    local t = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
+    t:SetJustifyH("LEFT");
+    t:SetHeight(18);
     t:SetTextColor(1, 1, 1);
-    t:SetWidth(20);
-    t:SetPoint("BOTTOMLEFT", f, "BOTTOMRIGHT", 5, 0);
+    t:SetPoint("LEFT", f, "RIGHT", 0, 0);
     f.labelFontString = t;
 
     return f;
@@ -34,7 +34,7 @@ local function createShowHatOption(parentFrame)
         f:SetChecked(ShowingHelm());
     end);
     f:SetChecked(ShowingHelm());
-    f.labelFontString:SetText("Showing hat");
+    f.labelFontString:SetText("Hat");
     return f;
 end
 
@@ -56,18 +56,20 @@ local function createShowCloakOption(parentFrame)
         f:SetChecked(ShowingCloak());
     end);
     f:SetChecked(ShowingCloak());
-    f.labelFontString:SetText("Showing cloak");
+    f.labelFontString:SetText("Cloak");
     return f;
 end
 
 local function createOptions(modelFrame)
     local f = createShowHatOption(modelFrame);
-    f:SetPoint("TOPLEFT", modelFrame, "TOPLEFT", 5, -5);
+    f:SetPoint("TOPLEFT", modelFrame, "TOPLEFT", 5, -3);
 
     local f1 = createShowCloakOption(modelFrame);
-    f1:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, -3);
+    f1:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, 0);
 end
 
 (function()
     createOptions(CharacterModelFrame);
+    -- createOptions(AuctionDressUpModel);
+    -- createOptions(TabardCharacterModel);
 end)();

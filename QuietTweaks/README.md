@@ -23,8 +23,6 @@
 - chat-switch-type
     - 无输入时按`tab`切换频道
     - 依次为`说` - `小队` - `团队` - `公会` - `说`
-- cloak-option
-    - 给3D全身秀添加显示头盔和披风的复选框
 - exp-speed
     - 显示经验/小时
     - 显示预估升级时间
@@ -34,6 +32,8 @@
     - 显示当前时间(不要玩得太晚！)
 - minimap-zoom
     - 允许鼠标滚轮缩放小地图
+- model-cloak
+    - 给3D全身秀添加显示头盔和披风的复选框
 - open-all-bags
     - 单击背包时打开/关闭所有包
 - pick-action
