@@ -12,12 +12,12 @@ lib\vanilla.A.SlotMan.lua
 
 pixel-perfect.lua
 
-add-cloak-checkbox.lua
 auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
 chat-scroll.lua
 chat-switch-type.lua
+cloak-option.lua
 exp-speed.lua
 format-buff-time.lua
 minimap-clock.lua
