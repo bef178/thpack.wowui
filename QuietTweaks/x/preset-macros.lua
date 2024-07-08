@@ -59,8 +59,8 @@ local macros = {
             name = ">g",
             content = [[
 #showtooltip
-/cast [@mouseover,exists,harm] [@target,exists,harm] Hammer of Justice
-/cast [@mouseover,exists,help] [@target,exists,help] Blessing of Protection
+/cast [mod,@mouseover,exists,harm] [@target,exists,harm] Hammer of Justice
+/cast [mod,@mouseover,exists,help] [@target,exists,help] Blessing of Protection
 ]],
         },
         {
