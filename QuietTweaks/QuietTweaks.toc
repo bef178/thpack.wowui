@@ -22,6 +22,7 @@ format-buff-time.lua
 minimap-clock.lua
 minimap-zoom.lua
 model-cloak.lua
+model-rotate.lua
 open-all-bags.lua
 pick-action.lua
 show-num-available-bag-slots.lua
