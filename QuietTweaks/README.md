@@ -34,6 +34,8 @@
     - 允许鼠标滚轮缩放小地图
 - model-cloak
     - 给3D全身秀添加显示头盔和披风的复选框
+- model-rotate
+    - 鼠标拖拽可旋转3D秀
 - open-all-bags
     - 单击背包时打开/关闭所有包
 - pick-action
