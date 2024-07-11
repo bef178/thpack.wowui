@@ -62,7 +62,7 @@ end
 
 local function createOptions(modelFrame)
     local f = createShowHatOption(modelFrame);
-    f:SetPoint("TOPLEFT", modelFrame, "TOPLEFT", 5, -3);
+    f:SetPoint("TOPLEFT", modelFrame, "TOPLEFT", 3, -35);
 
     local f1 = createShowCloakOption(modelFrame);
     f1:SetPoint("TOPLEFT", f, "BOTTOMLEFT", 0, 0);
