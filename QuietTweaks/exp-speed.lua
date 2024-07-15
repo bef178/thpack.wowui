@@ -1,40 +1,68 @@
 local buildTimeString = A.buildTimeString;
 
--- show exp points per hour
+local ExpTimer = {};
+
+function ExpTimer:new(timeWindow)
+    local o = {
+        timeWindow = timeWindow or (15 * 60), -- in seconds
+        q = {},
+    };
+    return setmetatable(o, { __index = self });
+end
+
+function ExpTimer:addExpPoints(points)
+    Array.add(self.q, {
+        timestamp = GetTime(),
+        points = points,
+    });
+end
+
+function ExpTimer:clear()
+    Array.clear(self.q);
+end
+
+function ExpTimer:shrink()
+    local startTime = GetTime() - self.timeWindow;
+    while (Array.size(self.q) > 0 and self.q[1].timestamp < startTime) do
+        Array.remove(self.q, 1);
+    end
+end
+
+function ExpTimer:totalExpPoints()
+    local n = Array.size(self.q);
+    if (n > 3) then
+        local startTime = self.q[1].timestamp;
+        local endTime = self.q[n].timestamp;
+        local seconds = endTime - startTime;
+        if (seconds > 3) then
+            local points = 0;
+            for i = 2, n, 1 do
+                points = points + self.q[i].points;
+            end
+            return points, seconds;
+        end
+    end
+end
+
+function ExpTimer:estimate()
+    local points, seconds = self:totalExpPoints();
+    if (points) then
+        return math.floor(points / seconds);
+    end
+    return 0;
+end
+
+-- show exp speed
 -- show ETA of level up
 (function()
     if (UnitLevel("player") == MAX_PLAYER_LEVEL) then
         return;
     end
 
-    local expQueue = {};
+    local expTimer = ExpTimer:new();
     local invalidated = true;
 
-    local function addExpPoints(points)
-        Array.add(expQueue, {
-            timestamp = GetTime(),
-            points = points
-        });
-    end
-
-    local function estimateExpPerHour()
-        local now = GetTime();
-        while (Array.size(expQueue) > 0 and (now - expQueue[1].timestamp > 3600)) do
-            Array.remove(expQueue, 1);
-        end
-        local n = Array.size(expQueue);
-        if (n > 3) then
-            local startTime = expQueue[1].timestamp;
-            local endTime = expQueue[n].timestamp;
-            local points = 0;
-            for i = 2, n, 1 do
-                points = points + expQueue[i].points;
-            end
-            return math.floor(points / (endTime - startTime) * 3600);
-        end
-    end
-
-    local f = CreateFrame("Frame", nil, MainMenuExpBar, nil);
+    local f = CreateFrame("Button", nil, MainMenuExpBar, nil);
     f:SetPoint("RIGHT", 0, 0);
     f:SetWidth(MainMenuExpBar:GetWidth() / 20);
     f:SetHeight(12);
@@ -51,9 +79,10 @@ local buildTimeString = A.buildTimeString;
             local message = arg1;
             local startIndex, endIndex, pointsString = string.find(message, '(%d+)')
             local points = tonumber(pointsString);
-            addExpPoints(points);
+            expTimer:shrink();
+            expTimer:addExpPoints(points);
+            invalidated = true;
         end
-        invalidated = true;
     end);
 
     f:SetScript("OnUpdate", (function()
@@ -65,9 +94,9 @@ local buildTimeString = A.buildTimeString;
             if (invalidated or (acc > REFRESH_INTERVAL)) then
                 invalidated = false;
                 acc = 0;
-                local expPerHour = estimateExpPerHour();
-                if (expPerHour) then
-                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / expPerHour * 3600;
+                local expSpeed = expTimer:estimate();
+                if (expSpeed > 0) then
+                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / expSpeed;
                     fontString:SetText("eta:" .. buildTimeString(secondsToLevelUp));
                 else
                     fontString:SetText("eta: ...");
@@ -77,7 +106,16 @@ local buildTimeString = A.buildTimeString;
     end)());
 
     f:SetScript("OnEnter", function()
-        GameTooltip:SetOwner(f, "ANCHOR_RIGHT")
-        GameTooltip:SetText((estimateExpPerHour() or 0) .. "/h", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+        local points, seconds = expTimer:totalExpPoints();
+        if (points) then
+            GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
+            GameTooltip:SetText(points .. "/" .. math.floor(seconds) .. "\"",
+                    NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+        end
+    end);
+
+    f:SetScript("OnClick", function()
+        expTimer:clear();
+        invalidated = true;
     end);
 end)();
