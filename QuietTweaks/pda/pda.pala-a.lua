@@ -456,7 +456,7 @@ Array.add(build.initializers, function(createSlotModel)
         model.spell = spell;
         model.contentTexture = spell.spellTexture;
         model.onClick = function(f, button)
-            CastSpellByName(model.spell.spellNameWithRank, 1);
+            CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
         end;
         model.onElapsed = function(elapsed)
             local buff = getUnitBuffBySpell("player", spell);

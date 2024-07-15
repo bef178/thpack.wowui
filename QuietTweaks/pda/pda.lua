@@ -4,7 +4,7 @@ local pda = SlotMan:new();
 pda.slot_style = "sharp_square";
 pda.slot_size = 31;
 pda.slot_margin = 4;
-pda.max_x_slots = 4,
+pda.max_x_slots = 4;
 pda.anchor:ClearAllPoints();
 pda.anchor:SetPoint("TOPLEFT", UIParent, "CENTER", 390, 120);
 
