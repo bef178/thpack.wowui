@@ -29,6 +29,14 @@ function ExpTimer:shrink()
 end
 
 function ExpTimer:totalExpPoints()
+    local points = 0;
+    for i, v in ipairs(self.q) do
+        points = points + v.points;
+    end
+    return points;
+end
+
+function ExpTimer:estimate()
     local n = Array.size(self.q);
     if (n > 3) then
         local startTime = self.q[1].timestamp;
@@ -39,15 +47,10 @@ function ExpTimer:totalExpPoints()
             for i = 2, n, 1 do
                 points = points + self.q[i].points;
             end
-            return points, seconds;
+            if (points > 0) then
+                return math.floor(points / seconds);
+            end
         end
-    end
-end
-
-function ExpTimer:estimate()
-    local points, seconds = self:totalExpPoints();
-    if (points) then
-        return math.floor(points / seconds);
     end
     return 0;
 end
@@ -106,10 +109,11 @@ end
     end)());
 
     f:SetScript("OnEnter", function()
-        local points, seconds = expTimer:totalExpPoints();
-        if (points) then
+        expTimer:shrink();
+        local points = expTimer:totalExpPoints();
+        if (points > 0) then
             GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
-            GameTooltip:SetText(points .. "/" .. math.floor(seconds) .. "\"",
+            GameTooltip:SetText(points .. " points over last " .. expTimer.timeWindow .. " seconds",
                     NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
         end
     end);
