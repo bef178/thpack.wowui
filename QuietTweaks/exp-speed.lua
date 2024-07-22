@@ -5,6 +5,7 @@ local ExpTimer = {};
 function ExpTimer:new(timeWindow)
     local o = {
         timeWindow = timeWindow or (15 * 60), -- in seconds
+        numRecent = 10,
         q = {},
     };
     return setmetatable(o, { __index = self });
@@ -28,15 +29,7 @@ function ExpTimer:shrink()
     end
 end
 
-function ExpTimer:totalExpPoints()
-    local points = 0;
-    for i, v in ipairs(self.q) do
-        points = points + v.points;
-    end
-    return points;
-end
-
-function ExpTimer:estimate()
+function ExpTimer:estimateExpSpeed()
     local n = Array.size(self.q);
     if (n > 3) then
         local startTime = self.q[1].timestamp;
@@ -55,8 +48,8 @@ function ExpTimer:estimate()
     return 0;
 end
 
--- show exp speed
 -- show ETA of level up
+-- show recent gains
 (function()
     if (UnitLevel("player") == MAX_PLAYER_LEVEL) then
         return;
@@ -97,12 +90,12 @@ end
             if (invalidated or (acc > REFRESH_INTERVAL)) then
                 invalidated = false;
                 acc = 0;
-                local expSpeed = expTimer:estimate();
-                if (expSpeed > 0) then
-                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / expSpeed;
-                    fontString:SetText("eta:" .. buildTimeString(secondsToLevelUp));
+                local pps = expTimer:estimateExpSpeed();
+                if (pps > 0) then
+                    local secondsToLevelUp = (UnitXPMax("player") - UnitXP("player")) / pps;
+                    fontString:SetText("ETA:" .. buildTimeString(secondsToLevelUp));
                 else
-                    fontString:SetText("eta: ...");
+                    fontString:SetText("ETA: ...");
                 end
             end
         end;
@@ -110,16 +103,35 @@ end
 
     f:SetScript("OnEnter", function()
         expTimer:shrink();
-        local points = expTimer:totalExpPoints();
-        if (points > 0) then
+        local now = GetTime();
+        local a = expTimer.q;
+        if (Array.size(a) > 0) then
+            local totalPoints = 0;
+            local j = 0;
             GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
-            GameTooltip:SetText(points .. " points over last " .. expTimer.timeWindow .. " seconds",
-                    NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+            GameTooltip:AddLine("Recent Exp", 0.8, 0.8, 0.8);
+            for i = Array.size(a), 1, -1 do
+                totalPoints = totalPoints + a[i].points;
+                if (j < expTimer.numRecent) then
+                    GameTooltip:AddDoubleLine("-" .. buildTimeString(now - a[i].timestamp), a[i].points,
+                            0.7, 0.7, 0.7, 0.7, 0.7, 0.7);
+                    j = j + 1;
+                end
+            end
+            GameTooltip:AddLine("Total " .. totalPoints .. " in " .. buildTimeString(expTimer.timeWindow), 0.9, 0.9, 0);
+            GameTooltip:AddLine("(shift click to reset)", 0.5, 0.5, 0.5);
+            GameTooltip:Show();
         end
+    end);
+    f:SetScript("OnLeave", function()
+        GameTooltip:Hide();
     end);
 
     f:SetScript("OnClick", function()
-        expTimer:clear();
-        invalidated = true;
+        if (IsShiftKeyDown()) then
+            expTimer:clear();
+            invalidated = true;
+            GameTooltip:Hide();
+        end
     end);
 end)();
