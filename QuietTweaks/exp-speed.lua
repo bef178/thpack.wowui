@@ -28,14 +28,6 @@ function ExpTimer:shrink()
     end
 end
 
-function ExpTimer:totalExpPoints()
-    local points = 0;
-    for i, v in ipairs(self.q) do
-        points = points + v.points;
-    end
-    return points;
-end
-
 function ExpTimer:estimate()
     local n = Array.size(self.q);
     if (n > 3) then
@@ -53,6 +45,20 @@ function ExpTimer:estimate()
         end
     end
     return 0;
+end
+
+function ExpTimer:recent(n)
+    if (n < 0) then
+        n = 0;
+    end
+    local qSize = Array.size(self.q);
+    n = Math.min(n, qSize);
+    local offset = qSize - n;
+    local a = {};
+    for i = offset + 1, qSize, 1 do
+        Array.add(a, self.q[i]);
+    end
+    return a;
 end
 
 -- show exp speed
@@ -110,12 +116,21 @@ end
 
     f:SetScript("OnEnter", function()
         expTimer:shrink();
-        local points = expTimer:totalExpPoints();
-        if (points > 0) then
+        local n = 10;
+        local a = expTimer:recent(n);
+        local now = GetTime();
+        if (Array.size(a) > 0) then
             GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
-            GameTooltip:SetText(points .. " points over last " .. expTimer.timeWindow .. " seconds",
-                    NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+            GameTooltip:AddLine("Last " .. n .. " exp");
+            for i = 1, Array.size(a), 1 do
+                GameTooltip:AddDoubleLine("-" .. buildTimeString(now - a[i].timestamp), a[i].points,
+                        1, 1, 1, 1, 1, 1);
+            end
+            GameTooltip:Show();
         end
+    end);
+    f:SetScript("OnLeave", function()
+        GameTooltip:Hide();
     end);
 
     f:SetScript("OnClick", function()

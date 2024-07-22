@@ -179,6 +179,10 @@ end;
 
 Math = Math or {};
 
+Math.min = function(a, b)
+    return a <= b and a or b;
+end;
+
 Math.modf = Math.modf or function(number)
     local fraction = math.mod(number, 1)
     return number - fraction, fraction
