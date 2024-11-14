@@ -85,8 +85,24 @@ function installPackage() {
 
 ########################################
 
+function buildClean() {
+    local packageName="$1"
+
+    if test -z "$packageName"; then
+        echo "E: invalid package name [$packageName]"
+        return
+    fi
+    rm -rf $OUT/$packageName*
+}
+
 function buildPackage() {
     local packageName="$1"
+
+    if test ! -d "$packageName"; then
+        echo "E: invalid package name [$packageName]"
+        return
+    fi
+
     local buildDate=$(date +%Y%m%d)
 
     local dstPackageRoot=$OUT/$packageName
@@ -99,16 +115,51 @@ function buildPackage() {
 
     sed "s/{BuildDate}/$buildDate/" -i $dstTocFile
 
-    while read line; do
-        if [[ "$line" == \#\#\ Interface:\ * ]]; then
-            interfaceVersion=${line#"## Interface: "}
-            break
-        fi
-    done < $dstTocFile
+    # while read line; do
+    #     if [[ "$line" == \#\#\ Interface:\ * ]]; then
+    #         interfaceVersion=${line#"## Interface: "}
+    #         break
+    #     fi
+    # done < $dstTocFile
 
     pushd $OUT >/dev/null
-    zip -qr $packageName.$interfaceVersion-$buildDate.zip $packageName
+    zip -qr $packageName.zip $packageName
     popd >/dev/null
+
+    echo Done building $OUT/$packageName.zip
 }
 
-buildPackage QuietTweaks
+function buildInstall() {
+    local packageName="$1"
+    local addonsDirectory="./addons/"
+
+    if test ! -f "$OUT/$packageName.zip"; then
+        echo "E: not found [$OUT/$packageName.zip]"
+        return
+    fi
+
+    if test ! -d "$addonsDirectory"; then
+        echo "E: invalid addons dir [$addonsDirectory]"
+        return
+    fi
+
+    rm -rf $addonsDirectory/$packageName/*
+    unzip $OUT/$packageName.zip -d "$addonsDirectory"
+}
+
+case "$1" in
+    clean)
+        buildClean QuietTweaks
+        ;;
+    package)
+        buildPackage QuietTweaks
+        ;;
+    install)
+        buildInstall QuietTweaks
+        ;;
+    "")
+        buildClean QuietTweaks
+        buildPackage QuietTweaks
+        buildInstall QuietTweaks
+        ;;
+esac
