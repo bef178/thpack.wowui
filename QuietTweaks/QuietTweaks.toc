@@ -11,8 +11,8 @@ lib\vanilla.A.lua
 lib\vanilla.A.item.lua
 lib\vanilla.A.unit.lua
 lib\vanilla.A.SlotMan.lua
+lib\db-map.lua
 lib\db-npc-flightmaster.lua
-lib\db-zone.lua
 
 pixel-perfect.lua
 
