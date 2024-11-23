@@ -1,7 +1,7 @@
 local hookGlobalFunction = A.hookGlobalFunction;
-local getSpellByName = A.getSpellByName;
-local getSpellCastStates = A.getSpellCastStates;
-local getUnitBuffBySpell = A.getUnitBuffBySpell;
+local getPlayerSpell = A.getPlayerSpell;
+local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
+local getUnitBuff = A.getUnitBuff;
 local SlotMan = A.SlotMan;
 
 local auraSlotMan = SlotMan:new();
@@ -70,7 +70,7 @@ function auraSlotMan:adopt(sealName)
         return;
     end
 
-    local spell = getSpellByName(sealName);
+    local spell = getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
@@ -93,8 +93,8 @@ function auraSlotMan:adopt(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuffBySpell("player", spell));
-        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
+        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 

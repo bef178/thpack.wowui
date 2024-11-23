@@ -156,33 +156,33 @@ end)();
 
 ----------------------------------------
 
-local getAttacking = A.getAttacking;
-local getSpellByName = A.getSpellByName;
-local getSpellCastStates = A.getSpellCastStates;
-local getUnitBuffBySpell = A.getUnitBuffBySpell;
+local checkPlayerAttacking = A.checkPlayerAttacking;
+local getPlayerSpell = A.getPlayerSpell;
+local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
+local getUnitBuff = A.getUnitBuff;
 
 -- cannot cast Seal of Righteousness right after Judgement, even with delay via OnUpdate
 function hammerWithSealOfRighteousness()
     local spellNameSealOfRighteousness = "Seal of Righteousness";
     local spellNameJudgement = "Judgement";
 
-    local spell = getSpellByName(spellNameSealOfRighteousness);
+    local spell = getPlayerSpell(spellNameSealOfRighteousness);
     if (not spell) then
         return;
     end
 
     -- if seal is not ready, not cast Judgement either
-    if (getSpellCastStates(spell).timeToCooldown > 0) then
+    if (getPlayerSpellCooldownTime(spell) > 0) then
         return;
     end
 
-    if (getUnitBuffBySpell("player", spell)) then
-        local spellJudgement = getSpellByName(spellNameJudgement);
+    if (getUnitBuff("player", spell)) then
+        local spellJudgement = getPlayerSpell(spellNameJudgement);
         if (not spellJudgement) then
             return;
         end
 
-        if (getSpellCastStates(spellJudgement).timeToCooldown == 0) then
+        if (getPlayerSpellCooldownTime(spellJudgement) == 0) then
             CastSpellByName(spellNameJudgement);
         end
     else
@@ -194,7 +194,7 @@ function startAttacking(b)
     if (b == nil) then
         b = true;
     end
-    if (getAttacking()) then
+    if (checkPlayerAttacking()) then
         if (not b) then
             CastSpellByName("Attack");
         end

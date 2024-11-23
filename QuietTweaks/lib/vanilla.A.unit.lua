@@ -17,8 +17,7 @@ A.getClassColor = (function()
     end;
 end)();
 
--- A.checkPlayerAttacking
-A.getAttacking = (function()
+A.checkPlayerAttacking = (function()
     local isAttacking = false;
     local f = CreateFrame("Frame");
     f:RegisterEvent("PLAYER_ENTER_COMBAT");
@@ -36,44 +35,34 @@ A.getAttacking = (function()
     end;
 end)();
 
--- A.getPlayerSpell
-A.getSpellByName = function(name)
-    local getSpellIndexByName = function(name)
-        for tabIndex = GetNumSpellTabs(), 1, -1 do
-            local tabName, tabTexture, spellOffset, spellCount = GetSpellTabInfo(tabIndex)
-            for i = spellOffset + spellCount, spellOffset + 1, -1 do
-                local spellName, spellRank = GetSpellName(i, 'spell');
-                local spellNameWithRank = nil;
-                if (spellRank) then
-                    spellNameWithRank = spellName .. "(" .. spellRank .. ")";
-                end
-                if (name == spellName or (spellNameWithRank and name == spellNameWithRank)) then
-                    return i, spellName, spellRank, spellNameWithRank;
-                end
-            end
-        end
-    end;
-
-    local spellIndex, spellName, spellRank, spellNameWithRank = getSpellIndexByName(name);
-    if (not spellIndex) then
+A.getPlayerSpell = function(name)
+    if (not name) then
         return;
     end
-
-    -- TODO spell mana
-    -- TODO spell reagent
-    return {
-        spellId = nil,
-        spellIndex = spellIndex,
-        spellBookType = "spell",
-        spellName = spellName,
-        spellRank = spellRank,
-        spellNameWithRank = spellNameWithRank,
-        spellTexture = GetSpellTexture(spellIndex, "spell"),
-    };
+    for tabIndex = GetNumSpellTabs(), 1, -1 do
+        local tabName, tabTexture, offset, size = GetSpellTabInfo(tabIndex);
+        for i = offset + size, offset + 1, -1 do
+            local spellName, spellRank = GetSpellName(i, BOOKTYPE_SPELL);
+            local spellNameWithRank = spellRank and (spellName .. "(" .. spellRank .. ")");
+            if (name == spellName or name == spellNameWithRank) then
+                -- TODO spell mana
+                -- TODO spell reagent
+                return {
+                    spellId = nil,
+                    spellBookType = BOOKTYPE_SPELL,
+                    spellIndex = i,
+                    spellName = spellName,
+                    spellRank = spellRank,
+                    spellNameWithRank = spellRank and (spellName .. "(" .. spellRank .. ")"),
+                    spellTexture = GetSpellTexture(spellIndex, "spell"),
+                };
+            end
+        end
+    end
 end;
 
--- all temporary states listed
-A.getSpellCastStates = function(spell)
+-- list all temporary states
+A.getPlayerSpellCastingState = function(spell)
     if (not spell) then
         return;
     end
@@ -93,8 +82,14 @@ A.getSpellCastStates = function(spell)
     -- TODO queuing, casting, channeling
     -- TODO num charges
     return {
+        type = "casting",
         timeToCooldown = timeToCooldown,
     };
+end;
+
+A.getPlayerSpellCooldownTime = function(spell)
+    local stat = A.getPlayerSpellCastingState(spell);
+    return stat and stat.timeToCooldown or 14 * 24 * 60 * 60;
 end;
 
 A.getUnitBuffBySpell = function(unit, spell)
@@ -153,13 +148,30 @@ A.getUnitBuff = function(unit, spell)
     for i = 1, 64, 1 do
         local buffTexture, buffNumStacks = UnitBuff(unit, i);
         if (buffTexture and buffTexture == spell.spellTexture) then
-            local buff = {
+            return {
                 type = "buff",
                 buffIndex = i,
                 buffTexture = buffTexture,
-                buffNumStacks = buffNumStacks,
             };
-            return buff;
+        end
+    end
+end;
+
+A.getUnitDebuff = function(unit, spell)
+    if (not unit) then
+        unit = "player"
+    end
+    if (not spell) then
+        return;
+    end
+    for i = 1, 64, 1 do
+        local buffTexture, buffNumStacks = UnitDebuff(unit, i);
+        if (buffTexture and buffTexture == spell.spellTexture) then
+            return {
+                type = "debuff",
+                buffIndex = i,
+                buffTexture = buffTexture,
+            };
         end
     end
 end;

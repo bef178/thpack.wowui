@@ -1,7 +1,7 @@
 local hookGlobalFunction = A.hookGlobalFunction;
-local getSpellByName = A.getSpellByName;
-local getSpellCastStates = A.getSpellCastStates;
-local getUnitBuffBySpell = A.getUnitBuffBySpell;
+local getPlayerSpell = A.getPlayerSpell;
+local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
+local getUnitBuff = A.getUnitBuff;
 local SlotMan = A.SlotMan;
 
 ----------------------------------------
@@ -51,7 +51,7 @@ function blessingSlotMan:adopt(blessing)
     end
 
     local spells = Array.map(blessing, function(v, i, a)
-        return getSpellByName(v);
+        return getPlayerSpell(v);
     end);
     if (not spells[1]) then
         return;
@@ -102,8 +102,8 @@ function blessingSlotMan:adopt(blessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingSpellTarget = not (not getUnitBuffBySpell(spellTargetUnit, spell));
-        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        model.affectingSpellTarget = not (not getUnitBuff(spellTargetUnit, spell));
+        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
         model.ready = model.timeToCooldown == 0;
     end;
 
@@ -155,7 +155,7 @@ function sealSlotMan:adopt(sealName)
         return;
     end
 
-    local spell = getSpellByName(sealName);
+    local spell = getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
@@ -178,8 +178,8 @@ function sealSlotMan:adopt(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuffBySpell("player", spell));
-        model.timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
+        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 

@@ -1,6 +1,6 @@
-local getSpellByName = A.getSpellByName;
-local getSpellCastStates = A.getSpellCastStates;
-local getUnitBuffBySpell = A.getUnitBuffBySpell;
+local getPlayerSpell = A.getPlayerSpell;
+local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
+local getUnitBuff = A.getUnitBuff;
 
 local targetsAliveEnemy = function()
     return UnitExists("target") and not UnitIsDead("target") and UnitIsEnemy("player", "target");
@@ -56,9 +56,9 @@ end;
 -- 这三者是最主要的反伤手段，集成为第一顺位
 -- 另，A怪时惩罚光环优于圣洁光环
 Array.add(build.initializers, function(createSlotModel)
-    local spellRetributionAura = getSpellByName("Retribution Aura");
-    local spellBlessingOfSanctuary = getSpellByName("Blessing of Sanctuary");
-    local spellHolyShield = getSpellByName("Holy Shield");
+    local spellRetributionAura = getPlayerSpell("Retribution Aura");
+    local spellBlessingOfSanctuary = getPlayerSpell("Blessing of Sanctuary");
+    local spellHolyShield = getPlayerSpell("Holy Shield");
     if (not spellRetributionAura and not spellBlessingOfSanctuary and not spellHolyShield) then
         return;
     end
@@ -93,7 +93,7 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
 
         model.timeToCooldown = timeToCooldown;
         model.ready = timeToCooldown == 0;
@@ -111,7 +111,7 @@ Array.add(build.initializers, function(createSlotModel)
         model.spell = spell;
         model.contentTexture = spell.spellTexture;
 
-        local buff = getUnitBuffBySpell("player", spell);
+        local buff = getUnitBuff("player", spell);
         if (buff and ((buff.buffTimeToLive or 0) > 10)) then
             -- safe active
             model.visible = false;
@@ -127,7 +127,7 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
 
         model.affectingSpellTarget = not (not buff);
         model.timeToCooldown = timeToCooldown;
@@ -148,7 +148,7 @@ Array.add(build.initializers, function(createSlotModel)
 
         -- TODO check equipped shield
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
         if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
@@ -163,7 +163,7 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        local buff = getUnitBuffBySpell("player", spell);
+        local buff = getUnitBuff("player", spell);
 
         model.affectingSpellTarget = not (not buff);
         model.timeToCooldown = timeToCooldown;
@@ -186,7 +186,7 @@ end);
 -- 奉献
 -- 最主要的伤害手段，为第二顺位
 Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Consecration");
+    local spell = getPlayerSpell("Consecration");
     if (not spell) then
         return;
     end
@@ -198,7 +198,7 @@ Array.add(build.initializers, function(createSlotModel)
         CastSpellByName(model.spell.spellNameWithRank);
     end;
     model.onElapsed = function(elapsed)
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
         if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
@@ -235,7 +235,7 @@ Array.add(build.initializers, function(createSlotModel)
 
         model.visible = true;
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
 
         model.spell = spell;
         model.contentTexture = spell.spellTexture;
@@ -252,7 +252,7 @@ Array.add(build.initializers, function(createSlotModel)
             return;
         end
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
         if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
@@ -277,13 +277,13 @@ Array.add(build.initializers, function(createSlotModel)
         model.recommended = false;
     end
 
-    local spellJudgement = getSpellByName("Judgement");
+    local spellJudgement = getPlayerSpell("Judgement");
     if (not spellJudgement) then
         return;
     end
 
-    local spellSealOfLight = getSpellByName("Seal of Light"); -- lv 30
-    local spellSealOfWisdom = getSpellByName("Seal of Wisdom"); -- lv 38
+    local spellSealOfLight = getPlayerSpell("Seal of Light"); -- lv 30
+    local spellSealOfWisdom = getPlayerSpell("Seal of Wisdom"); -- lv 38
     if (spellSealOfLight and spellSealOfWisdom) then
         -- dual recovery strategy
         local sealOfLightModel = (function()
@@ -296,10 +296,10 @@ Array.add(build.initializers, function(createSlotModel)
                 CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
             end;
             model.onElapsed = function(elapsed)
-                local buff = getUnitBuffBySpell("player", spell);
-                local targetDebuff = getUnitBuffBySpell("target", spell);
-                local sowBuff = getUnitBuffBySpell("player", spellSealOfWisdom);
-                local targetSowDebuff = getUnitBuffBySpell("target", spellSealOfWisdom);
+                local buff = getUnitBuff("player", spell);
+                local targetDebuff = getUnitBuff("target", spell);
+                local sowBuff = getUnitBuff("player", spellSealOfWisdom);
+                local targetSowDebuff = getUnitBuff("target", spellSealOfWisdom);
 
                 if (targetDebuff) then
                     if (buff) then
@@ -375,10 +375,10 @@ Array.add(build.initializers, function(createSlotModel)
                 CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
             end;
             model.onElapsed = function(elapsed)
-                local buff = getUnitBuffBySpell("player", spell);
-                local targetDebuff = getUnitBuffBySpell("target", spell);
-                local solBuff = getUnitBuffBySpell("player", spellSealOfLight);
-                local targetSolDebuff = getUnitBuffBySpell("target", spellSealOfLight);
+                local buff = getUnitBuff("player", spell);
+                local targetDebuff = getUnitBuff("target", spell);
+                local solBuff = getUnitBuff("player", spellSealOfLight);
+                local targetSolDebuff = getUnitBuff("target", spellSealOfLight);
 
                 if (targetDebuff) then
                     if (buff) then
@@ -459,8 +459,8 @@ Array.add(build.initializers, function(createSlotModel)
             CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
         end;
         model.onElapsed = function(elapsed)
-            local buff = getUnitBuffBySpell("player", spell);
-            local targetDebuff = getUnitBuffBySpell("target", spell);
+            local buff = getUnitBuff("player", spell);
+            local targetDebuff = getUnitBuff("target", spell);
 
             if (not buff) then
                 updateModelWithSeal(model, spell);
@@ -494,19 +494,19 @@ end);
 -- 都用1级，省蓝
 -- turtle wow
 Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Crusader Strike(Rank 1)");
+    local spell = getPlayerSpell("Crusader Strike(Rank 1)");
     if (not spell) then
         return;
     end
 
-    local spellHolyStrike = getSpellByName("Holy Strike(Rank 1)");
+    local spellHolyStrike = getPlayerSpell("Holy Strike(Rank 1)");
 
     local model = createSlotModel();
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
     model.onClick = function(f, button)
         if (spellHolyStrike) then
-            local timeToCooldown = getSpellCastStates(spellHolyStrike).timeToCooldown;
+            local timeToCooldown = getPlayerSpellCooldownTime(spellHolyStrike);
             if (timeToCooldown == 0) then
                 CastSpellByName(spellHolyStrike.spellNameWithRank);
             end
@@ -523,8 +523,8 @@ Array.add(build.initializers, function(createSlotModel)
             model.visible = true;
         end
 
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
-        local holyStrikeTimeToCooldown = spellHolyStrike and getSpellCastStates(spellHolyStrike).timeToCooldown or 86400;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
+        local holyStrikeTimeToCooldown = spellHolyStrike and getPlayerSpellCooldownTime(spellHolyStrike) or 86400;
         -- TODO check holy strike casting
 
         model.timeToCooldown = timeToCooldown;
@@ -539,7 +539,7 @@ end);
 
 -- 飞锤
 Array.add(build.initializers, function(createSlotModel)
-    local spell = getSpellByName("Hammer of Wrath");
+    local spell = getPlayerSpell("Hammer of Wrath");
     if (not spell) then
         return;
     end
@@ -551,7 +551,7 @@ Array.add(build.initializers, function(createSlotModel)
         CastSpellByName(model.spell.spellNameWithRank);
     end;
     model.onElapsed = function(elapsed)
-        local timeToCooldown = getSpellCastStates(spell).timeToCooldown;
+        local timeToCooldown = getPlayerSpellCooldownTime(spell);
         if (timeToCooldown > 1.5) then
             model.visible = false;
             return;
