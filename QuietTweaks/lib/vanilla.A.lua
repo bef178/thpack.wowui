@@ -103,6 +103,8 @@ A.hookMemberFunction = function(funcContainer, funcName, hookType, callbackFunc)
     return 1;
 end;
 
+------------------------------------------------------------
+
 A.buildCoinString = function(amount)
     if (GetCoinTextureString) then
         return GetCoinTextureString(amount);
@@ -160,18 +162,5 @@ A.buildTimeString = function(seconds)
         return string.format("%d\'", m);
     else
         return string.format("%d\'%02d", m, s);
-    end
-end;
-
-A.getBagItemByName = function(name)
-    for bagId = 0, NUM_BAG_FRAMES do
-        for slotId = 1, GetContainerNumSlots(bagId) do
-            local itemLink = GetContainerItemLink(bagId, slotId);
-            local itemName = itemLink and String.match(itemLink, '%[([^%]]+)%]') or nil;
-            if (itemName and string.lower(itemName) == string.lower(name)) then
-                local texture = GetContainerItemInfo(bagId, slotId);
-                return bagId, slotId, texture;
-            end
-        end
     end
 end;
