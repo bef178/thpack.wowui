@@ -8,6 +8,7 @@ bindings.xml
 lib\Color.lua
 lib\vanilla-lang.lua
 lib\vanilla.A.lua
+lib\vanilla.A.unit.lua
 lib\vanilla.A.SlotMan.lua
 
 pixel-perfect.lua

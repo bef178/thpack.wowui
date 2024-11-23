@@ -75,6 +75,14 @@ String.trim = String.trim or function(s)
     return string.gsub(s, '^%s*(.-)%s*$', '%1')
 end;
 
+String.toLower = function(s)
+    return string.lower(s);
+end;
+
+String.toUpper = function(s)
+    return string.upper(s);
+end;
+
 ------------------------------------------------------------
 
 Map = Map or {};
