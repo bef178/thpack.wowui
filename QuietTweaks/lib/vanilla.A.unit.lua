@@ -54,7 +54,7 @@ A.getPlayerSpell = function(name)
                     spellName = spellName,
                     spellRank = spellRank,
                     spellNameWithRank = spellRank and (spellName .. "(" .. spellRank .. ")"),
-                    spellTexture = GetSpellTexture(spellIndex, "spell"),
+                    spellTexture = GetSpellTexture(i, "spell"),
                 };
             end
         end
@@ -145,6 +145,27 @@ A.getUnitBuff = function(unit, spell)
     if (not spell) then
         return;
     end
+    if (unit == "player") then
+        for i = 0, 63, 1 do
+            local j, lastsUntilCancelled = GetPlayerBuff(i, "HELPFUL");
+            if (j < 0) then
+                break;
+            end
+            local buffTexture = GetPlayerBuffTexture(j);
+            if (buffTexture and buffTexture == spell.spellTexture) then
+                local buff = {
+                    type = "buff",
+                    playerBuffIndex = j,
+                    buffTexture = buffTexture,
+                    buffNumStacks = GetPlayerBuffApplications(j),
+                    buffTimeToLive = GetPlayerBuffTimeLeft(j),
+                    buffLastsUntilCancelled = lastsUntilCancelled,
+                };
+                return buff;
+            end
+        end
+        return;
+    end
     for i = 1, 64, 1 do
         local buffTexture, buffNumStacks = UnitBuff(unit, i);
         if (buffTexture and buffTexture == spell.spellTexture) then
@@ -174,4 +195,41 @@ A.getUnitDebuff = function(unit, spell)
             };
         end
     end
+end;
+
+A.getUnitHp = function(unit)
+    local hp = UnitHealth(unit);
+    local maxHp = UnitHealthMax(unit);
+    return hp, maxHp, hp / maxHp;
+end;
+
+A.getUnitMp = function(unit)
+    local mp = UnitMana(unit);
+    local maxMp = UnitManaMax(unit);
+    return mp, maxMp, mp / maxMp;
+end;
+
+------------------------------------------------------------
+
+A.inCombat = function(unit)
+    if (not unit) then
+        unit = "player";
+    end
+    return UnitAffectingCombat(unit);
+end;
+
+A.inCooldown = function (spell)
+    return A.getPlayerSpellCooldownTime(spell) >= 0;
+end;
+
+A.buffed = function(spell, unit)
+    return A.getUnitBuff(unit, spell);
+end;
+
+A.debuffed = function(spell, unit)
+    return A.getUnitDebuff(spell, unit);
+end;
+
+A.cast = function(spell)
+    CastSpellByName(spell.spellNameWithRank);
 end;
