@@ -38,6 +38,7 @@ blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 
 map\flight-poi.lua
+map\worldmap-player-coordinates.lua
 
 pda\pda.lua
 pda\pda.pala-a.lua
