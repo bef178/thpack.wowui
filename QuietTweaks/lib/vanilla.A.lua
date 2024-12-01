@@ -103,6 +103,31 @@ A.hookMemberFunction = function(funcContainer, funcName, hookType, callbackFunc)
     return 1;
 end;
 
+A.hookScript = function(f, scriptName, hookType, callbackFunc)
+    local old = f:GetScript(scriptName);
+    if (hookType == "pre_hook") then
+        f:SetScript(scriptName, function()
+            callbackFunc();
+            if (old) then
+                old();
+            end
+        end);
+    elseif (hookType == "post_hook") then
+        f:SetScript(scriptName, function()
+            if (old) then
+                old();
+            end
+            callbackFunc();
+        end);
+    elseif (hookType == "replace_hook") then
+        f:SetScript(scriptName, callbackFunc);
+    elseif (hookType == "hook") then
+        f:SetScript(scriptName, function()
+            callbackFunc(old);
+        end);
+    end
+end;
+
 ------------------------------------------------------------
 
 A.buildCoinString = function(amount)
