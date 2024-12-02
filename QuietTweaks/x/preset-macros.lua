@@ -24,30 +24,41 @@ local castIf = function(spell, additionalCondition)
     end
 end;
 
-local palBless = function(defaultBlessName)
+_G.palBless = function(nameOfPreferredBless)
     local migBless = A.getPlayerSpell("Blessing of Might");
     local wisBless = A.getPlayerSpell("Blessing of Wisdom");
     local ligBless = A.getPlayerSpell("Blessing of Light");
+    local salBless = A.getPlayerSpell("Blessing of Salvation");
     local sanBless = A.getPlayerSpell("Blessing of Sanctuary");
     local kinBless = A.getPlayerSpell("Blessing of Kings");
 
-    -- XXX how to get buff source
-    local blessBuff = nil;
-    for i, v in ipairs({ migBless, wisBless, ligBless, sanBless, kinBless }) do
-        blessBuff = A.buffed(v);
-        if (blessBuff) then
-            break;
+    if (UnitExists("target") and UnitIsFriend("player", "target") and not UnitIsUnit("target", "player")) then
+        -- targets friend not myself
+        local targetPowerType = UnitPowerType("target");
+        if (targetPowerType and targetPowerType == 0) then
+            castIf(wisBless, true);
+        else
+            castIf(migBless, true);
         end
-    end
+    else
+        -- XXX how to get buff source
+        local buff = nil;
+        for i, v in ipairs({ migBless, wisBless, ligBless, salBless, sanBless, kinBless }) do
+            buff = A.buffed(v);
+            if (buff) then
+                break;
+            end
+        end
 
-    local bless = defaultBlessName and A.getPlayerSpell(defaultBlessName) or migBless;
-    if ((not blessBuff or blessBuff.buffTimeToLive < 30) and bless) then
-        A.cast(bless);
+        local bless = nameOfPreferredBless and A.getPlayerSpell(nameOfPreferredBless) or migBless;
+        if (not buff or buff.buffTimeToLive < 30) then
+            castIf(bless, true);
+        end
     end
 end;
 
 -- cannot cast [Seal of Righteousness] right after [Judgement], even with delay via OnUpdate
-local palSeal = function()
+_G.palSeal = function(nameOfPreferredStrike, nameOfPreferredSeal)
     local rigSeal = A.getPlayerSpell("Seal of Righteousness");
     local cruSeal = A.getPlayerSpell("Seal of Crusader");
     local wisSeal = A.getPlayerSpell("Seal of Wisdom");
@@ -56,9 +67,9 @@ local palSeal = function()
     local comSeal = A.getPlayerSpell("Seal of Command");
     local jud = A.getPlayerSpell("Judgement");
     local hoStrk = A.getPlayerSpell("Holy Strike");
-    local cruStrk = A.getPlayerSpell("Crusader Strike");
 
-    local strike = hoStrk or cruStrk;
+    local strike = nameOfPreferredStrike and A.getPlayerSpell(nameOfPreferredStrike) or hoStrk;
+    local seal = nameOfPreferredSeal and A.getPlayerSpell(nameOfPreferredSeal) or rigSeal;
 
     local which;
     for i, spell in ipairs({ rigSeal, cruSeal, wisSeal, ligSeal, jusSeal, comSeal }) do
@@ -70,23 +81,16 @@ local palSeal = function()
     if (which) then
         if (which == 1 or which == 6) then
             -- in close combat [Holy Strike] is piror to [Judgement]
-            castIf(strike);
+            castIf(strike, true);
             -- no [Judgement] if [Seal of Righteousness] is not ready, or may lose the incidental holy damage
             castIf(jud, A.getPlayerSpellCooldownTime(rigSeal) < 0.05);
         else
             castIf(jud, A.getPlayerSpellCooldownTime(rigSeal) < 0.05);
-            castIf(strike);
+            castIf(strike, true);
         end
     else
-        castIf(comSeal or rigSeal);
+        castIf(seal, true);
     end
-end;
-
-_G.palHam = function()
-    if (not A.inCombat()) then
-        palBless();
-    end
-    palSeal();
 end;
 
 ----------------------------------------
@@ -176,19 +180,11 @@ local macros = {
 ]],
         },
         {
-            name = ">ham",
-            content = [[
-#showtooltip Judgement
-/run palHam()
-/run startAttacking()
-]],
-        },
-        {
             name = ">emp",
-            icon = "Spell_Holy_SpellWarding",
             iconIndex = 448,
             content = [[
-/run local csbn=CastSpellByName; local _,tc=UnitClass("target"); if not UnitIsPlayer("target") or tc=="ROGUE" or tc=="WARRIOR" then csbn("Blessing of Might") else csbn("Blessing of Wisdom") end
+#showtooltip Judgement
+/run if (UnitIsFriend("player", "target")) then palBless() elseif (not A.inCombat()) then palBless(); palSeal(); startAttacking() else palSeal(); startAttacking() end
 ]],
         },
     }
