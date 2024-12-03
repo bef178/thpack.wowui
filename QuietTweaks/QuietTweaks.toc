@@ -19,6 +19,7 @@ pixel-perfect.lua
 auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
+blue-shaman.lua
 chat-scroll.lua
 chat-switch-type.lua
 exp-speed.lua
