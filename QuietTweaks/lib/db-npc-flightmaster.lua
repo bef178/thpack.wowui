@@ -23,6 +23,10 @@ local flightMasters = {
                 x = 0.566,
                 y = 0.526,
             },
+            ["Sentinel Hill, Westfall"] = {
+                x = 0.407,
+                y = 0.245,
+            },
         },
     },
     {
@@ -33,6 +37,10 @@ local flightMasters = {
             ["Redridge Mountains"] = {
                 x = 0.306,
                 y = 0.596,
+            },
+            ["Lakeshire, Redridge"] = {
+                x = 0.557,
+                y = 0.301,
             },
         },
     },
@@ -56,6 +64,10 @@ local flightMasters = {
                 x = 0.096,
                 y = 0.596,
             },
+            ["Menethil Harbor, Wetlands"] = {
+                x = 0.491,
+                y = 0.559,
+            },
         },
     },
     {
@@ -67,6 +79,10 @@ local flightMasters = {
                 x = 0.338,
                 y = 0.508,
             },
+            ["Thelsamar, Loch Modan"] = {
+                x = 0.589,
+                y = 0.484,
+            },
         },
     },
     {
@@ -77,6 +93,10 @@ local flightMasters = {
             ["Ironforge"] = {
                 x = 0.556,
                 y = 0.480,
+            },
+            ["Ironforge, Dun Morogh"] = {
+                x = 0.508,
+                y = 0.512,
             },
         },
     },
@@ -132,6 +152,10 @@ local flightMasters = {
             ["Hillsbrad Foothills"] = {
                 x = 0.494,
                 y = 0.526,
+            },
+            ["Southshore, Hillsbrad"] = {
+                x = 0.479,
+                y = 0.700,
             },
         },
     },
@@ -662,9 +686,11 @@ local A = A;
 A.db = A.db or {};
 A.db.npcs = A.db.npcs or {};
 
-A.db.flightMasters = {};
+-- use map for easy override
+A.db.flightMasterIds = {};
+
 for _, npc in ipairs(flightMasters) do
     A.db.npcs[npc.id] = npc;
-    Array.add(A.db.flightMasters, npc.id);
+    A.db.flightMasterIds[npc.id] = 1;
 end
 flightMasters = nil;

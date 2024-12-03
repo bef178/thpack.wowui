@@ -1,10 +1,66 @@
+local A = A;
 local db = A.db;
+local Math = Math;
 
-local memory = {};
-if (not memory.knownFlightMasters) then
-    memory.knownFlightMasters = {};
+-- npcId => 1/nil
+local reachedFlightMasterIds = {};
+
+local function scanTaxiMap()
+    local oldContinentIndex = GetCurrentMapContinent();
+    local oldZoneIndex = GetCurrentMapZone();
+
+    SetMapToCurrentZone();
+
+    local continentIndex = GetCurrentMapContinent();
+    local stops = {};
+    for i = 1, NumTaxiNodes(), 1 do
+        local t = TaxiNodeGetType(i);
+        if (t == "CURRENT" or t == "REACHABLE") then
+            local name = TaxiNodeName(i);
+            local x, y = TaxiNodePosition(i);
+            stops[name] = {
+                continentIndex = continentIndex,
+                name = name,
+                x = Math.round(x, 0.001),
+                y = Math.round(y, 0.001),
+            };
+        end
+    end
+
+    SetMapZoom(oldContinentIndex, oldZoneIndex);
+
+    return continentIndex, stops;
 end
-local knownFlightMasters = memory.knownFlightMasters;
+
+local function updateReachedFlightMasterIds()
+    local function findMachedNpcId(locationName, x, y)
+        local minX = x - 0.001;
+        local maxX = x + 0.001;
+        local minY = y - 0.001;
+        local maxY = y + 0.001;
+        for flightMasterId, enabled in pairs(db.flightMasterIds) do
+            local npc = enabled and db.npcs[flightMasterId];
+            if (npc) then
+                local location = npc.locations[locationName];
+                if (location
+                        and location.x >= minX and location.x <= maxX
+                        and location.y >= minY and location.y <= maxY) then
+                    return npc.id;
+                end
+            end
+        end
+    end
+
+    Map.clear(reachedFlightMasterIds);
+    for _, stops in pairs(FLIGHT_STOPS_MEMORY) do
+        for _, stop in pairs(stops or {}) do
+            local npcId = findMachedNpcId(stop.name, stop.x, stop.y);
+            if (npcId) then
+                reachedFlightMasterIds[npcId] = 1;
+            end
+        end
+    end
+end
 
 local function getCurrentMap()
     local continentIndex = GetCurrentMapContinent();
@@ -16,23 +72,21 @@ local function getCurrentMap()
     end
 end
 
+-- return array
 local function getFlightMasters(map)
     if (not map) then
         return;
     end
     local flightMasters = {};
-    for _, flightMasterId in ipairs(db.flightMasters) do
-        local npc = db.npcs[flightMasterId];
-        if (npc.locations[map.name]) then
-            local faction, color;
+    for flightMasterId, enabled in pairs(db.flightMasterIds) do
+        local npc = enabled and db.npcs[flightMasterId];
+        if (npc and npc.locations[map.name]) then
+            local color;
             if (npc.title == "Flight Master") then
-                faction = "neutral";
                 color = { 0.9, 0.9, 0.3 };
             elseif (npc.title == "Gryphon Master" or npc.title == "Hippogryph Master") then
-                faction = "alliance";
                 color = { 0.3, 0.3, 0.9 };
             elseif (npc.title == "Wind Rider Master" or npc.title == "Bat Handler") then
-                faction = "horde";
                 color = { 0.9, 0.3, 0.3 };
             end
             Array.add(flightMasters, {
@@ -40,9 +94,8 @@ local function getFlightMasters(map)
                 name = npc.name,
                 title = npc.title,
                 location = npc.locations[map.name],
-                faction = faction,
                 color = color,
-                discovered = Array.contains(knownFlightMasters, npc.id),
+                discovered = reachedFlightMasterIds[npc.id],
             });
         end
     end
@@ -77,14 +130,9 @@ local function updatePoi(poi, flightMaster)
     end
     poi.flightMaster = flightMaster; -- for tooltip
     if (flightMaster) then
-        if (flightMaster.faction == "neutral") then
-            poi.texture:SetTexture("Interface\\TaxiFrame\\UI-Taxi-Icon-Gray");
-            if (flightMaster.discovered) then
-                poi.texture:SetVertexColor(1, 1, 0);
-            end
-        elseif (flightMaster.faction == "alliance") then
-            poi.texture:SetTexture("Interface\\TaxiFrame\\UI-Taxi-Icon-Gray");
-        elseif (flightMaster.faction == "horde") then
+        if (flightMaster.discovered) then
+            poi.texture:SetTexture("Interface\\TaxiFrame\\UI-Taxi-Icon-Green");
+        else
             poi.texture:SetTexture("Interface\\TaxiFrame\\UI-Taxi-Icon-Gray");
         end
         local x = poi:GetParent():GetWidth() * flightMaster.location.x;
@@ -103,14 +151,22 @@ local pois = {};
 
 local f = CreateFrame("Frame");
 f:RegisterEvent("TAXIMAP_OPENED");
+f:RegisterEvent("VARIABLES_LOADED");
 f:RegisterEvent("WORLD_MAP_UPDATE");
 f:SetScript("OnEvent", function()
     if (event == "TAXIMAP_OPENED") then
-        -- scan for known flight points
-        -- TODO
+        -- refresh flight stops in this continent
+        local continentIndex, nodes = scanTaxiMap();
+        FLIGHT_STOPS_MEMORY[continentIndex] = nodes;
+        updateReachedFlightMasterIds();
+    elseif (event == "VARIABLES_LOADED") then
+        if (not FLIGHT_STOPS_MEMORY) then
+            FLIGHT_STOPS_MEMORY = {};
+        end
+        updateReachedFlightMasterIds();
     elseif (event == "WORLD_MAP_UPDATE") then
         if (WorldMapFrame:IsVisible()) then
-            local flightMasters = getFlightMasters(getCurrentMap() or {});
+            local flightMasters = getFlightMasters(getCurrentMap()) or {};
             for i, flightMaster in ipairs(flightMasters) do
                 local poi = pois[i];
                 if (not poi) then

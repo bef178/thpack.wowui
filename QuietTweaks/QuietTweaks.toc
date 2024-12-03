@@ -1,5 +1,6 @@
 ## Interface: 11200
 ## Title: Quiet Tweaks for Vanilla
+## SavedVariablesPerCharacter: FLIGHT_STOPS_MEMORY
 ## X-BuildDate: {BuildDate}
 
 bindings.lua
@@ -38,7 +39,7 @@ tooltip-healthbar.lua
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 
-map\flight-poi.lua
+map\flight-stops.lua
 map\worldmap-player-coordinates.lua
 map\worldmap-windowed.lua
 
