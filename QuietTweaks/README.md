@@ -40,6 +40,8 @@
     - 单击背包时打开/关闭所有包
 - pick-action
     - 按住shift时才可从动作条拖出技能
+- show-item-quality
+    - 物品边框着色(FIXME)
 - show-num-available-bag-slots
     - 显示背包剩余容量
 - show-num-poison-charges

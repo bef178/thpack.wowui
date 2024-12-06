@@ -17,8 +17,8 @@ Color = Color or (function()
         local r8 = tonumber(String.substring(colorString, 2, 3), 16);
         local g8 = tonumber(String.substring(colorString, 4, 5), 16);
         local b8 = tonumber(String.substring(colorString, 6, 7), 16);
-        local a8 = tonumber(String.substring(colorString, 8, 9), 16);
-        return r8 / 255, g8 / 255, b8 / 255, (a8 or 255) / 255;
+        local a8 = tonumber(String.substring(colorString, 8, 9), 16) or 255;
+        return r8 / 255, g8 / 255, b8 / 255, a8 / 255;
     end
 
     return Color;

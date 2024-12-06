@@ -32,6 +32,7 @@ model-cloak.lua
 model-rotate.lua
 open-all-bags.lua
 pick-action.lua
+show-item-quality.lua
 show-num-available-bag-slots.lua
 show-num-poison-charges.lua
 show-num-reagents.lua
