@@ -13,7 +13,7 @@
         f.playerCoordinatesText:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE");
         f.playerCoordinatesText:SetTextColor(0.8, 0.8, 0.8);
         f.playerCoordinatesText:SetJustifyH("LEFT");
-        f.playerCoordinatesText:SetWidth(140);
+        f.playerCoordinatesText:SetWidth(150);
         f.playerCoordinatesText:SetHeight(14);
         f.playerCoordinatesText:SetPoint("BOTTOMLEFT", WorldMapButton, "BOTTOMLEFT", 3, 0);
 
@@ -21,9 +21,9 @@
         f.cursorCoordinatesText:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE");
         f.cursorCoordinatesText:SetTextColor(0.8, 0.8, 0.8);
         f.cursorCoordinatesText:SetJustifyH("LEFT");
-        f.cursorCoordinatesText:SetWidth(140);
+        f.cursorCoordinatesText:SetWidth(150);
         f.cursorCoordinatesText:SetHeight(14);
-        f.cursorCoordinatesText:SetPoint("BOTTOMLEFT", WorldMapButton, "BOTTOMLEFT", 153, 0);
+        f.cursorCoordinatesText:SetPoint("BOTTOMLEFT", WorldMapButton, "BOTTOMLEFT", 154, 0);
     end);
 
     f:SetScript("OnUpdate", function()
