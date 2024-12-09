@@ -3,7 +3,7 @@ local A = A;
 local auraSlotMan = A.SlotMan:new();
 auraSlotMan.slot_size = 31;
 auraSlotMan.slot_margin = 6;
-auraSlotMan.max_x_slots = 10;
+auraSlotMan.slot_models = {};
 auraSlotMan.anchor:SetParent(MainMenuBar);
 auraSlotMan.anchor:ClearAllPoints();
 
@@ -24,44 +24,7 @@ function auraSlotMan:updateAnchorPosition()
     end
 end
 
-function auraSlotMan:start(seals)
-    local f = self.anchor;
-    f:RegisterEvent("PLAYER_ENTERING_WORLD");
-    f:RegisterEvent("SPELLS_CHANGED");
-    f:SetScript("OnEvent", function(...)
-        auraSlotMan:updateAnchorPosition();
-        auraSlotMan:clearAllSlotModels();
-        for i, seal in ipairs(seals) do
-            auraSlotMan:adopt(seal);
-        end
-        auraSlotMan:renderAllSlotModels();
-    end);
-
-    f:SetScript("OnUpdate", (function()
-        local acc = 0;
-        return function(...)
-            local elapsed = arg1;
-            acc = acc + elapsed;
-            if (acc < 0.1) then
-                return;
-            end
-
-            auraSlotMan:renderAllSlotModels(function(model)
-                if (model.onElapsed) then
-                    model.onElapsed(acc);
-                end
-            end);
-
-            acc = 0;
-        end;
-    end)());
-
-    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
-        auraSlotMan:updateAnchorPosition();
-    end);
-end
-
-function auraSlotMan:adopt(sealName)
+function auraSlotMan:buildSlotModel(sealName)
     if (not sealName) then
         return;
     end
@@ -94,11 +57,50 @@ function auraSlotMan:adopt(sealName)
         model.ready = (model.timeToCooldown == 0);
     end;
 
-    self:addSlotModelAndDock(model);
+    return model;
+end
+
+function auraSlotMan:start(seals)
+    local f = self.anchor;
+    f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
+    f:SetScript("OnEvent", function(...)
+        auraSlotMan:updateAnchorPosition();
+
+        local models = auraSlotMan.slot_models;
+        Array.clear(models);
+        for _, seal in ipairs(seals) do
+            local model = auraSlotMan:buildSlotModel(seal);
+            if (model) then
+                Array.add(models, model);
+            end
+        end
+        auraSlotMan:render(models);
+    end);
+    f:SetScript("OnUpdate", (function()
+        local acc = 0;
+        return function(...)
+            local elapsed = arg1;
+            acc = acc + elapsed;
+            if (acc > 0.1) then
+                for _, model in ipairs(auraSlotMan.slot_models) do
+                    if (model.onElapsed) then
+                        model.onElapsed(elapsed);
+                    end
+                end
+                auraSlotMan:render();
+                acc = 0;
+            end
+        end;
+    end)());
+
+    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
+        auraSlotMan:updateAnchorPosition();
+    end);
 end
 
 auraSlotMan:start({
-    -- spells placing long-term buffs only to self
+    -- spells creating last-until-cancelled buffs
     "Righteous Fury",
 });
 
