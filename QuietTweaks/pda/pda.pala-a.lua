@@ -1,6 +1,10 @@
+local CastSpellByName = CastSpellByName;
+
+local A = A;
 local getPlayerSpell = A.getPlayerSpell;
 local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
 local getUnitBuff = A.getUnitBuff;
+local pda = pda;
 
 local targetsAliveEnemy = function()
     return UnitExists("target") and not UnitIsDead("target") and UnitIsEnemy("player", "target");
@@ -24,38 +28,38 @@ local hasActiveShapeshiftForm = function()
     return false;
 end;
 
-local build = {
-    id = "pala-a",
-    description = "prot pala solo aoe, for turtle wow",
-    initializers = {},
-    slotModels = {},
-};
+local build = pda:newBuild();
+build.name = "pala-a";
+build.description = "prot pala solo aoe, for turtle wow";
+build.creators = {};
 
-build.prepareSlotModels = function(createSlotModel)
+function build:createSlotModels()
     Array.clear(build.slotModels);
-    for i, fn in ipairs(build.initializers) do
-        local a = fn(createSlotModel);
-        if (a) then
-            for j, model in ipairs(a) do
-                Array.add(build.slotModels, model);
+    for _, fn in ipairs(build.creators) do
+        if (fn) then
+            local a = fn();
+            if (a) then
+                for _, slotModel in ipairs(a) do
+                    Array.add(build.slotModels, slotModel);
+                end
             end
         end
     end
     return build.slotModels;
-end;
+end
 
-build.onElapsed = function(elapsed)
-    for i, model in ipairs(build.slotModels) do
-        if (model.onElapsed) then
-            model.onElapsed(elapsed);
+function build:updateSlotModels()
+    for _, slotModel in ipairs(build.slotModels) do
+        if (slotModel.onElapsed) then
+            slotModel.onElapsed();
         end
     end
-end;
+end
 
 -- 惩罚光环/庇护祝福/神圣之盾
--- 这三者是最主要的反伤手段，集成为第一顺位
+-- 这三者是最主要的反伤手段，合一为第一顺位
 -- 另，A怪时惩罚光环优于圣洁光环
-Array.add(build.initializers, function(createSlotModel)
+Array.add(build.creators, function()
     local spellRetributionAura = getPlayerSpell("Retribution Aura");
     local spellBlessingOfSanctuary = getPlayerSpell("Blessing of Sanctuary");
     local spellHolyShield = getPlayerSpell("Holy Shield");
@@ -63,7 +67,7 @@ Array.add(build.initializers, function(createSlotModel)
         return;
     end
 
-    local model = createSlotModel();
+    local model = pda:newSlotModel();
     model.targetingPlayer = true;
     model.onClick = function(f, button)
         CastSpellByName(model.spell.spellNameWithRank, 1);
@@ -185,13 +189,13 @@ end);
 
 -- 奉献
 -- 最主要的伤害手段，为第二顺位
-Array.add(build.initializers, function(createSlotModel)
+Array.add(build.creators, function()
     local spell = getPlayerSpell("Consecration");
     if (not spell) then
         return;
     end
 
-    local model = createSlotModel();
+    local model = pda:newSlotModel();
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
     model.onClick = function(f, button)
@@ -224,7 +228,7 @@ end);
 
 -- 光明圣印/智慧圣印/审判
 -- 最主要的战时回复手段，为第三顺位
-Array.add(build.initializers, function(createSlotModel)
+Array.add(build.creators, function()
     local function updateModelWithSeal(model, spell)
         local inCombat = UnitAffectingCombat("player");
         local onTarget = targetsAliveEnemy();
@@ -289,7 +293,7 @@ Array.add(build.initializers, function(createSlotModel)
         local sealOfLightModel = (function()
             local spell = spellSealOfLight;
 
-            local model = createSlotModel();
+            local model = pda:newSlotModel();
             model.spell = spell;
             model.contentTexture = spell.spellTexture;
             model.onClick = function(f, button)
@@ -368,7 +372,7 @@ Array.add(build.initializers, function(createSlotModel)
         local sealOfWisdomModel = (function()
             local spell = spellSealOfWisdom;
 
-            local model = createSlotModel();
+            local model = pda:newSlotModel();
             model.spell = spell;
             model.contentTexture = spell.spellTexture;
             model.onClick = function(f, button)
@@ -452,7 +456,7 @@ Array.add(build.initializers, function(createSlotModel)
         -- health or mana recovery strategy
         local spell = spellSealOfLight or spellSealOfWisdom;
 
-        local model = createSlotModel();
+        local model = pda:newSlotModel();
         model.spell = spell;
         model.contentTexture = spell.spellTexture;
         model.onClick = function(f, button)
@@ -493,7 +497,7 @@ end);
 -- 神圣打击将物理转化神圣法术伤害，无公共CD，不与其它技能共CD
 -- 都用1级，省蓝
 -- turtle wow
-Array.add(build.initializers, function(createSlotModel)
+Array.add(build.creators, function()
     local spell = getPlayerSpell("Crusader Strike(Rank 1)");
     if (not spell) then
         return;
@@ -501,7 +505,7 @@ Array.add(build.initializers, function(createSlotModel)
 
     local spellHolyStrike = getPlayerSpell("Holy Strike(Rank 1)");
 
-    local model = createSlotModel();
+    local model = pda:newSlotModel();
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
     model.onClick = function(f, button)
@@ -538,13 +542,13 @@ Array.add(build.initializers, function(createSlotModel)
 end);
 
 -- 飞锤
-Array.add(build.initializers, function(createSlotModel)
+Array.add(build.creators, function()
     local spell = getPlayerSpell("Hammer of Wrath");
     if (not spell) then
         return;
     end
 
-    local model = createSlotModel();
+    local model = pda:newSlotModel();
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
     model.onClick = function(f, button)

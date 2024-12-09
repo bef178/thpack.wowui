@@ -1,13 +1,9 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-local getPlayerSpell = A.getPlayerSpell;
-local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
-local getUnitBuff = A.getUnitBuff;
-local SlotMan = A.SlotMan;
+local A = A;
 
-local auraSlotMan = SlotMan:new();
+local auraSlotMan = A.SlotMan:new();
 auraSlotMan.slot_size = 31;
 auraSlotMan.slot_margin = 6;
-auraSlotMan.max_x_slots = 10;
+auraSlotMan.slot_models = {};
 auraSlotMan.anchor:SetParent(MainMenuBar);
 auraSlotMan.anchor:ClearAllPoints();
 
@@ -28,54 +24,17 @@ function auraSlotMan:updateAnchorPosition()
     end
 end
 
-function auraSlotMan:start(seals)
-    local f = self.anchor;
-    f:RegisterEvent("PLAYER_ENTERING_WORLD");
-    f:RegisterEvent("SPELLS_CHANGED");
-    f:SetScript("OnEvent", function(...)
-        auraSlotMan:updateAnchorPosition();
-        auraSlotMan:clearAllSlotModels();
-        for i, seal in ipairs(seals) do
-            auraSlotMan:adopt(seal);
-        end
-        auraSlotMan:renderAllSlotModels();
-    end);
-
-    f:SetScript("OnUpdate", (function()
-        local acc = 0;
-        return function(...)
-            local elapsed = arg1;
-            acc = acc + elapsed;
-            if (acc < 0.1) then
-                return;
-            end
-
-            auraSlotMan:renderAllSlotModels(function(model)
-                if (model.onElapsed) then
-                    model.onElapsed(acc);
-                end
-            end);
-
-            acc = 0;
-        end;
-    end)());
-
-    hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
-        auraSlotMan:updateAnchorPosition();
-    end);
-end
-
-function auraSlotMan:adopt(sealName)
+function auraSlotMan:buildSlotModel(sealName)
     if (not sealName) then
         return;
     end
 
-    local spell = getPlayerSpell(sealName);
+    local spell = A.getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
 
-    local model = self:createSlotModel();
+    local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
@@ -92,17 +51,54 @@ function auraSlotMan:adopt(sealName)
         CastSpellByName(model.spell.spellNameWithRank, 1);
     end;
 
-    model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+    model.onElapsed = function()
+        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 
-    self:addSlotModelAndDock(model);
+    return model;
+end
+
+function auraSlotMan:start(seals)
+    local slotModels = self.slot_models;
+
+    local f = self.anchor;
+    f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
+    f:SetScript("OnEvent", function(...)
+        auraSlotMan:updateAnchorPosition();
+
+        for _, seal in ipairs(seals) do
+            Array.add(slotModels, auraSlotMan:buildSlotModel(seal));
+        end
+        auraSlotMan:render(slotModels);
+    end);
+
+    f:SetScript("OnUpdate", (function()
+        local acc = 0;
+        return function(...)
+            local elapsed = arg1;
+            acc = acc + elapsed;
+            if (acc > 0.1) then
+                for _, slotModel in ipairs(slotModels) do
+                    if (slotModel.onElapsed) then
+                        slotModel.onElapsed();
+                    end
+                end
+                auraSlotMan:render();
+                acc = 0;
+            end
+        end;
+    end)());
+
+    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
+        auraSlotMan:updateAnchorPosition();
+    end);
 end
 
 auraSlotMan:start({
-    -- spells placing long-term buffs only to self
+    -- spells creating last-until-cancelled buffs
     "Righteous Fury",
 });
 

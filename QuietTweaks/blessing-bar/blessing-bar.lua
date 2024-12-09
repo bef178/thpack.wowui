@@ -1,30 +1,12 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-local getPlayerSpell = A.getPlayerSpell;
-local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
-local getUnitBuff = A.getUnitBuff;
-local SlotMan = A.SlotMan;
+local A = A;
 
 ----------------------------------------
 
-local blessingSlotMan = SlotMan:new();
+local blessingSlotMan = A.SlotMan:new();
 blessingSlotMan.slot_size = 31;
 blessingSlotMan.slot_margin = 6;
+blessingSlotMan.slot_models = {};
 blessingSlotMan.anchor:SetParent(MainMenuBar);
-blessingSlotMan.anchor:SetScript("OnUpdate", (function()
-    local acc = 0;
-    return function(...)
-        local elapsed = arg1;
-        acc = acc + elapsed;
-        if (acc > 0.1) then
-            blessingSlotMan:renderAllSlotModels(function(model)
-                if (model.onElapsed) then
-                    model.onElapsed(acc);
-                end
-            end);
-            acc = 0;
-        end
-    end;
-end)());
 
 function blessingSlotMan:updateAnchorPosition()
     local f = self.anchor;
@@ -37,29 +19,21 @@ function blessingSlotMan:updateAnchorPosition()
     end
 end
 
-function blessingSlotMan:redial(a)
-    self:clearAllSlotModels();
-    for i, a1 in ipairs(a) do
-        self:adopt(a1);
-    end
-    self:renderAllSlotModels();
-end
-
-function blessingSlotMan:adopt(blessing)
+function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
     if (not blessing) then
         return;
     end
 
-    local spells = Array.map(blessing, function(v, i, a)
-        return getPlayerSpell(v);
-    end);
-    if (not spells[1]) then
+    blessing = blessing and A.getPlayerSpell(blessing);
+    if (not blessing) then
         return;
     end
 
-    local model = self:createSlotModel();
+    greatBlessing = greatBlessing and A.getPlayerSpell(greatBlessing);
+
+    local model = self:newSlotModel();
     model.visible = true;
-    model.spells = spells;
+    model.spells = { blessing, greatBlessing };
     model.onEnter = function(f)
         GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
         -- GameTooltip_SetDefaultAnchor(GameTooltip, f);
@@ -73,7 +47,7 @@ function blessingSlotMan:adopt(blessing)
         CastSpellByName(model.spell.spellNameWithRank, model.spellTargetUnit == "player");
     end;
 
-    model.onElapsed = function(elapsed)
+    model.onElapsed = function()
         local spell;
         if (not IsShiftKeyDown()) then
             spell = model.spells[1];
@@ -102,65 +76,76 @@ function blessingSlotMan:adopt(blessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingSpellTarget = not (not getUnitBuff(spellTargetUnit, spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+        model.affectingSpellTarget = not (not A.getUnitBuff(spellTargetUnit, spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = model.timeToCooldown == 0;
     end;
 
-    self:addSlotModelAndDock(model);
+    return model;
+end
+
+function blessingSlotMan:start(blessingPairs)
+    local f = blessingSlotMan.anchor;
+    f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
+    f:SetScript("OnEvent", function(...)
+        blessingSlotMan:updateAnchorPosition();
+
+        for _, p in ipairs(blessingPairs) do
+            local slotModel = blessingSlotMan:buildSlotModel(p[1], p[2]);
+            if (slotModel) then
+                Array.add(blessingSlotMan.slot_models, slotModel);
+            end
+        end
+        blessingSlotMan:render(blessingSlotMan.slot_models);
+    end);
+    f:SetScript("OnUpdate", (function()
+        local acc = 0;
+        return function(...)
+            local elapsed = arg1;
+            acc = acc + elapsed;
+            if (acc > 0.1) then
+                for _, slotModel in ipairs(blessingSlotMan.slot_models) do
+                    if (slotModel.onElapsed) then
+                        slotModel.onElapsed();
+                    end
+                end
+                blessingSlotMan:render();
+                acc = 0;
+            end
+        end;
+    end)());
 end
 
 ----------------------------------------
 
-local sealSlotMan = SlotMan:new();
+local sealSlotMan = A.SlotMan:new();
 sealSlotMan.slot_size = blessingSlotMan.slot_size;
 sealSlotMan.slot_margin = blessingSlotMan.slot_margin;
+sealSlotMan.slot_models = {};
 sealSlotMan.anchor:SetParent(MainMenuBar);
-sealSlotMan.anchor:SetScript("OnUpdate", (function()
-    local acc = 0;
-    return function(...)
-        local elapsed = arg1;
-        acc = acc + elapsed;
-        if (acc > 0.1) then
-            sealSlotMan:renderAllSlotModels(function(model)
-                if (model.onElapsed) then
-                    model.onElapsed(acc);
-                end
-            end);
-            acc = 0;
-        end
-    end;
-end)());
 
 function sealSlotMan:updateAnchorPosition()
-    local size = blessingSlotMan.slot_size;
-    local margin = blessingSlotMan.slot_margin;
-    local n = blessingSlotMan:getNumSlotModels();
+    local size = self.slot_size;
+    local margin = self.slot_margin;
+    local n = Array.size(blessingSlotMan.slot_models);
     local blessingBarWidth = (n == 0) and 0 or (n * size + (n - 1) * margin);
     local gap = (blessingBarWidth == 0) and 0 or 32;
     self.anchor:ClearAllPoints();
     self.anchor:SetPoint("TOPLEFT", blessingSlotMan.anchor, "TOPLEFT", blessingBarWidth + gap, 0);
 end
 
-function sealSlotMan:redial(a)
-    self:clearAllSlotModels();
-    for i, a1 in ipairs(a) do
-        self:adopt(a1);
-    end
-    self:renderAllSlotModels();
-end
-
-function sealSlotMan:adopt(sealName)
+function sealSlotMan:buildSlotModel(sealName)
     if (not sealName) then
         return;
     end
 
-    local spell = getPlayerSpell(sealName);
+    local spell = A.getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
 
-    local model = self:createSlotModel();
+    local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
@@ -178,44 +163,69 @@ function sealSlotMan:adopt(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 
-    self:addSlotModelAndDock(model);
+    return model;
+end
+
+function sealSlotMan:start(seals)
+    local f = sealSlotMan.anchor;
+    f:RegisterEvent("PLAYER_ENTERING_WORLD");
+    f:RegisterEvent("SPELLS_CHANGED");
+    f:SetScript("OnEvent", function(...)
+        sealSlotMan:updateAnchorPosition();
+
+        for _, p in ipairs(seals) do
+            local slotModel = sealSlotMan:buildSlotModel(p);
+            if (slotModel) then
+                Array.add(sealSlotMan.slot_models, slotModel);
+            end
+        end
+        sealSlotMan:render(sealSlotMan.slot_models);
+    end);
+    f:SetScript("OnUpdate", (function()
+        local acc = 0;
+        return function(...)
+            local elapsed = arg1;
+            acc = acc + elapsed;
+            if (acc > 0.1) then
+                for _, slotModel in ipairs(sealSlotMan.slot_models) do
+                    if (slotModel.onElapsed) then
+                        slotModel.onElapsed();
+                    end
+                end
+                sealSlotMan:render();
+                acc = 0;
+            end
+        end;
+    end)());
 end
 
 ----------------------------------------
 
-(function(blessings, seals)
-    local f = blessingSlotMan.anchor;
-    f:RegisterEvent("PLAYER_ENTERING_WORLD");
-    f:RegisterEvent("SPELLS_CHANGED");
-    f:SetScript("OnEvent", function(...)
-        blessingSlotMan:updateAnchorPosition();
-        blessingSlotMan:redial(blessings);
+(function(blessingPairs, seals)
+    blessingSlotMan:start(blessingPairs);
+    sealSlotMan:start(seals);
 
-        sealSlotMan:updateAnchorPosition();
-        sealSlotMan:redial(seals);
-    end);
-
-    hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
+    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
         blessingSlotMan:updateAnchorPosition();
         sealSlotMan:updateAnchorPosition();
     end);
 end)(
     {
-        -- spells placing buffs to others
+        -- spells creating buffs to others
         { "Blessing of Might", "Greater Blessing of Might" },
         { "Blessing of Wisdom", "Greater Blessing of Wisdom" },
-        { "Blessing of Salvation", "Greater Blessing of Salvation" },
         { "Blessing of Light", "Greater Blessing of Light" },
+        { "Blessing of Salvation", "Greater Blessing of Salvation" },
         { "Blessing of Sanctuary", "Greater Blessing of Sanctuary" },
         { "Blessing of Kings", "Greater Blessing of Kings" },
     },
     {
-        -- spells placing short-term buffs only to self
+        -- spells creating short-term buffs to self
         "Seal of Righteousness",
         "Seal of the Crusader",
         "Seal of Justice",
