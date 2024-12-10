@@ -1,6 +1,6 @@
-local SlotMan = A.SlotMan;
+local A = A;
 
-local pda = SlotMan:new();
+local pda = A.SlotMan:new();
 pda.slot_style = "sharp_square";
 pda.slot_size = 31;
 pda.slot_margin = 4;

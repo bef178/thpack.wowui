@@ -1,3 +1,4 @@
+local A = A;
 local getResource = A.getResource;
 
 A.SlotMan = A.SlotMan or (function()
@@ -15,11 +16,11 @@ A.SlotMan = A.SlotMan or (function()
             slots = {},
         };
 
-        local anchorFrame = CreateFrame("Frame", nil, UIParent, nil);
-        anchorFrame:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0);
-        anchorFrame:SetWidth(4);
-        anchorFrame:SetHeight(4);
-        o.anchor = anchorFrame;
+        local f = CreateFrame("Frame", nil, UIParent, nil);
+        f:SetPoint("TOPLEFT", UIParent, "CENTER", 0, 0);
+        f:SetWidth(4);
+        f:SetHeight(4);
+        o.anchor = f;
 
         return setmetatable(o, { __index = self });
     end
@@ -42,15 +43,54 @@ A.SlotMan = A.SlotMan or (function()
         return model;
     end
 
-    function SlotMan:createSlotView()
-        if (self.slot_style == "sharp_square") then
-            return self:createSharpSquareSlotView();
-        else
-            return self:createRoundedSquareSlotView();
+    -- public
+    function SlotMan:getNumSlotModels()
+        return Array.size(self.slotModels);
+    end
+
+    -- public
+    function SlotMan:clearAllSlotModels()
+        Array.clear(self.slotModels);
+    end
+
+    -- public
+    function SlotMan:renderAllSlotModels(callbackToUpdateModel)
+        for i, model in ipairs(self.slotModels) do
+            if (callbackToUpdateModel) then
+                callbackToUpdateModel(model);
+            end
+            local f = self.slots[i];
+            self:_slotRender(f, model);
+        end
+        for i = Array.size(self.slotModels) + 1, Array.size(self.slots), 1 do
+            local f = self.slots[i];
+            f:Hide();
         end
     end
 
-    function SlotMan:createRoundedSquareSlotView()
+    -- public
+    function SlotMan:addSlotModelAndDock(model)
+        Array.add(self.slotModels, model);
+        local i = Array.size(self.slotModels);
+        if (i > Array.size(self.slots)) then
+            Array.add(self.slots, self:_slotNew());
+        end
+        local f = self.slots[i];
+        if (self.slot_interactive) then
+            self:_slotAttachScripts(f, model);
+        end
+        self:_slotUpdatePosition(f, i);
+    end
+
+    function SlotMan:_slotNew()
+        if (self.slot_style == "sharp_square") then
+            return self:_slotNewSharpSquareButton();
+        else
+            return self:_slotNewRoundedSquareButton();
+        end
+    end
+
+    function SlotMan:_slotNewRoundedSquareButton()
         local f = CreateFrame("Button", nil, self.anchor);
         f:SetWidth(self.slot_size);
         f:SetHeight(self.slot_size);
@@ -162,8 +202,8 @@ A.SlotMan = A.SlotMan or (function()
         return f;
     end
 
-    function SlotMan:createSharpSquareSlotView()
-        local f = self:createRoundedSquareSlotView();
+    function SlotMan:_slotNewSharpSquareButton()
+        local f = self:_slotNewRoundedSquareButton();
 
         local backgroundTexture = f:CreateTexture(nil, "BACKGROUND", nil, 1);
         backgroundTexture:SetTexture(getResource("tile32"));
@@ -177,32 +217,7 @@ A.SlotMan = A.SlotMan or (function()
         return f;
     end
 
-    -- public
-    function SlotMan:getNumSlotModels()
-        return Array.size(self.slotModels);
-    end
-
-    -- public
-    function SlotMan:clearAllSlotModels()
-        Array.clear(self.slotModels);
-    end
-
-    -- public
-    function SlotMan:renderAllSlotModels(callbackToUpdateModel)
-        for i, model in ipairs(self.slotModels) do
-            if (callbackToUpdateModel) then
-                callbackToUpdateModel(model);
-            end
-            local f = self.slots[i];
-            self:renderSlotModel(model, f);
-        end
-        for i = Array.size(self.slotModels) + 1, Array.size(self.slots), 1 do
-            local f = self.slots[i];
-            f:Hide();
-        end
-    end
-
-    function SlotMan:renderSlotModel(model, f)
+    function SlotMan:_slotRender(f, model)
         if (model.visible) then
             f:Show();
         else
@@ -275,21 +290,8 @@ A.SlotMan = A.SlotMan or (function()
         end
     end
 
-    -- public
-    function SlotMan:addSlotModelAndDock(model)
-        Array.add(self.slotModels, model);
-        local i = Array.size(self.slotModels);
-        if (i > Array.size(self.slots)) then
-            Array.add(self.slots, self:createSlotView());
-        end
-        local f = self.slots[i];
-        if (self.slot_interactive) then
-            self:attachSlotScripts(f, model);
-        end
-        self:updateSlotPosition(f, i);
-    end
-
-    function SlotMan:attachSlotScripts(f, model)
+    function SlotMan:_slotAttachScripts(f, model)
+        local slotMan = self;
         f:SetScript("OnHide", function()
             model.hovered = false;
             model.pressed = false;
@@ -299,43 +301,43 @@ A.SlotMan = A.SlotMan or (function()
             if (model.onEnter) then
                 model.onEnter(f);
             end
-            SlotMan:renderSlotModel(model, f);
+            slotMan:_slotRender(f, model);
         end);
         f:SetScript("OnLeave", function()
             model.hovered = false;
             if (model.onLeave) then
                 model.onLeave(f);
             end
-            SlotMan:renderSlotModel(model, f);
+            slotMan:_slotRender(f, model);
         end);
         f:SetScript("OnMouseDown", function()
             model.pressed = true;
             if (model.onMouseDown) then
                 model.onMouseDown(f, arg1);
             end
-            SlotMan:renderSlotModel(model, f);
+            slotMan:_slotRender(f, model);
         end);
         f:SetScript("OnMouseUp", function()
             model.pressed = false;
             if (model.onMouseUp) then
                 model.onMouseUp(f, arg1);
             end
-            SlotMan:renderSlotModel(model, f);
+            slotMan:_slotRender(f, model);
         end);
         f:SetScript("OnClick", function()
             if (model.onClick) then
                 model.onClick(f, arg1);
             end
-            SlotMan:renderSlotModel(model, f);
+            slotMan:_slotRender(f, model);
         end);
     end
 
-    function SlotMan:updateSlotPosition(slot, index)
+    function SlotMan:_slotUpdatePosition(f, index)
         local i = index - 1;
         local y = math.floor(i / self.max_x_slots);
         local x = i - y * self.max_x_slots;
-        slot:ClearAllPoints();
-        slot:SetPoint("TOPLEFT", self.anchor, "TOPLEFT",
+        f:ClearAllPoints();
+        f:SetPoint("TOPLEFT", self.anchor, "TOPLEFT",
             x * (self.slot_size + self.slot_margin),
             y * (self.slot_size + self.slot_margin));
     end

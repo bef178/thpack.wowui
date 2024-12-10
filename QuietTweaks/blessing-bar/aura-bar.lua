@@ -1,10 +1,6 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-local getPlayerSpell = A.getPlayerSpell;
-local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
-local getUnitBuff = A.getUnitBuff;
-local SlotMan = A.SlotMan;
+local A = A;
 
-local auraSlotMan = SlotMan:new();
+local auraSlotMan = A.SlotMan:new();
 auraSlotMan.slot_size = 31;
 auraSlotMan.slot_margin = 6;
 auraSlotMan.max_x_slots = 10;
@@ -60,7 +56,7 @@ function auraSlotMan:start(seals)
         end;
     end)());
 
-    hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
+    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
         auraSlotMan:updateAnchorPosition();
     end);
 end
@@ -70,7 +66,7 @@ function auraSlotMan:adopt(sealName)
         return;
     end
 
-    local spell = getPlayerSpell(sealName);
+    local spell = A.getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
@@ -93,8 +89,8 @@ function auraSlotMan:adopt(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 

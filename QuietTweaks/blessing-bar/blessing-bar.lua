@@ -1,12 +1,8 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-local getPlayerSpell = A.getPlayerSpell;
-local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
-local getUnitBuff = A.getUnitBuff;
-local SlotMan = A.SlotMan;
+local A = A;
 
 ----------------------------------------
 
-local blessingSlotMan = SlotMan:new();
+local blessingSlotMan = A.SlotMan:new();
 blessingSlotMan.slot_size = 31;
 blessingSlotMan.slot_margin = 6;
 blessingSlotMan.anchor:SetParent(MainMenuBar);
@@ -51,7 +47,7 @@ function blessingSlotMan:adopt(blessing)
     end
 
     local spells = Array.map(blessing, function(v, i, a)
-        return getPlayerSpell(v);
+        return A.getPlayerSpell(v);
     end);
     if (not spells[1]) then
         return;
@@ -102,8 +98,8 @@ function blessingSlotMan:adopt(blessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingSpellTarget = not (not getUnitBuff(spellTargetUnit, spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+        model.affectingSpellTarget = not (not A.getUnitBuff(spellTargetUnit, spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = model.timeToCooldown == 0;
     end;
 
@@ -112,7 +108,7 @@ end
 
 ----------------------------------------
 
-local sealSlotMan = SlotMan:new();
+local sealSlotMan = A.SlotMan:new();
 sealSlotMan.slot_size = blessingSlotMan.slot_size;
 sealSlotMan.slot_margin = blessingSlotMan.slot_margin;
 sealSlotMan.anchor:SetParent(MainMenuBar);
@@ -155,7 +151,7 @@ function sealSlotMan:adopt(sealName)
         return;
     end
 
-    local spell = getPlayerSpell(sealName);
+    local spell = A.getPlayerSpell(sealName);
     if (not spell) then
         return;
     end
@@ -178,8 +174,8 @@ function sealSlotMan:adopt(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not getUnitBuff("player", spell));
-        model.timeToCooldown = getPlayerSpellCooldownTime(spell);
+        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
+        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.ready = (model.timeToCooldown == 0);
     end;
 
@@ -200,7 +196,7 @@ end
         sealSlotMan:redial(seals);
     end);
 
-    hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
+    A.hookGlobalFunction("UIParent_ManageFramePositions", "post_hook", function()
         blessingSlotMan:updateAnchorPosition();
         sealSlotMan:updateAnchorPosition();
     end);
