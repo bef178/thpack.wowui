@@ -26,7 +26,7 @@ A.SlotMan = A.SlotMan or (function()
     end
 
     -- public
-    function SlotMan:createSlotModel()
+    function SlotMan:newSlotModel()
         local model = {};
         model.visible = false;
         model.hovered = false;
@@ -352,11 +352,11 @@ if (debug) then
     local slotManTest = SlotMan:new();
     A.slotManTest = slotManTest;
 
-    local model = slotManTest:createSlotModel();
+    local model = slotManTest:newSlotModel();
     model.contentTexture = "Interface//Icons//Spell_Holy_Light";
     slotManTest:addSlotModelAndDock(model);
 
-    model = slotManTest:createSlotModel();
+    model = slotManTest:newSlotModel();
     model.contentTexture = "Interface//Icons//Spell_Holy_Light";
     slotManTest:addSlotModelAndDock(model);
 

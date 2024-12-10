@@ -25,7 +25,7 @@ function pda:start()
             local activeBuild = self.adviceBuilds[1]; -- TODO switch among builds
             if (activeBuild) then
                 local slotModels = activeBuild.prepareSlotModels(function()
-                    return pda:createSlotModel();
+                    return pda:newSlotModel();
                 end);
                 for _, slotModel in ipairs(slotModels) do
                     pda:addSlotModelAndDock(slotModel);

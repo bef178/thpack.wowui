@@ -53,7 +53,7 @@ function blessingSlotMan:adopt(blessing)
         return;
     end
 
-    local model = self:createSlotModel();
+    local model = self:newSlotModel();
     model.visible = true;
     model.spells = spells;
     model.onEnter = function(f)
@@ -156,7 +156,7 @@ function sealSlotMan:adopt(sealName)
         return;
     end
 
-    local model = self:createSlotModel();
+    local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
     model.contentTexture = spell.spellTexture;

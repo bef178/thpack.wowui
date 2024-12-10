@@ -71,7 +71,7 @@ function auraSlotMan:adopt(sealName)
         return;
     end
 
-    local model = self:createSlotModel();
+    local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
     model.contentTexture = spell.spellTexture;
