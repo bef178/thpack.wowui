@@ -92,48 +92,17 @@ A.getPlayerSpellCooldownTime = function(spell)
     return stat and stat.timeToCooldown or 14 * 24 * 60 * 60;
 end;
 
-A.getUnitBuffBySpell = function(unit, spell)
-    if (not spell or not spell.spellTexture) then
-        return;
-    end
-    if (unit == "player") then
-        for i = 0, 63, 1 do
-            local buffTexture = GetPlayerBuffTexture(i);
-            if (buffTexture and buffTexture == spell.spellTexture) then
-                -- return i;
-                local buff = {
-                    playerBuffIndex = i,
-                    buffTexture = buffTexture,
-                    buffNumStacks = GetPlayerBuffApplications(i),
-                    buffTimeToLive = GetPlayerBuffTimeLeft(i) or 0,
-                };
-                local _, lastsUntilCancelled = GetPlayerBuff(i);
-                buff.buffLastsUntilCancelled = lastsUntilCancelled;
-                return buff;
-            end
-        end
-    else
-        for i = 1, 64, 1 do
-            local buffTexture, buffNumStacks = UnitBuff(unit, i);
-            if (buffTexture and buffTexture == spell.spellTexture) then
-                local buff = {
-                    buffIndex = i,
-                    buffTexture = buffTexture,
-                    buffNumStacks = buffNumStacks,
-                };
-                return buff;
-            end
-        end
-        for i = 1, 64, 1 do
-            local buffTexture, buffNumStacks = UnitDebuff(unit, i);
-            if (buffTexture and buffTexture == spell.spellTexture) then
-                local buff = {
-                    debuffIndex = i,
-                    buffTexture = buffTexture,
-                    buffNumStacks = buffNumStacks,
-                };
-                return buff;
-            end
+A.getPlayerActiveStance = function()
+    local n = GetNumShapeshiftForms(); -- NUM_SHAPESHIFT_SLOTS
+    for i = 1, n, 1 do
+        local texture, name, isActive, isCastable = GetShapeshiftFormInfo(i);
+        if (isActive) then
+            return {
+                type = "stance",
+                stanceIndex = i,
+                stanceName = name,
+                stanceTexture = texture,
+            };
         end
     end
 end;
@@ -173,6 +142,7 @@ A.getUnitBuff = function(unit, spell)
                 type = "buff",
                 buffIndex = i,
                 buffTexture = buffTexture,
+                buffNumStacks = buffNumStacks,
             };
         end
     end
@@ -227,9 +197,9 @@ A.buffed = function(spell, unit)
 end;
 
 A.debuffed = function(spell, unit)
-    return A.getUnitDebuff(spell, unit);
+    return A.getUnitDebuff(unit, spell);
 end;
 
-A.cast = function(spell)
-    CastSpellByName(spell.spellNameWithRank);
+A.cast = function(spell, spellTargetUnit)
+    CastSpellByName(spell.spellNameWithRank, spellTargetUnit == "player");
 end;

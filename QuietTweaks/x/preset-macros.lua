@@ -179,14 +179,6 @@ local macros = {
 /cast Holy Shock
 ]],
         },
-        {
-            name = ">emp",
-            iconIndex = 448,
-            content = [[
-#showtooltip Judgement
-/run if (UnitIsFriend("player", "target")) then palBless() elseif (not A.inCombat()) then palBless(); palSeal(); startAttacking() else palSeal(); startAttacking() end
-]],
-        },
     }
 };
 

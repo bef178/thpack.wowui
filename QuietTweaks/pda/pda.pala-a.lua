@@ -1,591 +1,497 @@
-local CastSpellByName = CastSpellByName;
-
 local A = A;
-local getPlayerSpell = A.getPlayerSpell;
-local getPlayerSpellCooldownTime = A.getPlayerSpellCooldownTime;
-local getUnitBuff = A.getUnitBuff;
 local pda = pda;
 
-local targetsAliveEnemy = function()
-    return UnitExists("target") and not UnitIsDead("target") and UnitIsEnemy("player", "target");
-end;
+local function canAssist(unit)
+    return UnitCanAssist("player", unit);
+end
 
-local getTargetHealthProportion = function()
-    if (not UnitExists("target")) then
+local function canAttack(unit)
+    if (not unit) then
+        unit = "target";
+    end
+    if (not UnitExists(unit)) then
         return;
     end
-    return UnitHealth("target") / UnitHealthMax("target");
-end;
+    return UnitCanAttack("player", unit);
+end
 
-local hasActiveShapeshiftForm = function()
-    local n = GetNumShapeshiftForms(); -- NUM_SHAPESHIFT_SLOTS
-    for i = 1, n, 1 do
-        local texture, name, isActive, isCastable = GetShapeshiftFormInfo(i);
-        if (isActive) then
-            return true;
-        end
+(function()
+    local _, class = UnitClass("player");
+    if (class ~= "PALADIN") then
+        return;
     end
-    return false;
-end;
 
-local build = pda:newBuild();
-build.name = "pala-a";
-build.description = "prot pala solo aoe, for turtle wow";
-build.slotModels = {};
-build.creators = {};
+    local function palRecommendAura(favAura)
+        local protAura = A.getPlayerSpell("Devotion Aura");
+        local retAura = A.getPlayerSpell("Retribution Aura");
 
-function build:createSlotModels()
-    Array.clear(build.slotModels);
-    for _, fn in ipairs(build.creators) do
-        if (fn) then
-            local a = fn();
-            if (a) then
-                for _, slotModel in ipairs(a) do
-                    Array.add(build.slotModels, slotModel);
-                end
+        if (not protAura and not retAura) then
+            return;
+        end
+
+        local stance = A.getPlayerActiveStance();
+        if (not stance) then
+            if (favAura == "retribution" or favAura == "ret" or favAura == "r") then
+                favAura = retAura;
+            elseif (type(favAura) == "string") then
+                favAura = A.getPlayerSpell(favAura);
+            end
+            local auraSpell = favAura or protAura;
+            if (auraSpell) then
+                return {
+                    spell = auraSpell,
+                    spellTargetUnit = "player",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(auraSpell),
+                };
             end
         end
     end
-    return build.slotModels;
-end
 
-function build:updateSlotModels()
-    for _, slotModel in ipairs(build.slotModels) do
-        if (slotModel.onElapsed) then
-            slotModel.onElapsed();
-        end
-    end
-end
+    -- XXX how to get buff source
+    local function palRecommendBless(favBless)
+        local migBless = A.getPlayerSpell("Blessing of Might");
+        local wisBless = A.getPlayerSpell("Blessing of Wisdom");
+        local ligBless = A.getPlayerSpell("Blessing of Light");
+        local salBless = A.getPlayerSpell("Blessing of Salvation");
+        local sanBless = A.getPlayerSpell("Blessing of Sanctuary");
+        local kinBless = A.getPlayerSpell("Blessing of Kings");
 
--- 惩罚光环/庇护祝福/神圣之盾
--- 这三者是最主要的反伤手段，合一为第一顺位
--- 另，A怪时惩罚光环优于圣洁光环
-Array.add(build.creators, function()
-    local spellRetributionAura = getPlayerSpell("Retribution Aura");
-    local spellBlessingOfSanctuary = getPlayerSpell("Blessing of Sanctuary");
-    local spellHolyShield = getPlayerSpell("Holy Shield");
-    if (not spellRetributionAura and not spellBlessingOfSanctuary and not spellHolyShield) then
-        return;
-    end
+        local playerInCombat = A.inCombat();
+        local targetAttackable = canAttack("target");
 
-    local model = pda:newSlotModel();
-    model.targetingPlayer = true;
-    model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, 1);
-    end;
+        if (not UnitExists("target") or UnitIsUnit("target", "player") or targetAttackable) then
+            -- targets myself
 
-    local function onElapsedWithRetributionAura(model, elapsed)
-        if (not spellRetributionAura) then
-            model.visible = false;
-            return;
-        end
+            if (favBless == "sanctuary" or favBless == "san" or favBless == "s") then
+                favBless = sanBless;
+            elseif (type(favBless) == "string") then
+                favBless = A.getPlayerSpell(favBless);
+            end
+            local blessSpell = favBless or migBless;
 
-        local spell = spellRetributionAura;
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
+            local buff = A.buffed(blessSpell);
 
-        if (hasActiveShapeshiftForm()) then
-            model.visible = false;
-            return;
-        end
-
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-
-        model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
-        model.highlighted = (inCombat or onTarget) and (timeToCooldown < 0.1);
-        return true;
-    end
-
-    local function onElapsedWithBlessingOfSanctuary(model, elapsed)
-        if (not spellBlessingOfSanctuary) then
-            model.visible = false;
-            return;
-        end
-
-        local spell = spellBlessingOfSanctuary;
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
-
-        local buff = getUnitBuff("player", spell);
-        if (buff and ((buff.buffTimeToLive or 0) > 10)) then
-            -- safe active
-            model.visible = false;
-            return;
-        end
-
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-
-        model.affectingSpellTarget = not (not buff);
-        model.timeToCooldown = timeToCooldown;
-        model.ready = (timeToCooldown == 0);
-        model.highlighted = (inCombat or onTarget) and (timeToCooldown < 0.1);
-        return true;
-    end
-
-    local function onElapsedWithHolyShield(model, elapsed)
-        if (not spellHolyShield) then
-            model.visible = false;
-            return;
-        end
-
-        local spell = spellHolyShield;
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
-
-        -- TODO check equipped shield
-
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-        if (timeToCooldown > 1.5) then
-            model.visible = false;
-            return;
-        end
-
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        local buff = getUnitBuff("player", spell);
-
-        model.affectingSpellTarget = not (not buff);
-        model.timeToCooldown = timeToCooldown;
-        model.ready = model.timeToCooldown == 0;
-        model.highlighted = (inCombat or onTarget) and (timeToCooldown < 0.1);
-        return true;
-    end
-
-    model.onElapsed = function(elapsed)
-        return onElapsedWithRetributionAura(model, elapsed)
-            or onElapsedWithBlessingOfSanctuary(model, elapsed)
-            or onElapsedWithHolyShield(model, elapsed);
-    end;
-
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
-
--- 奉献
--- 最主要的伤害手段，为第二顺位
-Array.add(build.creators, function()
-    local spell = getPlayerSpell("Consecration");
-    if (not spell) then
-        return;
-    end
-
-    local model = pda:newSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
-    model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank);
-    end;
-    model.onElapsed = function(elapsed)
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-        if (timeToCooldown > 1.5) then
-            model.visible = false;
-            return;
-        end
-
-        local inCombat = UnitAffectingCombat("player");
-        if (not inCombat) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
-        model.highlighted = inCombat and (timeToCooldown < 0.1);
-    end;
-
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
-
--- 光明圣印/智慧圣印/审判
--- 最主要的战时回复手段，为第三顺位
-Array.add(build.creators, function()
-    local function updateModelWithSeal(model, spell)
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
-        model.targetingPlayer = true;
-        model.timeToLive = nil;
-        model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
-        model.highlighted = false;
-    end
-
-    local function updateModelWithJudgement(model, spell, buff)
-        if (not buff) then
-            model.visible = false;
-            return;
-        end
-
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-        if (timeToCooldown > 1.5) then
-            model.visible = false;
-            return;
-        end
-
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        -- TODO also show the seal icon
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
-        model.targetingPlayer = false;
-        model.timeToLive = buff.buffTimeToLive;
-        model.timeToCooldown = timeToCooldown;
-        model.ready = onTarget and (timeToCooldown == 0);
-        model.highlighted = false;
-    end
-
-    local spellJudgement = getPlayerSpell("Judgement");
-    if (not spellJudgement) then
-        return;
-    end
-
-    local spellSealOfLight = getPlayerSpell("Seal of Light"); -- lv 30
-    local spellSealOfWisdom = getPlayerSpell("Seal of Wisdom"); -- lv 38
-    if (spellSealOfLight and spellSealOfWisdom) then
-        -- dual recovery strategy
-        local sealOfLightModel = (function()
-            local spell = spellSealOfLight;
-
-            local model = pda:newSlotModel();
-            model.spell = spell;
-            model.contentTexture = spell.spellTexture;
-            model.onClick = function(f, button)
-                CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
-            end;
-            model.onElapsed = function(elapsed)
-                local buff = getUnitBuff("player", spell);
-                local targetDebuff = getUnitBuff("target", spell);
-                local sowBuff = getUnitBuff("player", spellSealOfWisdom);
-                local targetSowDebuff = getUnitBuff("target", spellSealOfWisdom);
-
-                if (targetDebuff) then
-                    if (buff) then
-                        if (buff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = true;
-                            -- TODO check health proportion and mana proportion then make recommendation
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    elseif (sowBuff) then
-                        if (sowBuff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = false;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
+            if (playerInCombat) then
+                if (not buff or buff.buffTimeToLive < 5) then
+                    if (blessSpell) then
+                        return {
+                            spell = blessSpell,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                        };
                     end
-                elseif (targetSowDebuff) then
-                    if (buff) then
-                        if (buff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = true;
-                            model.highlighted = true;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    elseif (sowBuff) then
-                        if (sowBuff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = false;
-                            model.highlighted = true;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                        model.highlighted = true;
-                    end
-                else
-                    if (buff) then
-                        updateModelWithJudgement(model, spellJudgement, buff);
-                        model.affectingSpellTarget = false;
-                        model.highlighted = true;
-                    elseif (sowBuff) then
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                    end
-                end
-            end;
-
-            return model;
-        end)();
-
-        local sealOfWisdomModel = (function()
-            local spell = spellSealOfWisdom;
-
-            local model = pda:newSlotModel();
-            model.spell = spell;
-            model.contentTexture = spell.spellTexture;
-            model.onClick = function(f, button)
-                CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
-            end;
-            model.onElapsed = function(elapsed)
-                local buff = getUnitBuff("player", spell);
-                local targetDebuff = getUnitBuff("target", spell);
-                local solBuff = getUnitBuff("player", spellSealOfLight);
-                local targetSolDebuff = getUnitBuff("target", spellSealOfLight);
-
-                if (targetDebuff) then
-                    if (buff) then
-                        if (buff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = true;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    elseif (solBuff) then
-                        if (solBuff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = false;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                    end
-                elseif (targetSolDebuff) then
-                    if (buff) then
-                        if (buff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = true;
-                            model.highlighted = true;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    elseif (solBuff) then
-                        if (solBuff.buffTimeToLive < 5) then
-                            updateModelWithSeal(model, spell);
-                            model.affectingSpellTarget = false;
-                            model.highlighted = true;
-                        else
-                            model.visible = false;
-                            return;
-                        end
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                        model.highlighted = true;
-                    end
-                else
-                    if (buff) then
-                        updateModelWithJudgement(model, spellJudgement, buff);
-                        model.affectingSpellTarget = false;
-                        model.highlighted = true;
-                    elseif (solBuff) then
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                    else
-                        updateModelWithSeal(model, spell);
-                        model.affectingSpellTarget = false;
-                        model.highlighted = true;
-                    end
-                end
-            end;
-
-            return model;
-        end)();
-
-        local a = {};
-        Array.add(a, sealOfLightModel);
-        Array.add(a, sealOfWisdomModel);
-        return a;
-    elseif (spellSealOfLight or spellSealOfWisdom) then
-        -- health or mana recovery strategy
-        local spell = spellSealOfLight or spellSealOfWisdom;
-
-        local model = pda:newSlotModel();
-        model.spell = spell;
-        model.contentTexture = spell.spellTexture;
-        model.onClick = function(f, button)
-            CastSpellByName(model.spell.spellNameWithRank, model.targetingPlayer);
-        end;
-        model.onElapsed = function(elapsed)
-            local buff = getUnitBuff("player", spell);
-            local targetDebuff = getUnitBuff("target", spell);
-
-            if (not buff) then
-                updateModelWithSeal(model, spell);
-                model.affectingSpellTarget = false;
-                model.highlighted = true;
-            elseif (targetDebuff) then
-                if (buff.buffTimeToLive < 5) then
-                    updateModelWithSeal(model, spell);
-                    model.affectingSpellTarget = true;
-                    model.highlighted = true;
-                else
-                    model.visible = false;
-                    return;
                 end
             else
-                updateModelWithJudgement(model, spellJudgement, buff);
-                model.affectingSpellTarget = false;
-                model.highlighted = true;
+                if (not buff or buff.buffTimeToLive < 30) then
+                    if (blessSpell) then
+                        return {
+                            spell = blessSpell,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                        };
+                    end
+                end
             end
-        end;
-
-        local a = {};
-        Array.add(a, model);
-        return a;
-    end
-end);
-
--- 十字军打击 + 神圣打击
--- 十字军打击作为填充技能，毛回蓝
--- 神圣打击将物理转化神圣法术伤害，无公共CD，不与其它技能共CD
--- 都用1级，省蓝
--- turtle wow
-Array.add(build.creators, function()
-    local spell = getPlayerSpell("Crusader Strike(Rank 1)");
-    if (not spell) then
-        return;
-    end
-
-    local spellHolyStrike = getPlayerSpell("Holy Strike(Rank 1)");
-
-    local model = pda:newSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
-    model.onClick = function(f, button)
-        if (spellHolyStrike) then
-            local timeToCooldown = getPlayerSpellCooldownTime(spellHolyStrike);
-            if (timeToCooldown == 0) then
-                CastSpellByName(spellHolyStrike.spellNameWithRank);
+        elseif (canAssist("target") and not UnitIsUnit("player", "target")) then
+            -- targets other friendly
+            local blessSpell = nil;
+            do
+                local a;
+                if (UnitIsPlayer("target")) then
+                    local _, c = UnitClass("target");
+                    if (c == "WARRIOR" or c == "ROGUE") then
+                        a = { kinBless, migBless, sanBless };
+                    elseif (c == "MAGE" or c == "PRIEST" or c == "WARLOCK") then
+                        a = { kinBless, wisBless, sanBless };
+                    else
+                        a = { kinBless, wisBless, migBless, sanBless };
+                    end
+                elseif (UnitPlayerControlled("target")) then
+                    local t = UnitCreatureType("target");
+                    if (t == "Beast") then
+                        a = { kinBless, migBless, sanBless };
+                    end
+                else
+                    local targetPowerType = UnitPowerType("target");
+                    if (targetPowerType and targetPowerType == 0) then
+                        a = { kinBless, wisBless, sanBless };
+                    else
+                        a = { kinBless, migBless, sanBless };
+                    end
+                end
+                if (a) then
+                    for _, v in pairs(a) do
+                        if (v and not A.buffed(v, "target")) then
+                            blessSpell = v;
+                            break;
+                        end
+                    end
+                end
+            end
+            if (blessSpell) then
+                return {
+                    spell = blessSpell,
+                    spellTargetUnit = "target",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                };
             end
         end
-        CastSpellByName(model.spell.spellNameWithRank);
-    end;
-    model.onElapsed = function(elapsed)
-        local inCombat = UnitAffectingCombat("player");
-        local onTarget = targetsAliveEnemy();
-        if (not inCombat and not onTarget) then
-            model.visible = false;
+    end
+
+    -- TODO check equipped shield
+    local function palRecommendHolyShield()
+        local spell = A.getPlayerSpell("Holy Shield");
+
+        if (not spell) then
             return;
+        end
+
+        local _, _, proportion = A.getUnitHp("player");
+        if (proportion < 0.85) then
+            if (A.inCombat() or canAttack("target")) then
+                -- should check both buff time and cooldown time
+                -- due to buff time is always less than or equal to cooldown time
+                -- so, it is OK to ignore buff time
+                if (spell) then
+                    return {
+                        spell = spell,
+                        spellTargetUnit = "player",
+                        timeToCooldown = A.getPlayerSpellCooldownTime(spell),
+                    };
+                end
+            end
+        end
+    end
+
+    local function palRecommendRigSeal()
+        local rigSeal = A.getPlayerSpell("Seal of Righteousness");
+        local cruSeal = A.getPlayerSpell("Seal of Crusader");
+        local wisSeal = A.getPlayerSpell("Seal of Wisdom");
+        local ligSeal = A.getPlayerSpell("Seal of Light");
+        local jusSeal = A.getPlayerSpell("Seal of Justice");
+        local comSeal = A.getPlayerSpell("Seal of Command");
+        local jud = A.getPlayerSpell("Judgement");
+        local holyStrike = A.getPlayerSpell("Holy Strike");
+
+        if (not rigSeal) then
+            return;
+        end
+
+        local which = nil;
+        do
+            for i, v in ipairs({ rigSeal, cruSeal, wisSeal, ligSeal, jusSeal, comSeal }) do
+                if (A.buffed(v)) then
+                    which = i;
+                    break;
+                end
+            end
+        end
+
+        if (which == nil) then
+            if (rigSeal) then
+                return {
+                    spell = rigSeal,
+                    spellTargetUnit = "player",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(rigSeal),
+                };
+            end
+        elseif (which == 1) then
+            -- in close combat [Holy Strike] is piror to [Judgement]
+            if (holyStrike) then
+                return {
+                    spell = holyStrike,
+                    spellTargetUnit = "target",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
+                };
+            end
+            -- if [Seal of Righteousness] is not ready, don't recommend [Judgement]; or may miss the incidental holy damage
+            if (jud) then
+                return {
+                    spell = jud,
+                    spellTargetUnit = "target",
+                    timeToCooldown = Math.max(A.getPlayerSpellCooldownTime(jud), A.getPlayerSpellCooldownTime(rigSeal)),
+                };
+            end
+        end
+    end
+
+    local function palRecommendWisSeal()
+        local rigSeal = A.getPlayerSpell("Seal of Righteousness");
+        local cruSeal = A.getPlayerSpell("Seal of Crusader");
+        local wisSeal = A.getPlayerSpell("Seal of Wisdom");
+        local ligSeal = A.getPlayerSpell("Seal of Light");
+        local jusSeal = A.getPlayerSpell("Seal of Justice");
+        local comSeal = A.getPlayerSpell("Seal of Command");
+        local jud = A.getPlayerSpell("Judgement");
+        local holyStrike = A.getPlayerSpell("Holy Strike");
+
+        if (not wisSeal or not ligSeal) then
+            return;
+        end
+
+        local playerInCombat = A.inCombat();
+        local targetAttackable = canAttack("target");
+
+        local wisBuff = A.buffed(wisSeal);
+        local ligBuff = A.buffed(ligSeal);
+        local wisTargetDebuff = A.debuffed(wisSeal, "target");
+        local ligTargetDebuff = A.debuffed(ligSeal, "target");
+
+        local otherSealBuff;
+        do
+            for i, v in ipairs({ rigSeal, cruSeal, jusSeal, comSeal }) do
+                if (A.buffed(v)) then
+                    otherSealBuff = i;
+                    break;
+                end
+            end
+        end
+
+        if (otherSealBuff or ligTargetDebuff and wisTargetDebuff) then
+            return palRecommendRigSeal();
+        elseif (ligTargetDebuff) then
+            if (ligBuff) then
+                if (ligBuff.buffTimeToLive < 2) then
+                    -- TODO check health proportion and mana proportion then make recommendation
+                    if (wisSeal) then
+                        return {
+                            spell = wisSeal,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                        };
+                    end
+                else
+                end
+            elseif (wisBuff) then
+                if (wisBuff.buffTimeToLive < 2) then
+                    if (wisSeal) then
+                        return {
+                            spell = wisSeal,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                        };
+                    end
+                else
+                end
+            else
+                if (wisSeal) then
+                    return {
+                        spell = wisSeal,
+                        spellTargetUnit = "player",
+                        timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                    };
+                end
+            end
+        elseif (wisTargetDebuff) then
+            if (ligBuff) then
+                if (ligBuff.buffTimeToLive < 2) then
+                    if (ligSeal) then
+                        return {
+                            spell = ligSeal,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                        };
+                    end
+                else
+                end
+            elseif (wisBuff) then
+                if (wisBuff.buffTimeToLive < 2) then
+                    if (ligSeal) then
+                        return {
+                            spell = ligSeal,
+                            spellTargetUnit = "player",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                        };
+                    end
+                else
+                end
+            else
+                if (ligSeal) then
+                    return {
+                        spell = ligSeal,
+                        spellTargetUnit = "player",
+                        timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                    };
+                end
+            end
         else
-            model.visible = true;
+            if (ligBuff) then
+                if (jud) then
+                    if (playerInCombat or targetAttackable) then
+                        return {
+                            spell = jud,
+                            spellTargetUnit = "target",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(jud),
+                        };
+                    end
+                end
+            elseif (wisBuff) then
+                if (jud) then
+                    if (playerInCombat or targetAttackable) then
+                        return {
+                            spell = jud,
+                            spellTargetUnit = "target",
+                            timeToCooldown = A.getPlayerSpellCooldownTime(jud),
+                        };
+                    end
+                end
+            else
+                if (wisSeal) then
+                    return {
+                        spell = wisSeal,
+                        spellTargetUnit = "player",
+                        timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                    };
+                end
+            end
         end
 
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-        local holyStrikeTimeToCooldown = spellHolyStrike and getPlayerSpellCooldownTime(spellHolyStrike) or 86400;
-        -- TODO check holy strike casting
-
-        model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
-        model.highlighted = onTarget and (holyStrikeTimeToCooldown < 0.1);
-    end;
-
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
-
--- 飞锤
-Array.add(build.creators, function()
-    local spell = getPlayerSpell("Hammer of Wrath");
-    if (not spell) then
-        return;
+        if (holyStrike) then
+            if (playerInCombat or targetAttackable) then
+                return {
+                    spell = holyStrike,
+                    spellTargetUnit = "target",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
+                };
+            end
+        end
     end
 
-    local model = pda:newSlotModel();
-    model.spell = spell;
-    model.contentTexture = spell.spellTexture;
-    model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank);
+    local function palRecommendConsecration()
+        local spell = A.getPlayerSpell("Consecration");
+
+        if (not spell) then
+            return;
+        end
+
+        if (A.inCombat()) then
+            if (spell) then
+                return {
+                    spell = spell,
+                    spellTargetUnit = "player",
+                    timeToCooldown = A.getPlayerSpellCooldownTime(spell),
+                };
+            end
+        end
+    end
+
+    local function selectBestRecommendation(a)
+        local best;
+        do
+            for _, v in ipairs(a) do
+                local recommended = v[1](v[2]);
+                if (recommended) then
+                    if (not best) then
+                        best = recommended;
+                        if (best.timeToCooldown == 0) then
+                            break;
+                        end
+                    else
+                        if (best.timeToCooldown > recommended.timeToCooldown) then
+                            best = recommended;
+                            if (best.timeToCooldown == 0) then
+                                break;
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        if (best) then
+            return best;
+        end
     end;
-    model.onElapsed = function(elapsed)
-        local timeToCooldown = getPlayerSpellCooldownTime(spell);
-        if (timeToCooldown > 1.5) then
-            model.visible = false;
-            return;
+
+    local function palRecommendHammer()
+        return selectBestRecommendation({
+            { palRecommendAura, "retribution" },
+            { palRecommendBless, },
+            { palRecommendRigSeal, },
+        });
+    end
+
+    local function palRecommendRetaliate()
+        return selectBestRecommendation({
+            { palRecommendAura, "retribution" },
+            { palRecommendBless, "sanctuary" },
+            { palRecommendHolyShield, },
+            { palRecommendWisSeal, },
+        });
+    end
+
+    _G.palComboCast = function(t)
+        local a;
+        if (t == "retaliation" or t == "r") then
+            a = palRecommendRetaliate();
+        elseif (t == "hammer" or t == "h") then
+            a = palRecommendHammer();
         end
-
-        local onTarget = targetsAliveEnemy();
-        if (not onTarget) then
-            model.visible = false;
-            return;
+        if (a and a.timeToCooldown == 0) then
+            A.cast(a.spell, a.spellTargetUnit);
         end
-
-        local acceptableTargetHealth = (getTargetHealthProportion() or 1) < 0.215;
-        if (not acceptableTargetHealth) then
-            model.visible = false;
-            return;
-        end
-
-        model.visible = true;
-
-        local inCombat = UnitAffectingCombat("player");
-
-        model.timeToCooldown = timeToCooldown;
-        model.ready = timeToCooldown == 0;
-        model.highlighted = inCombat and (timeToCooldown < 0.1);
     end;
 
-    local a = {};
-    Array.add(a, model);
-    return a;
-end);
+    -- prot pal aoe
+    -- 输出有二。其一为「一键」，其二为奉献
+    -- 「一键」只讲光明圣印、智慧圣印、审判及神圣打击；飞锤、驱邪等需随机应变
+    -- 空，表示无须关注。如长CD，无施法材料(含buff、连击点)，或机制不满足(如压制、斩杀)
+    -- 暗，表示施放条件不具备，但可能即将具备
+    -- 亮，表示可以施放
+    -- 高亮，表示应立即施放
 
-pda:register(build);
+    local build = pda:newBuild();
+    build.name = "pal-a";
+    build.description = "prot pal solo aoe, for turtle wow";
+    build.slotModels = {};
+
+    function build:createSlotModels()
+        Array.clear(build.slotModels);
+
+        for i = 1, 2 do
+            local model = pda:newSlotModel();
+            model.onClick = function(f, button)
+                if (model.timeToCooldown == 0) then
+                    A.cast(model.spell, model.spellTargetUnit);
+                end
+            end;
+            Array.add(build.slotModels, model);
+        end
+
+        self:updateSlotModels();
+
+        return build.slotModels;
+    end
+
+    function build:updateSlotModels()
+        if (self.slotModels[1]) then
+            self:_updateSlotModel(self.slotModels[1], palRecommendRetaliate());
+        end
+        if (self.slotModels[2]) then
+            self:_updateSlotModel(self.slotModels[2], palRecommendConsecration());
+        end
+    end
+
+    function build:_updateSlotModel(model, recommended)
+        if (not model) then
+            return;
+        end
+        if (not recommended) then
+            model.visible = false;
+            return;
+        end
+
+        model.visible = recommended.timeToCooldown < 2;
+        if (not model.visible) then
+            return;
+        end
+
+        model.spell = recommended.spell;
+        model.contentTexture = recommended.spell.spellTexture;
+        model.spellTargetUnit = recommended.spellTargetUnit;
+        model.timeToCooldown = recommended.timeToCooldown;
+        model.ready = recommended.timeToCooldown == 0;
+        model.highlighted = recommended.timeToCooldown < 0.1;
+    end
+
+    pda:register(build);
+end)();

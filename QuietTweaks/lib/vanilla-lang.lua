@@ -187,6 +187,10 @@ end;
 
 Math = Math or {};
 
+Math.max = function(a, b)
+    return a >= b and a or b;
+end;
+
 Math.min = function(a, b)
     return a <= b and a or b;
 end;
