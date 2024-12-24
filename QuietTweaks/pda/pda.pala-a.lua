@@ -223,7 +223,6 @@ end
         local jusSeal = A.getPlayerSpell("Seal of Justice");
         local comSeal = A.getPlayerSpell("Seal of Command");
         local jud = A.getPlayerSpell("Judgement");
-        local holyStrike = A.getPlayerSpell("Holy Strike");
 
         if (not wisSeal or not ligSeal) then
             return;
@@ -345,13 +344,24 @@ end
                 end
             end
         end
+    end
 
-        if (holyStrike) then
-            if (playerInCombat or targetAttackable) then
+    local function palRecommendStrike(favStrike)
+        local holyStrike = A.getPlayerSpell("Holy Strike");
+
+        if (favStrike == "holy" or favStrike == "h") then
+            favStrike = holyStrike;
+        elseif (type(favStrike) == "string") then
+            favStrike = A.getPlayerSpell(favStrike);
+        end
+        local strike = favStrike or holyStrike;
+
+        if (strike) then
+            if (A.inCombat() or canAttack("target")) then
                 return {
-                    spell = holyStrike,
+                    spell = strike,
                     spellTargetUnit = "target",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
+                    timeToCooldown = A.getPlayerSpellCooldownTime(strike),
                 };
             end
         end
@@ -414,8 +424,9 @@ end
         return selectBestRecommendation({
             { palRecommendAura, "retribution" },
             { palRecommendBless, "sanctuary" },
-            { palRecommendHolyShield, },
             { palRecommendWisSeal, },
+            { palRecommendHolyShield, },
+            { palRecommendStrike, },
         });
     end
 
