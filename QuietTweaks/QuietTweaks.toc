@@ -6,12 +6,12 @@
 bindings.lua
 bindings.xml
 
+lib\lang.lua
 lib\Color.lua
-lib\vanilla-lang.lua
-lib\vanilla.A.lua
-lib\vanilla.A.item.lua
-lib\vanilla.A.unit.lua
-lib\vanilla.A.SlotMan.lua
+lib\A.lua
+lib\A.item.lua
+lib\A.unit.lua
+lib\A.SlotMan.lua
 lib\db-map.lua
 lib\db-npc-flightmaster.lua
 lib\db-turtlewow.lua
@@ -22,26 +22,28 @@ auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
 blue-shaman.lua
-chat-scroll.lua
-chat-switch-type.lua
+buff-poison-charges.lua
+buff-timer.lua
 exp-speed.lua
-format-buff-time.lua
-minimap-clock.lua
-minimap-zoom.lua
 model-cloak.lua
 model-rotate.lua
 open-all-bags.lua
 pick-action.lua
 show-item-quality.lua
 show-num-available-bag-slots.lua
-show-num-poison-charges.lua
 show-num-reagents.lua
 tooltip-healthbar.lua
 
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 
+chat\chat-layout.lua
+chat\chat-scroll.lua
+chat\chat-switch-channel.lua
+
 map\flight-stops.lua
+map\minimap-clock.lua
+map\minimap-zoom.lua
 map\worldmap-player-coordinates.lua
 map\worldmap-windowed.lua
 
@@ -51,6 +53,6 @@ pda\pda.pala-a.lua
 unitframe\target-class-icon.lua
 unitframe\target-class-texture.lua
 
-x\preset-key-bindings.lua
+x\preset-keys.lua
 x\preset-macros.lua
 x\preset-settings.lua
