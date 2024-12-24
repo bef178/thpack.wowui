@@ -41,7 +41,7 @@ end
                 return {
                     spell = auraSpell,
                     spellTargetUnit = "player",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(auraSpell),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(auraSpell),
                 };
             end
         end
@@ -77,7 +77,7 @@ end
                         return {
                             spell = blessSpell,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
                         };
                     end
                 end
@@ -87,7 +87,7 @@ end
                         return {
                             spell = blessSpell,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
                         };
                     end
                 end
@@ -132,7 +132,7 @@ end
                 return {
                     spell = blessSpell,
                     spellTargetUnit = "target",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(blessSpell),
                 };
             end
         end
@@ -156,7 +156,7 @@ end
                     return {
                         spell = spell,
                         spellTargetUnit = "player",
-                        timeToCooldown = A.getPlayerSpellCooldownTime(spell),
+                        spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell),
                     };
                 end
             end
@@ -192,7 +192,7 @@ end
                 return {
                     spell = rigSeal,
                     spellTargetUnit = "player",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(rigSeal),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(rigSeal),
                 };
             end
         elseif (which == 1) then
@@ -201,7 +201,7 @@ end
                 return {
                     spell = holyStrike,
                     spellTargetUnit = "target",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
                 };
             end
             -- if [Seal of Righteousness] is not ready, don't recommend [Judgement]; or may miss the incidental holy damage
@@ -209,7 +209,7 @@ end
                 return {
                     spell = jud,
                     spellTargetUnit = "target",
-                    timeToCooldown = Math.max(A.getPlayerSpellCooldownTime(jud), A.getPlayerSpellCooldownTime(rigSeal)),
+                    spellTimeToCooldown = Math.max(A.getPlayerSpellCooldownTime(jud), A.getPlayerSpellCooldownTime(rigSeal)),
                 };
             end
         end
@@ -257,7 +257,7 @@ end
                         return {
                             spell = wisSeal,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                         };
                     end
                 else
@@ -268,7 +268,7 @@ end
                         return {
                             spell = wisSeal,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                         };
                     end
                 else
@@ -278,7 +278,7 @@ end
                     return {
                         spell = wisSeal,
                         spellTargetUnit = "player",
-                        timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                        spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                     };
                 end
             end
@@ -289,7 +289,7 @@ end
                         return {
                             spell = ligSeal,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                         };
                     end
                 else
@@ -300,7 +300,7 @@ end
                         return {
                             spell = ligSeal,
                             spellTargetUnit = "player",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                         };
                     end
                 else
@@ -310,7 +310,7 @@ end
                     return {
                         spell = ligSeal,
                         spellTargetUnit = "player",
-                        timeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
+                        spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                     };
                 end
             end
@@ -321,7 +321,7 @@ end
                         return {
                             spell = jud,
                             spellTargetUnit = "target",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(jud),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(jud),
                         };
                     end
                 end
@@ -331,7 +331,7 @@ end
                         return {
                             spell = jud,
                             spellTargetUnit = "target",
-                            timeToCooldown = A.getPlayerSpellCooldownTime(jud),
+                            spellTimeToCooldown = A.getPlayerSpellCooldownTime(jud),
                         };
                     end
                 end
@@ -340,7 +340,7 @@ end
                     return {
                         spell = wisSeal,
                         spellTargetUnit = "player",
-                        timeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
+                        spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                     };
                 end
             end
@@ -351,7 +351,7 @@ end
                 return {
                     spell = holyStrike,
                     spellTargetUnit = "target",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(holyStrike),
                 };
             end
         end
@@ -369,7 +369,7 @@ end
                 return {
                     spell = spell,
                     spellTargetUnit = "player",
-                    timeToCooldown = A.getPlayerSpellCooldownTime(spell),
+                    spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell),
                 };
             end
         end
@@ -383,13 +383,13 @@ end
                 if (recommended) then
                     if (not best) then
                         best = recommended;
-                        if (best.timeToCooldown == 0) then
+                        if (best.spellTimeToCooldown == 0) then
                             break;
                         end
                     else
-                        if (best.timeToCooldown > recommended.timeToCooldown) then
+                        if (best.spellTimeToCooldown > recommended.spellTimeToCooldown) then
                             best = recommended;
-                            if (best.timeToCooldown == 0) then
+                            if (best.spellTimeToCooldown == 0) then
                                 break;
                             end
                         end
@@ -426,7 +426,7 @@ end
         elseif (t == "hammer" or t == "h") then
             a = palRecommendHammer();
         end
-        if (a and a.timeToCooldown == 0) then
+        if (a and a.spellTimeToCooldown == 0) then
             A.cast(a.spell, a.spellTargetUnit);
         end
     end;
@@ -450,7 +450,7 @@ end
         for i = 1, 2 do
             local model = pda:newSlotModel();
             model.onClick = function(f, button)
-                if (model.timeToCooldown == 0) then
+                if (model.spellTimeToCooldown == 0) then
                     A.cast(model.spell, model.spellTargetUnit);
                 end
             end;
@@ -480,17 +480,17 @@ end
             return;
         end
 
-        model.visible = recommended.timeToCooldown < 2;
+        model.visible = recommended.spellTimeToCooldown < 2;
         if (not model.visible) then
             return;
         end
 
         model.spell = recommended.spell;
-        model.contentTexture = recommended.spell.spellTexture;
+        model.spellTexture = recommended.spell.spellTexture;
         model.spellTargetUnit = recommended.spellTargetUnit;
-        model.timeToCooldown = recommended.timeToCooldown;
-        model.ready = recommended.timeToCooldown == 0;
-        model.highlighted = recommended.timeToCooldown < 0.1;
+        model.spellTimeToCooldown = recommended.spellTimeToCooldown;
+        model.spellReadyToCast = recommended.spellTimeToCooldown == 0;
+        model.glowing = recommended.spellTimeToCooldown < 0.1;
     end
 
     pda:register(build);

@@ -37,7 +37,7 @@ function auraSlotMan:buildSlotModel(sealName)
     local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
-    model.contentTexture = spell.spellTexture;
+    model.spellTexture = spell.spellTexture;
     model.onEnter = function(f)
         GameTooltip:SetOwner(f, "ANCHOR_TOPLEFT");
         -- GameTooltip_SetDefaultAnchor(GameTooltip, f);
@@ -52,9 +52,9 @@ function auraSlotMan:buildSlotModel(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
-        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
-        model.ready = (model.timeToCooldown == 0);
+        model.spellTargetUnitAffected = not (not A.getUnitBuff("player", spell));
+        model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
+        model.spellReadyToCast = (model.spellTimeToCooldown == 0);
     end;
 
     return model;

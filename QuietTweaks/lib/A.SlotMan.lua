@@ -27,18 +27,22 @@ A.SlotMan = A.SlotMan or (function()
     -- public
     function SlotMan:newSlotModel()
         local model = {};
+
         model.visible = false;
         model.hovered = false;
         model.pressed = false;
         model.checked = false; -- true iff casting as of action button
-        model.contentTexture = nil;
-        model.ready = false;
-        model.targetingPlayer = false;
-        model.affectingSpellTarget = false;
+        model.glowing = false;
+
         model.numStacks = nil;
-        model.timeToLive = nil;
-        model.timeToCooldown = nil;
-        model.highlighted = false;
+
+        model.spellTexture = nil;
+        model.spellReadyToCast = false;
+        model.spellTimeToLive = nil;
+        model.spellTimeToCooldown = nil;
+        model.spellTargetUnit = nil;
+        model.spellTargetUnitAffected = false;
+
         return model;
     end
 
@@ -124,21 +128,21 @@ A.SlotMan = A.SlotMan or (function()
         hoveredTexture:Hide();
         f.hoveredTexture = hoveredTexture;
 
-        local topLeftSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 4);
-        topLeftSpotTexture:SetTexture(getResource("tile32"));
-        topLeftSpotTexture:SetVertexColor(0.3, 0.85, 0.85);
-        topLeftSpotTexture:SetPoint("TOPLEFT", 4, -4);
-        topLeftSpotTexture:SetWidth(4);
-        topLeftSpotTexture:SetHeight(4);
-        f.topLeftSpotTexture = topLeftSpotTexture;
+        local cyanSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 4);
+        cyanSpotTexture:SetTexture(getResource("tile32"));
+        cyanSpotTexture:SetVertexColor(0.3, 0.85, 0.85);
+        cyanSpotTexture:SetPoint("TOPLEFT", 4, -4);
+        cyanSpotTexture:SetWidth(4);
+        cyanSpotTexture:SetHeight(4);
+        f.cyanSpotTexture = cyanSpotTexture;
 
-        local affectingSpellTargetSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
-        affectingSpellTargetSpotTexture:SetTexture(getResource("tile32"));
-        affectingSpellTargetSpotTexture:SetVertexColor(1, 0.8, 0);
-        affectingSpellTargetSpotTexture:SetPoint("TOPLEFT", 4, 2);
-        affectingSpellTargetSpotTexture:SetWidth(4);
-        affectingSpellTargetSpotTexture:SetHeight(4);
-        f.affectingSpellTargetSpotTexture = affectingSpellTargetSpotTexture;
+        local yellowSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        yellowSpotTexture:SetTexture(getResource("tile32"));
+        yellowSpotTexture:SetVertexColor(1, 0.8, 0);
+        yellowSpotTexture:SetPoint("TOPLEFT", 4, 2);
+        yellowSpotTexture:SetWidth(4);
+        yellowSpotTexture:SetHeight(4);
+        f.yellowSpotTexture = yellowSpotTexture;
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil);
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"));
@@ -235,12 +239,12 @@ A.SlotMan = A.SlotMan or (function()
             f.hoveredTexture:Hide();
         end
 
-        if (model.contentTexture) then
-            f.contentTexture:SetTexture(model.contentTexture);
+        if (model.spellTexture) then
+            f.contentTexture:SetTexture(model.spellTexture);
         end
 
-        -- f.contentTexture:SetDesaturated(not model.ready);
-        if (model.ready) then
+        -- f.contentTexture:SetDesaturated(not model.spellReadyToCast);
+        if (model.spellReadyToCast) then
             f.contentTexture:SetVertexColor(1, 1, 1);
             f.borderTexture:SetVertexColor(1, 1, 1);
         else
@@ -251,28 +255,28 @@ A.SlotMan = A.SlotMan or (function()
         --     f.contentTexture:SetVertexColor(0.5, 0.5, 1.0);
         --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0);
 
-        if (model.targetingPlayer) then
-            f.topLeftSpotTexture:Show();
+        if (model.spellTargetUnit == "player") then
+            f.cyanSpotTexture:Show();
         else
-            f.topLeftSpotTexture:Hide();
+            f.cyanSpotTexture:Hide();
         end
 
-        if (model.affectingSpellTarget) then
-            f.affectingSpellTargetSpotTexture:Show();
+        if (model.spellTargetUnitAffected) then
+            f.yellowSpotTexture:Show();
         else
-            f.affectingSpellTargetSpotTexture:Hide();
+            f.yellowSpotTexture:Hide();
         end
 
-        if (model.numStacks and model.numStacks > 1) then
+        if (model.numStacks and model.numStacks ~= 1) then
             f.numStacksText:SetText(model.numStacks);
         else
             f.numStacksText:SetText(nil);
         end
 
-        f.timeToLiveBar:SetValue(model.timeToLive or 0);
-        f.timeToCooldownBar:SetValue(model.timeToCooldown or 0);
+        f.timeToLiveBar:SetValue(model.spellTimeToLive or 0);
+        f.timeToCooldownBar:SetValue(model.spellTimeToCooldown or 0);
 
-        if (model.highlighted) then
+        if (model.glowing) then
             f.glowFrame:SetBackdropBorderColor(1, 1, 1, 0.8);
             f.glowFrame:Show();
         else
@@ -342,10 +346,10 @@ if (debug) then
     A.slotManTest = slotManTest;
 
     local model = slotManTest:newSlotModel();
-    model.contentTexture = "Interface//Icons//Spell_Holy_Light";
+    model.spellTexture = "Interface//Icons//Spell_Holy_Light";
 
     local model2 = slotManTest:newSlotModel();
-    model2.contentTexture = "Interface//Icons//Spell_Holy_Light";
+    model2.spellTexture = "Interface//Icons//Spell_Holy_Light";
 
     slotManTest:render({ model, model2 });
 end
