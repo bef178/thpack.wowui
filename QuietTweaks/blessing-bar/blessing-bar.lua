@@ -60,7 +60,7 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
         end
 
         model.spell = spell;
-        model.contentTexture = spell.spellTexture;
+        model.spellTexture = spell.spellTexture;
 
         local spellTargetUnit;
         if (IsAltKeyDown()) then
@@ -76,10 +76,10 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
         end
         model.spellTargetUnit = spellTargetUnit;
 
-        model.targetingPlayer = spellTargetUnit == "player";
-        model.affectingSpellTarget = not (not A.getUnitBuff(spellTargetUnit, spell));
-        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
-        model.ready = model.timeToCooldown == 0;
+        model.spellTargetUnit = spellTargetUnit;
+        model.spellTargetUnitAffected = not (not A.getUnitBuff(spellTargetUnit, spell));
+        model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
+        model.spellReadyToCast = model.spellTimeToCooldown == 0;
     end;
 
     return model;
@@ -160,7 +160,7 @@ function sealSlotMan:buildSlotModel(sealName)
     local model = self:newSlotModel();
     model.visible = true;
     model.spell = spell;
-    model.contentTexture = spell.spellTexture;
+    model.spellTexture = spell.spellTexture;
     model.onEnter = function(f)
         GameTooltip:SetOwner(f, "ANCHOR_RIGHT");
         -- GameTooltip_SetDefaultAnchor(GameTooltip, f);
@@ -175,9 +175,9 @@ function sealSlotMan:buildSlotModel(sealName)
     end;
 
     model.onElapsed = function(elapsed)
-        model.affectingSpellTarget = not (not A.getUnitBuff("player", spell));
-        model.timeToCooldown = A.getPlayerSpellCooldownTime(spell);
-        model.ready = (model.timeToCooldown == 0);
+        model.spellTargetUnitAffected = not (not A.getUnitBuff("player", spell));
+        model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
+        model.spellReadyToCast = (model.spellTimeToCooldown == 0);
     end;
 
     return model;
@@ -230,7 +230,7 @@ end
     end);
 end)(
     {
-        -- spells creating buffs to others
+        -- spells granting buffs to others
         { "Blessing of Might", "Greater Blessing of Might" },
         { "Blessing of Wisdom", "Greater Blessing of Wisdom" },
         { "Blessing of Light", "Greater Blessing of Light" },
@@ -239,7 +239,7 @@ end)(
         { "Blessing of Kings", "Greater Blessing of Kings" },
     },
     {
-        -- spells creating short-term buffs to self
+        -- spells granting short-term buffs to self
         "Seal of Righteousness",
         "Seal of the Crusader",
         "Seal of Justice",

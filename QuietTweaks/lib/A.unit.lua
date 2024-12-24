@@ -69,27 +69,27 @@ A.getPlayerSpellCastingState = function(spell)
 
     local startTime, duration, enabled = GetSpellCooldown(spell.spellIndex, spell.spellBookType);
 
-    local timeToCooldown;
+    local spellTimeToCooldown;
     if (enabled) then
-        timeToCooldown = startTime + duration - GetTime();
-        if (timeToCooldown < 0) then
-            timeToCooldown = 0;
+        spellTimeToCooldown = startTime + duration - GetTime();
+        if (spellTimeToCooldown < 0) then
+            spellTimeToCooldown = 0;
         end
     else
-        timeToCooldown = 0;
+        spellTimeToCooldown = 0;
     end
 
     -- TODO queuing, casting, channeling
     -- TODO num charges
     return {
         type = "casting",
-        timeToCooldown = timeToCooldown,
+        spellTimeToCooldown = spellTimeToCooldown,
     };
 end;
 
 A.getPlayerSpellCooldownTime = function(spell)
     local stat = A.getPlayerSpellCastingState(spell);
-    return stat and stat.timeToCooldown or 14 * 24 * 60 * 60;
+    return stat and stat.spellTimeToCooldown or 14 * 24 * 60 * 60;
 end;
 
 A.getPlayerActiveStance = function()
