@@ -40,7 +40,6 @@ end
             if (auraSpell) then
                 return {
                     spell = auraSpell,
-                    spellTargetUnit = "player",
                     spellTimeToCooldown = A.getPlayerSpellCooldownTime(auraSpell),
                 };
             end
@@ -155,7 +154,6 @@ end
                 if (spell) then
                     return {
                         spell = spell,
-                        spellTargetUnit = "player",
                         spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell),
                     };
                 end
@@ -191,7 +189,6 @@ end
             if (rigSeal) then
                 return {
                     spell = rigSeal,
-                    spellTargetUnit = "player",
                     spellTimeToCooldown = A.getPlayerSpellCooldownTime(rigSeal),
                 };
             end
@@ -255,7 +252,6 @@ end
                     if (wisSeal) then
                         return {
                             spell = wisSeal,
-                            spellTargetUnit = "player",
                             spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                         };
                     end
@@ -266,7 +262,6 @@ end
                     if (wisSeal) then
                         return {
                             spell = wisSeal,
-                            spellTargetUnit = "player",
                             spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                         };
                     end
@@ -276,7 +271,6 @@ end
                 if (wisSeal) then
                     return {
                         spell = wisSeal,
-                        spellTargetUnit = "player",
                         spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                     };
                 end
@@ -287,7 +281,6 @@ end
                     if (ligSeal) then
                         return {
                             spell = ligSeal,
-                            spellTargetUnit = "player",
                             spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                         };
                     end
@@ -298,7 +291,6 @@ end
                     if (ligSeal) then
                         return {
                             spell = ligSeal,
-                            spellTargetUnit = "player",
                             spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                         };
                     end
@@ -308,7 +300,6 @@ end
                 if (ligSeal) then
                     return {
                         spell = ligSeal,
-                        spellTargetUnit = "player",
                         spellTimeToCooldown = A.getPlayerSpellCooldownTime(ligSeal),
                     };
                 end
@@ -338,7 +329,6 @@ end
                 if (wisSeal) then
                     return {
                         spell = wisSeal,
-                        spellTargetUnit = "player",
                         spellTimeToCooldown = A.getPlayerSpellCooldownTime(wisSeal),
                     };
                 end
@@ -378,7 +368,6 @@ end
             if (spell) then
                 return {
                     spell = spell,
-                    spellTargetUnit = "player",
                     spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell),
                 };
             end
