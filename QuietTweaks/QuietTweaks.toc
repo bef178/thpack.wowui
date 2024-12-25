@@ -22,26 +22,27 @@ auto-dismount.lua
 auto-repair.lua
 auto-sell.lua
 blue-shaman.lua
-chat-scroll.lua
-chat-switch-type.lua
+buff-poison-charges.lua
+buff-timer.lua
 exp-speed.lua
-format-buff-time.lua
-minimap-clock.lua
-minimap-zoom.lua
 model-cloak.lua
 model-rotate.lua
 open-all-bags.lua
 pick-action.lua
 show-item-quality.lua
 show-num-available-bag-slots.lua
-show-num-poison-charges.lua
 show-num-reagents.lua
 tooltip-healthbar.lua
 
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 
+chat\chat-scroll.lua
+chat\chat-switch-channel.lua
+
 map\flight-stops.lua
+map\minimap-clock.lua
+map\minimap-zoom.lua
 map\worldmap-player-coordinates.lua
 map\worldmap-windowed.lua
 

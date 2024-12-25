@@ -1,4 +1,4 @@
--- tab to switch chat type
+-- tab to switch chat channel
 
 local hookGlobalFunction = A.hookGlobalFunction;
 

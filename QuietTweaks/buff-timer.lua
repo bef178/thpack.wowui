@@ -1,8 +1,7 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-local buildTimeString = A.buildTimeString;
+local A = A;
 
 (function()
-    hookGlobalFunction("BuffFrame_UpdateDuration", "post_hook", function(buffButton, remainingSeconds)
+    A.hookGlobalFunction("BuffFrame_UpdateDuration", "post_hook", function(buffButton, remainingSeconds)
         if (SHOW_BUFF_DURATIONS ~= "1") then
             return;
         end
@@ -11,7 +10,7 @@ local buildTimeString = A.buildTimeString;
             return;
         end
 
-        local timeString = buildTimeString(remainingSeconds);
+        local timeString = A.buildTimeString(remainingSeconds);
         if (not timeString) then
             return;
         end

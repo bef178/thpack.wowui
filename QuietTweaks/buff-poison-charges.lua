@@ -1,7 +1,5 @@
-local hookGlobalFunction = A.hookGlobalFunction;
-
 (function()
-    hookGlobalFunction("BuffFrame_Enchant_OnUpdate", "post_hook", function(...)
+    A.hookGlobalFunction("BuffFrame_Enchant_OnUpdate", "post_hook", function(...)
         local hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantId,
                 hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantId = GetWeaponEnchantInfo();
         if (hasOffHandEnchant) then
