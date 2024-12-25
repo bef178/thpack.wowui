@@ -9,7 +9,7 @@
             end
         end
     </Binding>
-    <Binding name="TOGGLE_WORLD_MAP" runOnUp="true">
+    <Binding name="TOGGLE_WORLD_MAP_FRAME" runOnUp="true">
         if (keystate == "down") then
             if (not UnitAffectingCombat("player")) then
                 ShowUIPanel(WorldMapFrame);
