@@ -1,5 +1,4 @@
 (function()
-    SetCVar("profanityFilter", "0");
     SetCVar("cameraDistanceMax", 50);
 
     local function repositionPlayerFrame()
@@ -10,13 +9,6 @@
     local function repositionTargetFrame()
         TargetFrame:ClearAllPoints();
         TargetFrame:SetPoint("TOPLEFT", UIParent, "CENTER", 40, -120);
-    end
-
-    local function repositionChatFrame1()
-        if (ChatFrame1) then
-            ChatFrame1:SetWidth(400);
-            ChatFrame1:SetHeight(185);
-        end
     end
 
     local function showMultiActionBars()
@@ -39,7 +31,6 @@
             f:Hide();
             repositionPlayerFrame();
             repositionTargetFrame();
-            repositionChatFrame1();
             showMultiActionBars();
         end);
     end)();

@@ -37,6 +37,7 @@ tooltip-healthbar.lua
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
 
+chat\chat-layout.lua
 chat\chat-scroll.lua
 chat\chat-switch-channel.lua
 
