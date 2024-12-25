@@ -6,12 +6,12 @@
 bindings.lua
 bindings.xml
 
+lib\lang.lua
 lib\Color.lua
-lib\vanilla-lang.lua
-lib\vanilla.A.lua
-lib\vanilla.A.item.lua
-lib\vanilla.A.unit.lua
-lib\vanilla.A.SlotMan.lua
+lib\A.lua
+lib\A.item.lua
+lib\A.unit.lua
+lib\A.SlotMan.lua
 lib\db-map.lua
 lib\db-npc-flightmaster.lua
 lib\db-turtlewow.lua
