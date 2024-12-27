@@ -41,7 +41,8 @@ A.SlotMan = A.SlotMan or (function()
         model.spellTimeToLive = nil;
         model.spellTimeToCooldown = nil;
         model.spellTargetUnit = nil;
-        model.spellTargetUnitAffected = false;
+        model.spellTargetBuffed = false;
+        model.spellTargetDebuffed = false;
 
         return model;
     end
@@ -136,13 +137,21 @@ A.SlotMan = A.SlotMan or (function()
         cyanSpotTexture:SetHeight(4);
         f.cyanSpotTexture = cyanSpotTexture;
 
-        local yellowSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
-        yellowSpotTexture:SetTexture(getResource("tile32"));
-        yellowSpotTexture:SetVertexColor(1, 0.8, 0);
-        yellowSpotTexture:SetPoint("TOPLEFT", 4, 2);
-        yellowSpotTexture:SetWidth(4);
-        yellowSpotTexture:SetHeight(4);
-        f.yellowSpotTexture = yellowSpotTexture;
+        local buffedSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        buffedSpotTexture:SetTexture(getResource("tile32"));
+        buffedSpotTexture:SetVertexColor(1, 0.8, 0);
+        buffedSpotTexture:SetPoint("TOPLEFT", 4, 2);
+        buffedSpotTexture:SetWidth(4);
+        buffedSpotTexture:SetHeight(4);
+        f.buffedSpotTexture = buffedSpotTexture;
+
+        local debuffedSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5);
+        debuffedSpotTexture:SetTexture(getResource("tile32"));
+        debuffedSpotTexture:SetVertexColor(0.85, 0.3, 0.3);
+        debuffedSpotTexture:SetPoint("TOPLEFT", 8, 2);
+        debuffedSpotTexture:SetWidth(4);
+        debuffedSpotTexture:SetHeight(4);
+        f.debuffedSpotTexture = debuffedSpotTexture;
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil);
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"));
@@ -261,10 +270,16 @@ A.SlotMan = A.SlotMan or (function()
             f.cyanSpotTexture:Hide();
         end
 
-        if (model.spellTargetUnitAffected) then
-            f.yellowSpotTexture:Show();
+        if (model.spellTargetBuffed) then
+            f.buffedSpotTexture:Show();
         else
-            f.yellowSpotTexture:Hide();
+            f.buffedSpotTexture:Hide();
+        end
+
+        if (model.spellTargetDebuffed) then
+            f.debuffedSpotTexture:Show();
+        else
+            f.debuffedSpotTexture:Hide();
         end
 
         if (model.numStacks and model.numStacks ~= 1) then

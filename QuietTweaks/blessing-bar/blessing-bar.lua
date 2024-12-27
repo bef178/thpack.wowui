@@ -45,7 +45,7 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
         GameTooltip:Hide();
     end;
     model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, model.spellTargetUnit == "player");
+        A.cast(model.spell, model.spellTargetUnit);
     end;
 
     model.onElapsed = function(elapsed)
@@ -77,7 +77,7 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
         model.spellTargetUnit = spellTargetUnit;
 
         model.spellTargetUnit = spellTargetUnit;
-        model.spellTargetUnitAffected = not (not A.getUnitBuff(spellTargetUnit, spell));
+        model.spellTargetBuffed = not (not A.getUnitBuff(spellTargetUnit, spell));
         model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.spellReadyToCast = model.spellTimeToCooldown == 0;
     end;
@@ -171,11 +171,11 @@ function sealSlotMan:buildSlotModel(sealName)
         GameTooltip:Hide();
     end;
     model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, 1);
+        A.cast(model.spell, model.spellTargetUnit);
     end;
 
     model.onElapsed = function(elapsed)
-        model.spellTargetUnitAffected = not (not A.getUnitBuff("player", spell));
+        model.spellTargetBuffed = not (not A.getUnitBuff("player", spell));
         model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.spellReadyToCast = (model.spellTimeToCooldown == 0);
     end;

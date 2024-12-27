@@ -48,13 +48,14 @@ function auraSlotMan:buildSlotModel(sealName)
         GameTooltip:Hide();
     end;
     model.onClick = function(f, button)
-        CastSpellByName(model.spell.spellNameWithRank, 1);
+        A.cast(model.spell, model.spellTargetUnit);
     end;
 
     model.onElapsed = function(elapsed)
-        model.spellTargetUnitAffected = not (not A.getUnitBuff("player", spell));
-        model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
         model.spellReadyToCast = (model.spellTimeToCooldown == 0);
+        model.spellTimeToCooldown = A.getPlayerSpellCooldownTime(spell);
+        model.spellTargetUnit = "player";
+        model.spellTargetBuffed = not (not A.getUnitBuff("player", spell));
     end;
 
     return model;
@@ -100,7 +101,7 @@ function auraSlotMan:start(seals)
 end
 
 auraSlotMan:start({
-    -- spells creating last-until-cancelled buffs
+    -- spells granting last-until-cancelled buffs
     "Righteous Fury",
 });
 
