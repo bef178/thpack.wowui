@@ -374,10 +374,26 @@ end
         end
     end
 
-    local function selectBestRecommendation(a)
-        local best;
-        do
-            for _, v in ipairs(a) do
+    local function palRecommend(strategy)
+        local config;
+        if (strategy == "righteoushammer") then
+            config = {
+                { palRecommendAura, "retribution" },
+                { palRecommendBless, },
+                { palRecommendRigSeal, },
+            };
+        elseif (strategy == "counterattack") then
+            config = {
+                { palRecommendAura, "retribution" },
+                { palRecommendBless, "sanctuary" },
+                { palRecommendWisSeal, },
+                { palRecommendHolyShield, },
+                { palRecommendStrike, },
+            };
+        end
+        if (config) then
+            local best;
+            for _, v in ipairs(config) do
                 local recommended = v[1](v[2]);
                 if (recommended) then
                     if (not best) then
@@ -395,37 +411,17 @@ end
                     end
                 end
             end
+            if (best) then
+                return best;
+            end
         end
-        if (best) then
-            return best;
-        end
-    end;
-
-    local function palRecommendHammer()
-        return selectBestRecommendation({
-            { palRecommendAura, "retribution" },
-            { palRecommendBless, },
-            { palRecommendRigSeal, },
-        });
     end
 
-    local function palRecommendRetaliate()
-        return selectBestRecommendation({
-            { palRecommendAura, "retribution" },
-            { palRecommendBless, "sanctuary" },
-            { palRecommendWisSeal, },
-            { palRecommendHolyShield, },
-            { palRecommendStrike, },
-        });
-    end
-
-    _G.palComboCast = function(t)
-        local a;
-        if (t == "retaliation" or t == "r") then
-            a = palRecommendRetaliate();
-        elseif (t == "hammer" or t == "h") then
-            a = palRecommendHammer();
+    _G.palCastCombo = function(strategy)
+        if (strategy ~= "counterattack") then
+            strategy = "righteoushammer";
         end
+        local a = palRecommend(strategy);
         if (a and a.spellTimeToCooldown == 0) then
             A.cast(a.spell, a.spellTargetUnit);
         end
@@ -464,7 +460,7 @@ end
 
     function build:updateSlotModels()
         if (self.slotModels[1]) then
-            self:_updateSlotModel(self.slotModels[1], palRecommendRetaliate());
+            self:_updateSlotModel(self.slotModels[1], palRecommend("counterattack"));
         end
         if (self.slotModels[2]) then
             self:_updateSlotModel(self.slotModels[2], palRecommendConsecration());
