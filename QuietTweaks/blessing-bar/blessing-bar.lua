@@ -66,10 +66,10 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
         if (IsAltKeyDown()) then
             spellTargetUnit = "player";
         elseif (UnitExists("target")) then
-            if (UnitIsEnemy("player", "target")) then
-                spellTargetUnit = "player";
-            else
+            if (UnitCanAssist("player", "target")) then
                 spellTargetUnit = "target";
+            else
+                spellTargetUnit = "player";
             end
         else
             spellTargetUnit = "player";
