@@ -200,6 +200,26 @@ A.debuffed = function(spell, unit)
     return A.getUnitDebuff(unit, spell);
 end;
 
+A.canAssist = function(unit)
+    if (not unit) then
+        unit = "target";
+    end
+    if (not UnitExists(unit)) then
+        return;
+    end
+    return UnitCanAssist("player", unit);
+end;
+
+A.canAttack = function(unit)
+    if (not unit) then
+        unit = "target";
+    end
+    if (not UnitExists(unit)) then
+        return;
+    end
+    return UnitCanAttack("player", unit);
+end;
+
 A.cast = function(spell, spellTargetUnit)
     CastSpellByName(spell.spellNameWithRank, spellTargetUnit == "player");
 end;

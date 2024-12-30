@@ -1,3 +1,4 @@
+local A = A;
 local getResource = A.getResource;
 
 (function()
@@ -40,7 +41,7 @@ local getResource = A.getResource;
         local button = arg1;
         if (button == "LeftButton") then
             local unit = "target";
-            if (UnitIsPlayer(unit) and not UnitCanAttack("player", unit)) then
+            if (UnitIsPlayer(unit) and not A.canAttack(unit)) then
                 if (InspectFrame and InspectFrame:IsShown()) then
                     InspectFrameCloseButton:Click();
                 else

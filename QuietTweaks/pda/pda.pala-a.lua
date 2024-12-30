@@ -1,20 +1,6 @@
 local A = A;
 local pda = pda;
 
-local function canAssist(unit)
-    return UnitCanAssist("player", unit);
-end
-
-local function canAttack(unit)
-    if (not unit) then
-        unit = "target";
-    end
-    if (not UnitExists(unit)) then
-        return;
-    end
-    return UnitCanAttack("player", unit);
-end
-
 (function()
     local _, class = UnitClass("player");
     if (class ~= "PALADIN") then
@@ -56,7 +42,7 @@ end
         local kinBless = A.getPlayerSpell("Blessing of Kings");
 
         local playerInCombat = A.inCombat();
-        local targetAttackable = canAttack("target");
+        local targetAttackable = A.canAttack("target");
 
         if (not UnitExists("target") or UnitIsUnit("target", "player") or targetAttackable) then
             -- targets myself
@@ -91,7 +77,7 @@ end
                     end
                 end
             end
-        elseif (canAssist("target") and not UnitIsUnit("player", "target")) then
+        elseif (A.canAssist("target") and not UnitIsUnit("player", "target")) then
             -- targets other friendly
             local blessSpell = nil;
             do
@@ -147,7 +133,7 @@ end
 
         local _, _, proportion = A.getUnitHp("player");
         if (proportion < 0.85) then
-            if (A.inCombat() or canAttack("target")) then
+            if (A.inCombat() or A.canAttack("target")) then
                 -- should check both buff time and cooldown time
                 -- due to buff time is always less than or equal to cooldown time
                 -- so, it is OK to ignore buff time
@@ -226,7 +212,7 @@ end
         end
 
         local playerInCombat = A.inCombat();
-        local targetAttackable = canAttack("target");
+        local targetAttackable = A.canAttack("target");
 
         local wisBuff = A.buffed(wisSeal);
         local ligBuff = A.buffed(ligSeal);
@@ -347,7 +333,7 @@ end
         local strike = favStrike or holyStrike;
 
         if (strike) then
-            if (A.inCombat() or canAttack("target")) then
+            if (A.inCombat() or A.canAttack("target")) then
                 return {
                     spell = strike,
                     spellTargetUnit = "target",
