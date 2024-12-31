@@ -27,7 +27,7 @@ _G.Color = (function()
         local r8 = tonumber(String.substring(colorString, 2, 3), 16);
         local g8 = tonumber(String.substring(colorString, 4, 5), 16);
         local b8 = tonumber(String.substring(colorString, 6, 7), 16);
-        return r8 * 0x10000 + g8 * 0x100 + b8;
+        return r8 * 256 * 256 + g8 * 256 + b8;
     end
 
     Color.pick = (function()

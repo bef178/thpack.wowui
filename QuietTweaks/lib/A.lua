@@ -190,6 +190,10 @@ A.buildTimeString = function(seconds)
     end
 end;
 
+A.buildColoredString = function(colorString, s)
+    return string.format("|cff%06x%s|r", Color.toInt24(colorString), s);
+end;
+
 A.getClassColor = function(className)
     if (not className) then
         return;

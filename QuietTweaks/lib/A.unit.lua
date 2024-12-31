@@ -162,6 +162,56 @@ A.getUnitMp = function(unit)
     return mp, maxMp, mp / maxMp;
 end;
 
+-- TargetFrame_CheckFaction()
+-- UnitIsEnemy()
+-- UnitIsFriend()
+-- UnitIsDead()
+-- UnitIsGhost()
+-- UnitReaction()
+-- UnitSelectionColor()
+A.getUnitNameColor = function(unit)
+    if (not UnitPlayerControlled(unit) and UnitIsTapped(unit)) then
+        return Color.pick("darkgray");
+    end
+
+    -- tuned color as text fore color
+    local red = "#cc3333";
+    local green = "#339933";
+    local blue = "#5582fa";
+    local yellow = "#eeee11";
+
+    if (UnitIsPlayer(unit)) then
+        -- horde against alliance
+        if (UnitCanAttack(unit, "player")) then
+            if (UnitCanAttack("player", unit)) then
+                return red;
+            else
+                -- only he can attack! (in enemy-occupied territory)
+                return Color.pick("darkorange");
+            end
+        elseif (UnitCanAttack("player", unit)) then
+            -- i feel safe
+            return yellow;
+        else
+            -- friend
+            if (UnitIsPVP(unit)) then
+                return green;
+            else
+                return blue;
+            end
+        end
+    else
+        -- npc or pet or summonee
+        if (UnitIsEnemy("player", unit)) then
+            return red;
+        elseif (UnitIsFriend("player", unit)) then
+            return green;
+        else
+            return yellow;
+        end
+    end
+end;
+
 ------------------------------------------------------------
 
 A.inCombat = function(unit)
@@ -171,7 +221,7 @@ A.inCombat = function(unit)
     return UnitAffectingCombat(unit);
 end;
 
-A.inCooldown = function (spell)
+A.inCooldown = function(spell)
     return A.getPlayerSpellCooldownTime(spell) >= 0;
 end;
 

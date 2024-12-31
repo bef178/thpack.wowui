@@ -33,6 +33,7 @@ show-item-quality.lua
 show-num-available-bag-slots.lua
 show-num-reagents.lua
 tooltip-healthbar.lua
+tooltip-unit.lua
 
 blessing-bar\aura-bar.lua
 blessing-bar\blessing-bar.lua
