@@ -189,3 +189,21 @@ A.buildTimeString = function(seconds)
         return string.format("%d\'%02d", m, s);
     end
 end;
+
+A.getClassColor = function(className)
+    if (not className) then
+        return;
+    end
+    -- 2.4.3 FrameXML/Fonts.xml
+    -- 7.3.2 SharedXML/Util.lua
+    if (RAID_CLASS_COLORS) then
+        local v = RAID_CLASS_COLORS[String.toUpper(className)];
+        if (v) then
+            if (v.colorStr) then
+                return "#" .. String.substring(v.colorStr, 3, 8);
+            else
+                return Color.fromVertex(v.r, v.g, v.b);
+            end
+        end
+    end
+end;

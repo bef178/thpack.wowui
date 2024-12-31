@@ -1,5 +1,5 @@
 local Color = Color;
-local getClassColor = A.getClassColor;
+local A = A;
 
 (function()
     local f = GameTooltipStatusBar;
@@ -38,7 +38,7 @@ local getClassColor = A.getClassColor;
     f:SetScript("OnEvent", function()
         if (UnitIsPlayer("mouseover")) then
             local _, className = UnitClass("mouseover");
-            local classColor = getClassColor(className) or "#808080";
+            local classColor = A.getClassColor(className) or "#808080";
             f:SetStatusBarColor(Color.toVertex(classColor));
         end
     end);

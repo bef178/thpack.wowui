@@ -1,22 +1,5 @@
 local A = A;
 
-A.getClassColor = (function()
-    local classColors = {
-        ["MAGE"] = "#3ec5e9",
-        ["PRIEST"] = "#fefefe",
-        ["WARLOCK"] = "#8686ec",
-        ["DRUID"] = "#fe7b09",
-        ["ROGUE"] = "#fef367",
-        ["HUNTER"] = "#a9d271",
-        ["SHAMAN"] = "#006fdc",
-        ["PALADIN"] = "#f38bb9",
-        ["WARRIOR"] = "#c59a6c",
-    };
-    return function(className)
-        return classColors[String.toUpper(className)];
-    end;
-end)();
-
 A.checkPlayerAttacking = (function()
     local isAttacking = false;
     local f = CreateFrame("Frame");
