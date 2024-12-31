@@ -195,13 +195,13 @@ Math.min = function(a, b)
     return a <= b and a or b;
 end;
 
-Math.modf = Math.modf or function(number)
+Math.modf = function(number)
     local fraction = math.mod(number, 1)
     return number - fraction, fraction
 end;
 
 -- e.g. round(0.1234567, 0.000001) => 0.123457
-Math.round = Math.round or function(number, measurement)
+Math.round = function(number, measurement)
     if (not number or not measurement) then
         error("InvalidArgumentException");
     end
