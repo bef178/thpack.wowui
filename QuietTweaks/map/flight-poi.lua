@@ -2,9 +2,6 @@ local A = A;
 local db = A.db;
 local Math = Math;
 
--- npcId => 1/nil
-local reachedFlightMasterIds = {};
-
 local function scanTaxiMap()
     local oldContinentIndex = GetCurrentMapContinent();
     local oldZoneIndex = GetCurrentMapZone();
@@ -12,28 +9,27 @@ local function scanTaxiMap()
     SetMapToCurrentZone();
 
     local continentIndex = GetCurrentMapContinent();
-    local stops = {};
+    local taxiNodes = {};
     for i = 1, NumTaxiNodes(), 1 do
         local t = TaxiNodeGetType(i);
-        if (t == "CURRENT" or t == "REACHABLE") then
-            local name = TaxiNodeName(i);
-            local x, y = TaxiNodePosition(i);
-            stops[name] = {
-                continentIndex = continentIndex,
-                name = name,
-                x = Math.round(x, 0.001),
-                y = Math.round(y, 0.001),
-            };
-        end
+        local name = TaxiNodeName(i);
+        local x, y = TaxiNodePosition(i);
+        taxiNodes[name] = {
+            continentIndex = continentIndex,
+            name = name,
+            x = Math.round(x, 0.001),
+            y = Math.round(y, 0.001),
+            reachable = t == "CURRENT" or t == "REACHABLE",
+        };
     end
 
     SetMapZoom(oldContinentIndex, oldZoneIndex);
 
-    return continentIndex, stops;
+    return continentIndex, taxiNodes;
 end
 
-local function updateReachedFlightMasterIds()
-    local function findMachedNpcId(locationName, x, y)
+local function markFlightMasters(memory)
+    local function findNpcByLocation(locationName, x, y)
         local minX = x - 0.001;
         local maxX = x + 0.001;
         local minY = y - 0.001;
@@ -45,18 +41,19 @@ local function updateReachedFlightMasterIds()
                 if (location
                         and location.x >= minX and location.x <= maxX
                         and location.y >= minY and location.y <= maxY) then
-                    return npc.id;
+                    return npc;
                 end
             end
         end
     end
 
-    Map.clear(reachedFlightMasterIds);
-    for _, stops in pairs(FLIGHT_STOPS_MEMORY) do
-        for _, stop in pairs(stops or {}) do
-            local npcId = findMachedNpcId(stop.name, stop.x, stop.y);
-            if (npcId) then
-                reachedFlightMasterIds[npcId] = 1;
+    for _, nodes in pairs(memory) do
+        for _, node in pairs(nodes or {}) do
+            if (node.reachable) then
+                local npc = findNpcByLocation(node.name, node.x, node.y);
+                if (npc) then
+                    npc.discovered = true;
+                end
             end
         end
     end
@@ -73,10 +70,12 @@ local function getCurrentMap()
 end
 
 -- return array
-local function getFlightMasters(map)
+local function getCurrentMapFlightMasters()
+    local map = getCurrentMap();
     if (not map) then
         return;
     end
+
     local flightMasters = {};
     for flightMasterId, enabled in pairs(db.flightMasterIds) do
         local npc = enabled and db.npcs[flightMasterId];
@@ -95,7 +94,7 @@ local function getFlightMasters(map)
                 title = npc.title,
                 location = npc.locations[map.name],
                 color = color,
-                discovered = reachedFlightMasterIds[npc.id],
+                discovered = npc.discovered,
             });
         end
     end
@@ -157,16 +156,16 @@ f:SetScript("OnEvent", function()
     if (event == "TAXIMAP_OPENED") then
         -- refresh flight stops in this continent
         local continentIndex, nodes = scanTaxiMap();
-        FLIGHT_STOPS_MEMORY[continentIndex] = nodes;
-        updateReachedFlightMasterIds();
+        TAXI_NODES_MEMORY[continentIndex] = nodes;
+        markFlightMasters(TAXI_NODES_MEMORY);
     elseif (event == "VARIABLES_LOADED") then
-        if (not FLIGHT_STOPS_MEMORY) then
-            FLIGHT_STOPS_MEMORY = {};
+        if (not TAXI_NODES_MEMORY) then
+            TAXI_NODES_MEMORY = {};
         end
-        updateReachedFlightMasterIds();
+        markFlightMasters(TAXI_NODES_MEMORY);
     elseif (event == "WORLD_MAP_UPDATE") then
         if (WorldMapFrame:IsVisible()) then
-            local flightMasters = getFlightMasters(getCurrentMap()) or {};
+            local flightMasters = getCurrentMapFlightMasters() or {};
             for i, flightMaster in ipairs(flightMasters) do
                 local poi = pois[i];
                 if (not poi) then
