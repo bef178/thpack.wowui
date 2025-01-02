@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: Quiet Tweaks for Vanilla
-## SavedVariablesPerCharacter: FLIGHT_STOPS_MEMORY
+## SavedVariablesPerCharacter: TAXI_NODES_MEMORY
 ## X-BuildDate: {BuildDate}
 
 bindings.lua
@@ -14,7 +14,7 @@ lib\A.unit.lua
 lib\A.SlotMan.lua
 lib\db-map.lua
 lib\db-npc-flightmaster.lua
-lib\db-turtlewow.lua
+lib\db-npc-flightmaster-turtlewow.lua
 
 pixel-perfect.lua
 
@@ -42,7 +42,7 @@ chat\chat-layout.lua
 chat\chat-scroll.lua
 chat\chat-switch-channel.lua
 
-map\flight-stops.lua
+map\flight-poi.lua
 map\minimap-clock.lua
 map\minimap-zoom.lua
 map\worldmap-player-coordinates.lua
