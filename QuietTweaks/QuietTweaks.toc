@@ -45,6 +45,7 @@ chat\chat-switch-channel.lua
 map\flight-poi.lua
 map\minimap-clock.lua
 map\minimap-zoom.lua
+map\team-poi.lua
 map\worldmap-player-coordinates.lua
 map\worldmap-windowed.lua
 
