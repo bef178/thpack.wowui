@@ -302,8 +302,10 @@ A.SlotMan = A.SlotMan or (function()
     function SlotMan:_slotAttachScripts(f)
         local slotMan = self;
         f:SetScript("OnHide", function()
-            f.slotModel.hovered = false;
-            f.slotModel.pressed = false;
+            if (f.slotModel) then
+                f.slotModel.hovered = false;
+                f.slotModel.pressed = false;
+            end
         end);
         f:SetScript("OnEnter", function()
             f.slotModel.hovered = true;
