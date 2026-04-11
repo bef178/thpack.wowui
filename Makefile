@@ -2,6 +2,10 @@
 all:
 	@bash build/build.sh
 
+.PHONY: package
+package:
+	@bash build/build.sh package
+
 .PHONY: install
 install:
 	@bash build/build.sh install
@@ -9,4 +13,4 @@ install:
 .PHONY: clean
 clean:
 	@echo "cleaning ..."
-	@rm -rf ./out/*
+	@rm -rf ./target/*
