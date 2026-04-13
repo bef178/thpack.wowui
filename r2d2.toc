@@ -63,6 +63,7 @@ src\lua\wow\misc\bindings.lua
 src\lua\wow\misc\blue-shaman.lua
 src\lua\wow\misc\exp-speed.lua
 src\lua\wow\misc\auto-dismount.lua
+src\lua\wow\misc\crit-swing.lua
 
 src\lua\wow\blessingbar\blessingbar.lua
 src\lua\wow\blessingbar\aurabar.lua
@@ -73,5 +74,6 @@ src\lua\wow\pda\pda.pala-a.lua
 src\resource\class\
 src\resource\slot\
 src\resource\circle.tga
+src\resource\fight.ogg
 src\resource\glow.tga
 src\resource\tile32.tga

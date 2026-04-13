@@ -32,9 +32,9 @@ Map = (function()
         if (type(m1) ~= "table") then
             error("InvalidArgumentException")
         end
-        for k, v in pairs(m1) do
-            if (m[k] == nil) then
-                m[k] = v
+        for k1, v1 in pairs(m1) do
+            if (m[k1] == nil) then
+                m[k1] = v1
             end
         end
     end

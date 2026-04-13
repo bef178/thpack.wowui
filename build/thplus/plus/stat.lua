@@ -190,6 +190,7 @@ function Placer.getMightRowItems(isMelee)
     -- 132169:ability_hunter_criticalshot
     if (isMelee == nil) then
         error("isMelee should be true or false, not nil");
+    end
     local data = StatBook.fillMightBonus()
     if (isMelee) then
         local meleeWeaponTextureId = GetInventoryItemTexture("player", INVSLOT_MAINHAND) or 132223;
