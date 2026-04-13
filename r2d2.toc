@@ -42,7 +42,6 @@ src\lua\wow\chat\chat-layout.lua
 src\lua\wow\map\minimap-clock.lua
 src\lua\wow\map\minimap-zoom.lua
 src\lua\wow\map\worldmap-coordinates.lua
-src\lua\wow\map\worldmap-windowed.lua
 src\lua\wow\map\team-poi.lua
 src\lua\wow\map\flight-poi.lua
 
