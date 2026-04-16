@@ -2,7 +2,8 @@ Proto = (function()
     local Proto = {}
 
     function Proto.getProto(self)
-        return getmetatable(self).__index
+        local meta = getmetatable(self)
+        return meta and meta.__index
     end
 
     function Proto.setProto(self, super)
@@ -12,27 +13,27 @@ Proto = (function()
     end
 
     -- ctor(o) as user-defined constructor
-    -- client would call malloc() to create instance
+    -- client would call :new() to create instance
     function Proto.newProto(super, ctor)
         local proto = {}
         Proto.setProto(proto, super)
-        proto.__malloc = ctor
+        proto.__new = ctor
 
-        function proto:malloc()
+        function proto:new(...)
             local o = {}
             Proto.setProto(o, self)
 
             local q = {}
             local p = Proto.getProto(o)
-            while (p ~= nil) do
+            while p do
                 table.insert(q, p)
                 p = Proto.getProto(p)
             end
-            while (table.getn(q) > 0) do
+            while table.getn(q) > 0 do
                 p = table.remove(q)
-                local fn = rawget(p, "__malloc")
+                local fn = rawget(p, "__new")
                 if type(fn) == "function" then
-                    fn(o)
+                    fn(o, unpack(arg))
                 end
             end
 
