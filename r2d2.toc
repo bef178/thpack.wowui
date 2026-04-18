@@ -20,8 +20,9 @@ src\lua\wow\db\db-npcs-mobs.lua
 src\lua\wow\util\Util.lua
 src\lua\wow\util\ItemUtil.lua
 src\lua\wow\util\UnitUtil.lua
+src\lua\wow\util\SpellUtil.lua
+src\lua\wow\util\CastUtil.lua
 src\lua\wow\util\Timer.lua
-src\lua\wow\util\SpellBook.lua
 src\lua\wow\util\Messenger.lua
 src\lua\wow\util\SlotMan.lua
 

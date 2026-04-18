@@ -4,7 +4,7 @@ local PlaySoundFile = PlaySoundFile
 local Map = Map
 local String = String
 local getResource = Util.getResource
-local SpellBook = SpellBook
+local CastUtil = CastUtil
 
 local function onCombatChatEvent(event)
     if not event then
@@ -20,5 +20,5 @@ f:RegisterEvent("CHAT_MSG_COMBAT_SELF_HITS")
 f:SetScript("OnEvent", function()
     local eventName = event
     local message = arg1
-    onCombatChatEvent(SpellBook.parseCombatChatMessage(message))
+    onCombatChatEvent(CastUtil.parseChatMsg(message))
 end)
