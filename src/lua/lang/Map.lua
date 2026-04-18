@@ -37,6 +37,7 @@ Map = (function()
                 m[k1] = v1
             end
         end
+        return m
     end
 
     function Map.size(m)
