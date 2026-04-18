@@ -52,7 +52,7 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("ADDON_LOADED")
 f:SetScript("OnEvent", function(...)
     if event == "ADDON_LOADED" then
-        local addonName = arg3
+        local addonName = arg1
         if addonName == "Blizzard_AuctionUI" then
             attachMouseScriptsToModel(AuctionDressUpModel)
         elseif (addonName == "Blizzard_InspectUI") then
