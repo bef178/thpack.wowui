@@ -67,6 +67,7 @@ src\lua\wow\misc\blue-shaman.lua
 src\lua\wow\misc\exp-speed.lua
 src\lua\wow\misc\auto-dismount.lua
 src\lua\wow\misc\crit-swing.lua
+src\lua\wow\misc\kongfu.lua
 
 src\lua\wow\blessingbar\blessingbar.lua
 src\lua\wow\blessingbar\aurabar.lua
