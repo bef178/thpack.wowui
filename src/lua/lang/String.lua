@@ -16,7 +16,10 @@ String = (function()
             return nil
         end
         if a[3] then
-            return unpack(a, 3)
+            -- on vanilla, `unpack` does not take the 2nd parameter
+            Array.remove(a, 1)
+            Array.remove(a, 1)
+            return unpack(a)
         end
         return string.sub(s, a[1], a[2])
     end

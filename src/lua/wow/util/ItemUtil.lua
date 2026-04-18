@@ -45,7 +45,7 @@ ItemUtil = (function()
         if not itemLink then
             return
         end
-        local matchStart, matchEnd, itemColorString, itemString, itemNameString = String.match(itemLink, "^\124cff(%x*)\124H(item:[%-?%d:]+)\124h%[(.+)%]\124h\124r$")
+        local itemColorString, itemString, itemNameString = String.match(itemLink, "^\124cff(%x*)\124H(item:[%-?%d:]+)\124h%[(.+)%]\124h\124r$")
         if not itemColorString then
             return
         end
@@ -53,7 +53,7 @@ ItemUtil = (function()
     end
 
     A.parseItemString = function(itemString)
-        local matchStart, matchEnd, itemId, enchantId, suffixId, linkProviderSpecializationId = String.match(itemString, "^item:(%d+):?(%d*):?(%d*):?(%d*)")
+        local itemId, enchantId, suffixId, linkProviderSpecializationId = String.match(itemString, "^item:(%d+):?(%d*):?(%d*):?(%d*)")
         if not itemId then
             return
         end
