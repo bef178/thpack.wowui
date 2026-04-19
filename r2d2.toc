@@ -80,4 +80,5 @@ src\resource\slot\
 src\resource\circle.tga
 src\resource\fight.ogg
 src\resource\glow.tga
+src\resource\healthbar32.tga
 src\resource\tile32.tga
