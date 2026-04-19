@@ -96,7 +96,8 @@ Messenger = (function()
 
     function Messenger.playSound(soundFile)
         -- 8959: RAID_WARNING
-        PlaySound(soundFile or 8959)
+        -- PlaySound(soundFile or 8959)
+        PlaySound("RaidWarning")
     end
 
     return Messenger
