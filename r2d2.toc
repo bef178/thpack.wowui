@@ -50,8 +50,9 @@ src\lua\wow\map\team-poi.lua
 src\lua\wow\map\flight-poi.lua
 
 src\lua\wow\unitframe\target-class-icon.lua
-src\lua\wow\unitframe\name-background-class-color.lua
+src\lua\wow\unitframe\class-color-on-name-bar.lua
 src\lua\wow\unitframe\unitframe-layout.lua
+src\lua\wow\unitframe\player-cast-on-name-bar.lua
 
 src\lua\wow\doll\doll-cloak.lua
 src\lua\wow\doll\doll-rotate.lua

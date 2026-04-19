@@ -6,7 +6,7 @@ local getClassColor = Util.getClassColor
 local function enablePlayerClassColorTexture()
     local _, className = UnitClass("player")
     local texture = PlayerFrame:CreateTexture(nil, "BORDER")
-    texture:SetTexture("Interface\\TargetingFrame\\UI-TargetingFrame-LevelBackground")
+    texture:SetTexture([[Interface\TargetingFrame\UI-TargetingFrame-LevelBackground]])
     texture:SetWidth(119)
     texture:SetHeight(19)
     texture:SetPoint("TOPLEFT", 106, -22)
