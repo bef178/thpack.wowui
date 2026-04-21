@@ -5,6 +5,21 @@ Array = (function()
         table.insert(a, value)
     end
 
+    function Array.addAll(a, a1)
+        for i, v1 in ipairs(a1) do
+            Array.add(a, v1)
+        end
+        return a
+    end
+
+    function Array.insert(a, index, value)
+        table.insert(a, index, value)
+    end
+
+    function Array.remove(a, index)
+        return table.remove(a, index)
+    end
+
     function Array.clear(a)
         for i = Array.size(a), 1, -1 do
             Array.remove(a, i)
@@ -20,8 +35,12 @@ Array = (function()
         return false
     end
 
-    function Array.insert(a, index, value)
-        table.insert(a, index, value)
+    function Array.size(a)
+        return table.getn(a)
+    end
+
+    function Array.join(a, separatorString)
+        return table.concat(a, separatorString)
     end
 
     function Array.map(a, func)
@@ -30,21 +49,6 @@ Array = (function()
             Array.add(a1, func(v, i, a))
         end
         return a1
-    end
-
-    -- concat
-    function Array.merge(a, a1)
-        for i, v1 in ipairs(a1) do
-            table.insert(a, v1)
-        end
-    end
-
-    function Array.remove(a, index)
-        table.remove(a, index)
-    end
-
-    function Array.size(a)
-        return table.getn(a)
     end
 
     return Array

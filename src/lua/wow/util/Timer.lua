@@ -47,5 +47,22 @@ Timer = (function()
         return self._data ~= nil
     end
 
+    function Timer:interval(intervalSeconds, totalSeconds, onTick)
+        self:start(totalSeconds, (function()
+            local triggerPoint = intervalSeconds
+            return function(progress, elapsedSeconds, isEnd)
+                if isEnd then
+                    onTick(progress, elapsedSeconds, isEnd)
+                    return
+                end
+                if elapsedSeconds < triggerPoint then
+                    return
+                end
+                triggerPoint = triggerPoint + intervalSeconds
+                onTick(progress, elapsedSeconds, isEnd)
+            end
+        end)())
+    end
+
     return Timer
 end)()
