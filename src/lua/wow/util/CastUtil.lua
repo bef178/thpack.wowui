@@ -1,6 +1,7 @@
 local GetTime = GetTime
 local Map = Map
 local String = String
+local Color = Color
 
 CastUtil = (function()
     --[[
@@ -12,7 +13,10 @@ CastUtil = (function()
         spellName = nil, -- e.g. "SWING"
         spellRank = nil,
         spellType = nil, -- "CASTING" or "CHANNELING" or "INSTANT"
-        spellStage = nil, -- "STARTED" or "DONE" or "FAILED" or "TICK"
+        spellStage = nil, -- "STARTED" or "CHANGED" or "SUCCEEDED" or "FAILED" or "TICK"
+        startTime = nil,
+        totalSeconds = nil,
+        changedSeconds = nil,
         effect = nil, -- "DAMAGE" or "HEAL" or "BUFF" or "DEBUFF" or "DISPEL"
         amount = nil,
         absorbed = nil,
@@ -32,12 +36,15 @@ CastUtil = (function()
     local CastUtil = {
         _fSpellCast = nil,
         _fChatMsg = nil,
-        _subscribers = {}
+        _subscribers = {},
+        _numSubscribers = 0
     }
 
     function CastUtil.register(callback)
         local key = tostring(callback)
         CastUtil._subscribers[key] = callback
+        CastUtil._numSubscribers = Map.size(CastUtil._subscribers)
+        return key
     end
 
     function CastUtil.unregister(key)
@@ -45,6 +52,7 @@ CastUtil = (function()
             key = tostring(key)
         end
         CastUtil._subscribers[key] = nil
+        CastUtil._numSubscribers = Map.size(CastUtil._subscribers)
     end
 
     function CastUtil._dispatch(castEvent)
@@ -58,15 +66,30 @@ CastUtil = (function()
         end
     end
 
-    function CastUtil._listenToSpellCast()
-        local function onCastingStart(data)
+    CastUtil._fSpellCast = (function()
+        local function onCastingStarted(data)
             CastUtil._dispatch({
                 timestamp = GetTime(),
                 source = "You",
                 spellName = data.spellName,
-                spellRank = data.spellRank,
                 spellType = "CASTING",
-                spellStage = "STARTED"
+                spellStage = "STARTED",
+                startTime = data.casting,
+                totalSeconds = data.castingTotalSeconds,
+                changedSeconds = data.castingDelayedSeconds
+            })
+        end
+
+        local function onCastingChanged(data)
+            CastUtil._dispatch({
+                timestamp = GetTime(),
+                source = "You",
+                spellName = data.spellName,
+                spellType = "CASTING",
+                spellStage = "CHANGED",
+                startTime = data.casting,
+                totalSeconds = data.castingTotalSeconds,
+                changedSeconds = data.castingDelayedSeconds
             })
         end
 
@@ -75,9 +98,11 @@ CastUtil = (function()
                 timestamp = GetTime(),
                 source = "You",
                 spellName = data.spellName,
-                spellRank = data.spellRank,
                 spellType = "CASTING",
-                spellStage = "DONE"
+                spellStage = "SUCCEEDED",
+                startTime = data.casting,
+                totalSeconds = data.castingTotalSeconds,
+                changedSeconds = data.castingDelayedSeconds
             })
         end
 
@@ -86,31 +111,50 @@ CastUtil = (function()
                 timestamp = GetTime(),
                 source = "You",
                 spellName = data.spellName,
-                spellRank = data.spellRank,
                 spellType = "CASTING",
-                spellStage = "FAILED"
+                spellStage = "FAILED",
+                startTime = data.casting,
+                totalSeconds = data.castingTotalSeconds,
+                changedSeconds = data.castingDelayedSeconds
             })
         end
 
-        local function onChannelingStart(data)
+        local function onChannelingStarted(data)
             CastUtil._dispatch({
                 timestamp = GetTime(),
                 source = "You",
                 spellName = data.spellName,
-                spellRank = data.spellRank,
                 spellType = "CHANNELING",
-                spellStage = "STARTED"
+                spellStage = "STARTED",
+                startTime = data.channeling,
+                totalSeconds = data.channelingTotalSeconds,
+                changedSeconds = data.channelingAdvanceSeconds
             })
         end
 
-        local function onChannelingDone(state)
+        local function onChannelingChanged(data)
+            CastUtil._dispatch({
+                timestamp = GetTime(),
+                source = "You",
+                spellName = data.spellName,
+                spellType = "CHANNELING",
+                spellStage = "CHANGED",
+                startTime = data.channeling,
+                totalSeconds = data.channelingTotalSeconds,
+                changedSeconds = data.channelingAdvanceSeconds
+            })
+        end
+
+        local function onChannelingSucceeded(state)
             CastUtil._dispatch({
                 timestamp = GetTime(),
                 source = "You",
                 spellName = state.spellName,
-                spellRank = state.spellRank,
                 spellType = "CHANNELING",
-                spellStage = "DONE"
+                spellStage = "SUCCEEDED",
+                startTime = state.channeling,
+                totalSeconds = state.channelingTotalSeconds,
+                changedSeconds = state.channelingAdvanceSeconds
             })
         end
 
@@ -119,9 +163,11 @@ CastUtil = (function()
                 timestamp = GetTime(),
                 source = "You",
                 spellName = state.spellName,
-                spellRank = state.spellRank,
                 spellType = "CHANNELING",
-                spellStage = "FAILED"
+                spellStage = "FAILED",
+                startTime = state.channeling,
+                totalSeconds = state.channelingTotalSeconds,
+                changedSeconds = state.channelingAdvanceSeconds
             })
         end
 
@@ -141,45 +187,63 @@ CastUtil = (function()
 
         f._data = {}
         f:SetScript("OnEvent", function()
-            if Map.size(CastUtil._subscribers) == 0 then
+            if CastUtil._numSubscribers == 0 then
                 return
             end
             local eventName = event
             local state = f._data
             if eventName == "SPELLCAST_START" then
-                state.casting = true
+                state.casting = GetTime()
                 state.castingStopWaiting = nil
+                state.castingTotalSeconds = arg2 / 1000
+                state.castingDelayedSeconds = 0
                 state.spellName = arg1
-                state.spellRank = arg2
-                onCastingStart(state)
+                onCastingStarted(state)
             elseif eventName == "SPELLCAST_DELAYED" then
-                -- dummy
+                state.castingDelayedSeconds = state.castingDelayedSeconds + arg1 / 1000
+                onCastingChanged(state)
             elseif eventName == "SPELLCAST_STOP" then
-                if state.casting then
-                    state.castingStopWaiting = 1
-                end
+                -- if state.casting then
+                --     state.castingStopWaiting = 1
+                -- end
+                local state1 = Map.merge({}, state)
+                state.casting = nil
+                state.castingStopWaiting = nil
+                state.castingTotalSeconds = nil
+                state.castingDelayedSeconds = nil
+                state.spellName = nil
+                onCastingSucceeded(state1)
             elseif eventName == "SPELLCAST_FAILED" or eventName == "SPELLCAST_INTERRUPTED" then
                 local state1 = Map.merge({}, state)
-                state.casting = false
+                state.casting = nil
                 state.castingStopWaiting = nil
-                state.spellRank = nil
+                state.castingTotalSeconds = nil
+                state.castingDelayedSeconds = nil
                 state.spellName = nil
                 onCastingFailed(state1)
             elseif eventName == "SPELLCAST_CHANNEL_START" then
-                state.channeling = true
+                state.channeling = GetTime()
+                state.channelingStartTime = GetTime()
+                state.channelingTotalSeconds = arg1 / 1000
+                state.channelingAdvanceSeconds = 0
                 state.spellName = arg2
-                state.channelingEndTime = GetTime() + arg1 / 1000
-                onChannelingStart(state)
+                onChannelingStarted(state)
             elseif eventName == "SPELLCAST_CHANNEL_UPDATE" then
-                -- dummy
+                local oldEndTime = state.channelingStartTime + state.channelingTotalSeconds
+                local nowEndTime = GetTime() + arg1 / 1000
+                state.channelingAdvanceSeconds = oldEndTime - nowEndTime
+                onChannelingChanged(state)
             elseif eventName == "SPELLCAST_CHANNEL_STOP" then
                 if state.channeling then
                     local state1 = Map.merge({}, state)
-                    state.channeling = false
+                    state.channeling = nil
+                    state.channelingStartTime = nil
+                    state.channelingTotalSeconds = nil
+                    state.channelingAdvanceSeconds = nil
                     state.spellName = nil
-                    state.channelingEndTime = nil
-                    if GetTime() > state1.channelingEndTime - 0.1 then
-                        onChannelingDone(state1)
+                    local endTime = state1.channelingStartTime + state1.channelingTotalSeconds
+                    if GetTime() > endTime - 0.1 then
+                        onChannelingSucceeded(state1)
                     else
                         onChannelingFailed(state1)
                     end
@@ -187,48 +251,35 @@ CastUtil = (function()
             end
         end)
 
-        f:SetScript("OnUpdate", function()
-            local elapsed = arg1
-            local state = f._data
-            -- delay a bit to confirm whether it is succeeded or cancelled
-            if state.castingStopWaiting == 1 then
-                state.castingStopWaiting = 2
-            elseif state.castingStopWaiting == 2 then
-                if state.casting then
-                    local state1 = Map.merge({}, state)
-                    state.casting = false
-                    state.castingStopWaiting = nil
-                    state.spellRank = nil
-                    state.spellName = nil
-                    onCastingSucceeded(state1)
-                end
-            else
-                state.castingStopWaiting = nil
-            end
-        end)
+        -- f:SetScript("OnUpdate", function()
+        --     local state = f._data
+        --     -- delay a bit to confirm whether it is succeeded or cancelled
+        --     -- 约15ms调用一次。在网络不好的时候，延几个tick意义不大
+        --     if state.castingStopWaiting then
+        --         if state.castingStopWaiting < 2 then
+        --             state.castingStopWaiting = state.castingStopWaiting + 1
+        --         else
+        --             local state1 = Map.merge({}, state)
+        --             state.casting = nil
+        --             state.castingStopWaiting = nil
+        --             state.castingTotalSeconds = nil
+        --             state.castingDelayedSeconds = nil
+        --             state.spellName = nil
+        --             onCastingSucceeded(state1)
+        --         end
+        --     end
+        -- end)
 
         return f
-    end
+    end)()
 
-    function CastUtil._listenToChatMsg()
+    CastUtil._fChatMsg = (function()
         local f = CreateFrame("Frame")
 
         -- register CHAT_MSG_* events
         do
-            local combatA1 = {
-                "SELF",
-                "PET",
-                "PARTY",
-                "FRIENDLYPLAYER",
-                "HOSTILEPLAYER",
-                "CREATURE_VS_SELF",
-                "CREATURE_VS_PARTY",
-                "CREATURE_VS_CREATURE"
-            }
-            local combatA2 = {
-                "HITS",
-                "MISSES"
-            }
+            local combatA1 = {"SELF", "PET", "PARTY", "FRIENDLYPLAYER", "HOSTILEPLAYER", "CREATURE_VS_SELF", "CREATURE_VS_PARTY", "CREATURE_VS_CREATURE"}
+            local combatA2 = {"HITS", "MISSES"}
             for i, v in ipairs(combatA1) do
                 for _, v2 in ipairs(combatA2) do
                     local eventName = "CHAT_MSG_COMBAT_" .. v .. "_" .. v2
@@ -244,10 +295,7 @@ CastUtil = (function()
             f:RegisterEvent("CHAT_MSG_COMBAT_MISC_INFO")
 
             local spellA1 = combatA1
-            local spellA2 = {
-                "DAMAGE",
-                "BUFF"
-            }
+            local spellA2 = {"DAMAGE", "BUFF"}
             for i, v in ipairs(spellA1) do
                 for _, v2 in ipairs(spellA2) do
                     local eventName = "CHAT_MSG_SPELL_" .. v .. "_" .. v2
@@ -264,17 +312,8 @@ CastUtil = (function()
             f:RegisterEvent("CHAT_MSG_SPELL_BREAK_AURA")
             f:RegisterEvent("CHAT_MSG_SPELL_FAILED_LOCALPLAYER")
 
-            local spellPeriodicA1 = {
-                "SELF",
-                "PARTY",
-                "FRIENDLYPLAYER",
-                "HOSTILEPLAYER",
-                "CREATURE"
-            }
-            local spellPeriodicA2 = {
-                "DAMAGE",
-                "BUFFS"
-            }
+            local spellPeriodicA1 = {"SELF", "PARTY", "FRIENDLYPLAYER", "HOSTILEPLAYER", "CREATURE"}
+            local spellPeriodicA2 = {"DAMAGE", "BUFFS"}
             for i, v in ipairs(spellPeriodicA1) do
                 for _, v2 in ipairs(spellPeriodicA2) do
                     local eventName = "CHAT_MSG_SPELL_PERIODIC" .. v .. "_" .. v2
@@ -284,13 +323,13 @@ CastUtil = (function()
         end
 
         f:SetScript("OnEvent", function()
-            if Map.size(CastUtil._subscribers) == 0 then
+            if CastUtil._numSubscribers == 0 then
                 return
             end
             local message = arg1
             CastUtil._dispatch(CastUtil.parseChatMsg(message))
         end)
-    end
+    end)()
 
     function CastUtil.parseChatMsg(message)
         return CastUtil._parseChatMsgCombat(message) or CastUtil._parseChatMsgSpell(message)
@@ -364,7 +403,7 @@ CastUtil = (function()
                 spellStage = "TICK",
                 effect = "DAMAGE",
                 amount = tonumber(amount)
-            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {});
+            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {})
         end
 
         target, amount = String.match(message, "You crit (.+) for (%d+)%.")
@@ -513,7 +552,7 @@ CastUtil = (function()
                 effect = "DAMAGE",
                 amount = tonumber(amount),
                 school = school
-            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {});
+            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {})
         end
 
         -- "Your Holy Strike crits Expert Training Dummy for 432 Holy damage."
@@ -565,8 +604,181 @@ CastUtil = (function()
         end
     end
 
-    CastUtil._fSpellCast = CastUtil._listenToSpellCast()
-    CastUtil._fChatMsg = CastUtil._listenToChatMsg()
+    function CastUtil.enableCastBar(castBar, unit)
+        -- 1.12: SPELLCAST_* events only fire for player
+        if unit ~= "player" then
+            return
+        end
+
+        local data = {}
+
+        local function reset()
+            data.mode = nil
+            data.startTime = nil
+            data.totalSeconds = nil
+            data.changedSeconds = nil
+            data.flashing = nil
+            data.holding = nil
+            data.fading = nil
+
+            castBar:Hide()
+            castBar:SetValue(0)
+            castBar:SetAlpha(1)
+            castBar:SetStatusBarColor(Color.toVertex(Color.pick("Cyan")))
+            if castBar.sparkTextureRegion then
+                castBar.sparkTextureRegion:Show()
+            end
+            if castBar.flashTextureRegion then
+                castBar.flashTextureRegion:SetAlpha(0)
+            end
+            if castBar.nameTextRegion then
+                castBar.nameTextRegion:SetText()
+            end
+            if castBar.valueTextRegion then
+                castBar.valueTextRegion:SetText()
+            end
+        end
+
+        castBar:SetScript("OnUpdate", function()
+            local elapsed = arg1
+            local now = GetTime()
+            if data.mode == "CASTING" then
+                local effectiveElapsedSeconds = now - data.startTime - data.changedSeconds
+                if effectiveElapsedSeconds < 0 then
+                    effectiveElapsedSeconds = 0
+                elseif effectiveElapsedSeconds > data.totalSeconds then
+                    effectiveElapsedSeconds = data.totalSeconds
+                end
+                local fraction = effectiveElapsedSeconds / data.totalSeconds
+                castBar:SetValue(fraction)
+                if castBar.sparkTextureRegion then
+                    castBar.sparkTextureRegion:SetPoint("CENTER", castBar, "LEFT", fraction * castBar:GetWidth(), 0)
+                end
+                if castBar.valueTextRegion then
+                    castBar.valueTextRegion:SetText(string.format("%.1f", data.totalSeconds - effectiveElapsedSeconds))
+                end
+            elseif data.mode == "CHANNELING" then
+                local effectiveElapsedSeconds = now - data.startTime + data.changedSeconds
+                if effectiveElapsedSeconds < 0 then
+                    effectiveElapsedSeconds = 0
+                elseif effectiveElapsedSeconds > data.totalSeconds then
+                    effectiveElapsedSeconds = data.totalSeconds
+                end
+                local fraction = 1 - effectiveElapsedSeconds / data.totalSeconds
+                if castBar.sparkTextureRegion then
+                    castBar.sparkTextureRegion:SetPoint("CENTER", castBar, "LEFT", fraction * castBar:GetWidth(), 0)
+                end
+                castBar:SetValue(fraction)
+                if castBar.valueTextRegion then
+                    castBar.valueTextRegion:SetFormattedText("%.1f", data.totalSeconds - effectiveElapsedSeconds)
+                end
+            elseif data.mode == "ENDING" then
+                if castBar.flashTextureRegion and data.flashing then
+                    local alpha = castBar.flashTextureRegion:GetAlpha() + 0.1
+                    if alpha >= 1 then
+                        castBar.flashTextureRegion:SetAlpha(1)
+                        data.flashing = nil
+                    else
+                        castBar.flashTextureRegion:SetAlpha(alpha)
+                    end
+                elseif data.holding then
+                    data.holding = data.holding - elapsed * 3
+                    if data.holding <= 0 then
+                        data.holding = nil
+                    end
+                elseif data.fading then
+                    local alpha = castBar:GetAlpha() - 0.05
+                    if alpha <= 0 then
+                        castBar:SetAlpha(0)
+                        data.fading = nil
+                    else
+                        castBar:SetAlpha(alpha)
+                    end
+                else
+                    reset()
+                end
+            end
+        end)
+
+        CastUtil.register(function(event)
+            if event.source == "You" then
+                if event.spellType == "CASTING" then
+                    if event.spellStage == "STARTED" then
+                        data.mode = event.spellType
+                        data.startTime = event.startTime
+                        data.totalSeconds = event.totalSeconds
+                        data.changedSeconds = event.changedSeconds
+                        castBar:SetValue(0)
+                        castBar:SetAlpha(1)
+                        castBar:SetStatusBarColor(Color.toVertex(Color.pick("Gold")))
+                        if castBar.sparkTextureRegion then
+                            castBar.sparkTextureRegion:Show()
+                        end
+                        if castBar.flashTextureRegion then
+                            castBar.flashTextureRegion:SetAlpha(0)
+                        end
+                        if castBar.nameTextRegion then
+                            castBar.nameTextRegion:SetText(event.spellName)
+                        end
+                        castBar:Show()
+                    elseif event.spellStage == "CHANGED" then
+                        data.changedSeconds = event.changedSeconds
+                    elseif event.spellStage == "SUCCEEDED" or event.spellStage == "FAILED" then
+                        local isSucceeded = event.spellStage == "SUCCEEDED"
+                        castBar:SetValue(1)
+                        castBar:SetAlpha(1) -- 1.12
+                        castBar:SetStatusBarColor(Color.toVertex(Color.pick(isSucceeded and "Green" or "Red")))
+                        if castBar.sparkTextureRegion then
+                            castBar.sparkTextureRegion:Hide()
+                        end
+                        data.mode = "ENDING"
+                        if isSucceeded and castBar.sparkTextureRegion then
+                            data.flashing = 1
+                        else
+                            data.holding = 1
+                        end
+                        data.fading = 1
+                    end
+                elseif event.spellType == "CHANNELING" then
+                    if event.spellStage == "STARTED" then
+                        data.mode = event.spellType
+                        data.startTime = event.startTime
+                        data.totalSeconds = event.totalSeconds
+                        data.changedSeconds = event.changedSeconds
+                        castBar:SetValue(1)
+                        castBar:SetAlpha(1)
+                        castBar:SetStatusBarColor(Color.toVertex(Color.pick("Green")))
+                        if castBar.sparkTextureRegion then
+                            castBar.sparkTextureRegion:Show()
+                        end
+                        if castBar.flashTextureRegion then
+                            castBar.flashTextureRegion:SetAlpha(0)
+                        end
+                        if castBar.nameTextRegion then
+                            castBar.nameTextRegion:Show()
+                        end
+                        castBar:Show();
+                    elseif event.spellStage == "CHANGED" then
+                        data.changedSeconds = event.changedSeconds
+                    elseif event.spellStage == "SUCCEEDED" or event.spellStage == "FAILED" then
+                        local isSucceeded = event.spellStage == "SUCCEEDED"
+                        castBar:SetValue(0)
+                        castBar:SetStatusBarColor(Color.toVertex(Color.pick(isSucceeded and "Green" or "Red")))
+                        if castBar.sparkTextureRegion then
+                            castBar.sparkTextureRegion:Hide()
+                        end
+                        data.mode = "ENDING"
+                        if isSucceeded and castBar.sparkTextureRegion then
+                            data.flashing = 1
+                        else
+                            data.holding = 1
+                        end
+                        data.fading = 1
+                    end
+                end
+            end
+        end)
+    end
 
     return CastUtil
 end)()

@@ -6,6 +6,7 @@ local GetTime = GetTime
 local hookScript = Util.hookScript
 local getResource = Util.getResource
 local getClassColor = Util.getClassColor
+local CastUtil = CastUtil
 
 -- war3 hero layout
 Heroic = (function()
@@ -80,6 +81,7 @@ Heroic = (function()
         portraitFrame:SetScript("OnEvent", function()
             local event = event
             if event == "PLAYER_ENTERING_WORLD" then
+                local unit = uf.unit
                 Heroic._invalidatePortraitTexture(portraitTexture, uf.unit)
                 local _, classType = UnitClass(unit)
                 local colorString = getClassColor(classType) or "#FFFFFF"
@@ -287,88 +289,7 @@ Heroic = (function()
         castBar:SetAllPoints(uf.manaBar)
         castBar:Hide()
 
-        -- 1.12: SPELLCAST events only fire for player
-        if uf.unit == "player" then
-            local function onCastEnd()
-                castBar.castSpellName = nil
-                castBar.castSpellType = nil
-                castBar:SetScript("OnUpdate", nil)
-                castBar:Hide()
-            end
-
-            local function onCastUpdate()
-                local now = GetTime()
-                if castBar.castSpellType == "CASTING" then
-                    local effectiveElapsedSeconds = now - castBar.castStartTime - castBar.castDelayedSeconds
-                    if effectiveElapsedSeconds < 0 then
-                        effectiveElapsedSeconds = 0
-                    end
-                    local fraction = effectiveElapsedSeconds / castBar.castTotalSeconds
-                    castBar:SetValue(fraction)
-                    if castBar.valueTextRegion then
-                        castBar.valueTextRegion:SetFormattedText("%.1f", castBar.castTotalSeconds - effectiveElapsedSeconds)
-                    end
-                elseif castBar.castSpellType == "CHANNELING" then
-                    local effectiveElapsedSeconds = now - castBar.castStartTime + castBar.castDelayedSeconds
-                    if effectiveElapsedSeconds > castBar.castTotalSeconds then
-                        effectiveElapsedSeconds = castBar.castTotalSeconds
-                    end
-                    local fraction = 1 - effectiveElapsedSeconds / castBar.castTotalSeconds
-                    castBar:SetValue(fraction)
-                    if castBar.valueTextRegion then
-                        castBar.valueTextRegion:SetFormattedText("%.1f", castBar.castTotalSeconds - effectiveElapsedSeconds)
-                    end
-                else
-                    onCastEnd()
-                end
-            end
-
-            local events = {
-                ["SPELLCAST_START"] = function()
-                    castBar.castSpellName = arg1
-                    castBar.castSpellType = "CASTING"
-                    castBar.castStartTime = GetTime()
-                    castBar.castTotalSeconds = arg2 / 1000
-                    castBar.castDelayedSeconds = 0
-                    castBar:SetStatusBarColor(Color.toVertex(Color.pick("Gold")))
-                    castBar:SetScript("OnUpdate", onCastUpdate)
-                    castBar:Show()
-                end,
-                ["SPELLCAST_STOP"] = onCastEnd,
-                ["SPELLCAST_FAILED"] = onCastEnd,
-                ["SPELLCAST_INTERRUPTED"] = onCastEnd,
-                ["SPELLCAST_DELAYED"] = function()
-                    if castBar.castSpellType == "CASTING" then
-                        castBar.castDelayedSeconds = castBar.castDelayedSeconds + arg1 / 1000
-                    end
-                end,
-                ["SPELLCAST_CHANNEL_START"] = function()
-                    castBar.castSpellName = arg2
-                    castBar.castSpellType = "CHANNELING"
-                    castBar.castStartTime = GetTime()
-                    castBar.castTotalSeconds = arg1 / 1000
-                    castBar.castDelayedSeconds = 0
-                    castBar:SetStatusBarColor(Color.toVertex(Color.pick("Green")))
-                    castBar:SetScript("OnUpdate", onCastUpdate)
-                    castBar:Show()
-                end,
-                ["SPELLCAST_CHANNEL_STOP"] = onCastEnd,
-                ["SPELLCAST_CHANNEL_UPDATE"] = function()
-                    if castBar.castSpellType == "CHANNELING" then
-                        castBar.castDelayedSeconds = castBar.castDelayedSeconds + arg1 / 1000
-                    end
-                end
-            }
-            for event, _ in pairs(events) do
-                castBar:RegisterEvent(event)
-            end
-            castBar:SetScript("OnEvent", function()
-                local event = event
-                if events[event] then
-                    events[event]()
-                end
-            end)
-        end
+        CastUtil.enableCastBar(castBar, uf.unit)
 
         uf.castBar = castBar
     end
