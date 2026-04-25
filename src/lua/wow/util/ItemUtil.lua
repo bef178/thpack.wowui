@@ -1,7 +1,7 @@
 ItemUtil = (function()
     local A = {}
 
-    A.findBagItem = function(name)
+    function A.findBagItem(name)
         for bagIndex = 0, NUM_BAG_FRAMES do
             for slotIndex = 1, GetContainerNumSlots(bagIndex) do
                 local itemLink = GetContainerItemLink(bagIndex, slotIndex)
@@ -16,7 +16,7 @@ ItemUtil = (function()
         end
     end
 
-    A.getItem = function(id)
+    function A.getItem(id)
         if not id then
             return
         end
@@ -30,18 +30,30 @@ ItemUtil = (function()
                 itemQuality = quality, -- int value in [0,7]
                 itemLevel = level,
                 itemType = type, -- e.g. "Armor", "Weapon", "Quest", etc.
+                itemSubType = subType, -- e.g. "Shields"
                 itemMaxStacks = maxStacks,
+                itemEquipSlot = equipLocation, -- e.g. "INVTYPE_SHIELD"
                 itemTexture = texture,
                 itemRecyclePrice = nil,
                 itemEnchantId = nil
-             }
+            }
+        end
+    end
+
+    function A.getEquippedItem(unit, slotId)
+        local link = GetInventoryItemLink(unit, slotId)
+        if link then
+            local id = A.parseItemLink(link)
+            if id then
+                return A.getItem(id)
+            end
         end
     end
 
     -- e.g. "|cffffffff|Hitem:4306::::::::60:258:::::::|h[Silk Cloth]|h|r"
     --   60: linkProviderLevel, this link is provided by a lv60 player
     --  258: linkProviderSpecializationId, this link is provided by a shadow priest
-    A.parseItemLink = function(itemLink)
+    function A.parseItemLink(itemLink)
         if not itemLink then
             return
         end
@@ -49,10 +61,10 @@ ItemUtil = (function()
         if not itemColorString then
             return
         end
-        return A.parseItemString(itemString)
+        return A._parseItemString(itemString)
     end
 
-    A.parseItemString = function(itemString)
+    function A._parseItemString(itemString)
         local itemId, enchantId, suffixId, linkProviderSpecializationId = String.match(itemString, "^item:(%d+):?(%d*):?(%d*):?(%d*)")
         if not itemId then
             return
