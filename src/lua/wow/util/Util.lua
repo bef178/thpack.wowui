@@ -45,13 +45,13 @@ Util = (function()
     function A.logd(...)
         local a = arg
         local a = arg
-        if (Array.size(a) == 0) then
+        if Array.size(a) == 0 then
             A.logi("-- 1 - nil: nil")
             return
         end
         for i, v in ipairs(a) do
             local vType = type(v)
-            if (vType == "string" or vType == "number") then
+            if vType == "string" or vType == "number" then
                 A.logi(string.format("-- %s - %s: %s", i, vType, tostring(v)))
             else
                 A.logi(string.format("-- %s - %s", i, (tostring(v) or "N/A")))
@@ -65,40 +65,40 @@ Util = (function()
 
     ------------------------------------------------------------
 
-    A.getFunctionId = function(func)
-        if (type(func) ~= "function") then
+    function A.getFunctionId(func)
+        if type(func) ~= "function" then
             error("InvalidArgumentException")
         end
         return String.substring(String.match(tostring(func), ": .+$"), 3)
     end
 
-    A.hookGlobalFunction = function(funcName, behaviorType, callbackFunc)
+    function A.hookGlobalFunction(funcName, behaviorType, callbackFunc)
         return A.hookMemberFunction(_G, funcName, behaviorType, callbackFunc)
     end
 
-    A.hookMemberFunction = function(funcContainer, funcName, hookType, callbackFunc)
+    function A.hookMemberFunction(funcContainer, funcName, hookType, callbackFunc)
         local func = funcContainer[funcName]
-        if (not func) then
+        if not func then
             return
         end
 
         local funcKey = A.getFunctionId(func) .. funcName
         funcContainer[funcKey] = func
-        if (hookType == "pre_hook") then
+        if hookType == "pre_hook" then
             funcContainer[funcName] = function(...)
                 callbackFunc(unpack(arg))
                 funcContainer[funcKey](unpack(arg))
             end
-        elseif (hookType == "post_hook") then
+        elseif hookType == "post_hook" then
             funcContainer[funcName] = function(...)
                 funcContainer[funcKey](unpack(arg))
                 callbackFunc(unpack(arg))
             end
-        elseif (hookType == "replace_hook") then
+        elseif hookType == "replace_hook" then
             funcContainer[funcName] = function(...)
                 callbackFunc(unpack(arg))
             end
-        elseif (hookType == "hook") then
+        elseif hookType == "hook" then
             funcContainer[funcName] = function(...)
                 callbackFunc(func, unpack(arg))
             end
@@ -108,25 +108,25 @@ Util = (function()
         return 1
     end
 
-    A.hookScript = function(f, scriptName, hookType, callbackFunc)
+    function A.hookScript(f, scriptName, hookType, callbackFunc)
         local old = f:GetScript(scriptName)
-        if (hookType == "pre_hook") then
+        if hookType == "pre_hook" then
             f:SetScript(scriptName, function()
                 callbackFunc()
-                if (old) then
+                if old then
                     old()
                 end
             end)
-        elseif (hookType == "post_hook") then
+        elseif hookType == "post_hook" then
             f:SetScript(scriptName, function()
-                if (old) then
+                if old then
                     old()
                 end
                 callbackFunc()
             end)
-        elseif (hookType == "replace_hook") then
+        elseif hookType == "replace_hook" then
             f:SetScript(scriptName, callbackFunc)
-        elseif (hookType == "hook") then
+        elseif hookType == "hook" then
             f:SetScript(scriptName, function()
                 callbackFunc(old)
             end)
@@ -144,7 +144,7 @@ Util = (function()
         ReloadUI()
     end)
 
-    A.addSlashCommand("aPrint", "/debug", function(x)
+    A.addSlashCommand("aDebug", "/debug", function(x)
         -- if no log, probably `slashCommand` already exists
         A.logi("-------- printing: ")
         A.logd(loadstring("return " .. x)())
@@ -154,7 +154,7 @@ Util = (function()
         local exp = UnitXP("player")
         local maxExp = UnitXPMax("player")
         local bonusExp = GetXPExhaustion()
-        if (bonusExp) then
+        if bonusExp then
             A.logi(string.format("exp: %d(%d) / %d", exp, exp + bonusExp, maxExp))
         else
             A.logi(string.format("exp: %d / %d", exp, maxExp))
@@ -163,7 +163,7 @@ Util = (function()
 
     ------------------------------------------------------------
 
-    local buildCoinTextureString = function(goldAmount, silverAmount, copperAmount)
+    local function buildCoinTextureString(goldAmount, silverAmount, copperAmount)
         local texture = "Interface\\MoneyFrame\\UI-MoneyIcons"
         local goldIcon = string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", texture, 0, 25, 0, 100)
         local silverIcon = string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", texture, 25, 50, 0, 100)
@@ -177,7 +177,7 @@ Util = (function()
         end
     end
 
-    local buildCoinTextString = function(goldAmount, silverAmount, copperAmount)
+    local function buildCoinTextString(goldAmount, silverAmount, copperAmount)
         if goldAmount > 0 then
             return string.format("%s Gold %s Silver %s Copper", goldAmount, silverAmount, copperAmount)
         elseif silverAmount > 0 then
@@ -187,7 +187,7 @@ Util = (function()
         end
     end
 
-    A.buildCoinString = function(amount)
+    function A.buildCoinString(amount)
         if GetCoinTextureString then
             return GetCoinTextureString(amount)
         end
@@ -202,7 +202,7 @@ Util = (function()
         return buildCoinTextString(goldAmount, silverAmount, copperAmount)
     end
 
-    A.buildTimeString = function(seconds)
+    function A.buildTimeString(seconds)
         if seconds <= 0 then
             return
         end
@@ -223,11 +223,11 @@ Util = (function()
         end
     end
 
-    A.buildColoredString = function(colorString, s)
+    function A.buildColoredString(colorString, s)
         return string.format("|cff%06x%s|r", Color.toInt24(colorString), s)
     end
 
-    A.getClassColor = function(className)
+    function A.getClassColor(className)
         if not className then
             return
         end
@@ -245,7 +245,7 @@ Util = (function()
         end
     end
 
-    A.toPrintableLink = function(link)
+    function A.toPrintableLink(link)
         local s, _ = string.gsub(link, "\124", "\124\124")
         return s
     end
