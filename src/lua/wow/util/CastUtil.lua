@@ -621,7 +621,6 @@ CastUtil = (function()
             data.holding = nil
             data.fading = nil
 
-            castBar:Hide()
             castBar:SetValue(0)
             castBar:SetAlpha(1)
             castBar:SetStatusBarColor(Color.toVertex(Color.pick("Cyan")))
@@ -634,9 +633,10 @@ CastUtil = (function()
             if castBar.nameTextRegion then
                 castBar.nameTextRegion:SetText()
             end
-            if castBar.valueTextRegion then
-                castBar.valueTextRegion:SetText()
+            if castBar.remainingTimeTextRegion then
+                castBar.remainingTimeTextRegion:SetText()
             end
+            castBar:Hide()
         end
 
         castBar:SetScript("OnUpdate", function()
@@ -654,8 +654,8 @@ CastUtil = (function()
                 if castBar.sparkTextureRegion then
                     castBar.sparkTextureRegion:SetPoint("CENTER", castBar, "LEFT", fraction * castBar:GetWidth(), 0)
                 end
-                if castBar.valueTextRegion then
-                    castBar.valueTextRegion:SetText(string.format("%.1f", data.totalSeconds - effectiveElapsedSeconds))
+                if castBar.remainingTimeTextRegion then
+                    castBar.remainingTimeTextRegion:SetText(string.format("%.1f", data.totalSeconds - effectiveElapsedSeconds))
                 end
             elseif data.mode == "CHANNELING" then
                 local effectiveElapsedSeconds = now - data.startTime + data.changedSeconds
@@ -669,8 +669,8 @@ CastUtil = (function()
                     castBar.sparkTextureRegion:SetPoint("CENTER", castBar, "LEFT", fraction * castBar:GetWidth(), 0)
                 end
                 castBar:SetValue(fraction)
-                if castBar.valueTextRegion then
-                    castBar.valueTextRegion:SetFormattedText("%.1f", data.totalSeconds - effectiveElapsedSeconds)
+                if castBar.remainingTimeTextRegion then
+                    castBar.remainingTimeTextRegion:SetFormattedText("%.1f", data.totalSeconds - effectiveElapsedSeconds)
                 end
             elseif data.mode == "ENDING" then
                 if castBar.flashTextureRegion and data.flashing then
@@ -732,7 +732,7 @@ CastUtil = (function()
                             castBar.sparkTextureRegion:Hide()
                         end
                         data.mode = "ENDING"
-                        if isSucceeded and castBar.sparkTextureRegion then
+                        if isSucceeded and castBar.flashTextureRegion then
                             data.flashing = 1
                         else
                             data.holding = 1
@@ -757,7 +757,7 @@ CastUtil = (function()
                         if castBar.nameTextRegion then
                             castBar.nameTextRegion:Show()
                         end
-                        castBar:Show();
+                        castBar:Show()
                     elseif event.spellStage == "CHANGED" then
                         data.changedSeconds = event.changedSeconds
                     elseif event.spellStage == "SUCCEEDED" or event.spellStage == "FAILED" then
@@ -768,7 +768,7 @@ CastUtil = (function()
                             castBar.sparkTextureRegion:Hide()
                         end
                         data.mode = "ENDING"
-                        if isSucceeded and castBar.sparkTextureRegion then
+                        if isSucceeded and castBar.flashTextureRegion then
                             data.flashing = 1
                         else
                             data.holding = 1

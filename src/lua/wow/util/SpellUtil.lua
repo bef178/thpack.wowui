@@ -4,10 +4,10 @@ local Map = Map
 local String = String
 
 SpellUtil = (function()
-    local SpellBook = {}
+    local SpellUtil = {}
 
-    -- via search player's spellbook
-    function SpellBook.getSpellIndex(spellName, spellRank)
+    -- index via search player's spellbook
+    function SpellUtil.getSpellId(spellName, spellRank)
         local i = 1
         while true do
             local name, rank = GetSpellName(i, BOOKTYPE_SPELL)
@@ -22,5 +22,9 @@ SpellUtil = (function()
         return nil
     end
 
-    return SpellBook
+    function SpellUtil.getSpellTexture(spellId)
+        return GetSpellTexture(spellId, BOOKTYPE_SPELL)
+    end
+
+    return SpellUtil
 end)()
