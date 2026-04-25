@@ -60,10 +60,5 @@ ItemUtil = (function()
         return itemId, enchantId
     end
 
-    A.toPrintableItemLink = function(itemLink)
-        local s, count = string.gsub(itemLink, "\124", "\124\124")
-        return s
-    end
-
     return A
 end)()

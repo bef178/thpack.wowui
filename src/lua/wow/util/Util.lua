@@ -245,5 +245,10 @@ Util = (function()
         end
     end
 
+    A.toPrintableLink = function(link)
+        local s, _ = string.gsub(link, "\124", "\124\124")
+        return s
+    end
+
     return A
 end)()
