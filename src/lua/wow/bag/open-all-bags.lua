@@ -1,11 +1,10 @@
--- single click on backpack to toggle all bags
 local function openAllBags()
     for i = 0, 10 do
-        -- keep bags order
+        -- keep bags sorted
         CloseBag(i)
         OpenBag(i)
     end
-    -- `backpackWasOpen` works as a flag of sticky: on set, bags keep open when merchant closed
+    -- `backpackWasOpen` works as a flag of sticky: with it, bags keep open when merchant closed
     ContainerFrame1.backpackWasOpen = 1
 end
 
@@ -27,47 +26,26 @@ local function toggleAllBags()
 end
 
 -- click backpack to toggle all bags
-(function()
-    -- mask button
-    local f = CreateFrame("Button", nil, MainMenuBarBackpackButton, SecureButtonTemplate)
-    f:SetAllPoints()
-    f:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square", "ADD")
-    f:SetScript("OnEnter", function()
-        MainMenuBarBackpackButton:GetScript("OnEnter")(MainMenuBarBackpackButton)
-    end)
-    f:SetScript("OnLeave", function()
-        MainMenuBarBackpackButton:GetScript("OnLeave")(MainMenuBarBackpackButton)
-    end)
-    f:SetScript("OnClick", function()
-        toggleAllBags()
-    end)
-end)();
+local f = CreateFrame("Button", nil, MainMenuBarBackpackButton, SecureButtonTemplate)
+f:SetAllPoints()
+f:SetHighlightTexture("Interface/Buttons/ButtonHilight-Square", "ADD")
+f:SetScript("OnEnter", function()
+    MainMenuBarBackpackButton:GetScript("OnEnter")(MainMenuBarBackpackButton)
+end)
+f:SetScript("OnLeave", function()
+    MainMenuBarBackpackButton:GetScript("OnLeave")(MainMenuBarBackpackButton)
+end)
+f:SetScript("OnClick", function()
+    toggleAllBags()
+end)
 
--- bank
-(function()
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("BANKFRAME_OPENED")
-    f:SetScript("OnEvent", function()
-        openAllBags()
-    end)
-end)();
-
--- mail
-(function()
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("MAIL_SHOW")
-    -- f:RegisterEvent("MAIL_CLOSED")
-    f:SetScript("OnEvent", function()
-        openAllBags()
-    end)
-end)();
-
--- merchant
-(function()
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("MERCHANT_SHOW")
-    -- f:RegisterEvent("MERCHANT_CLOSED")
-    f:SetScript("OnEvent", function()
-        openAllBags()
-    end)
-end)();
+-- f is a sentinel as well
+-- bank, mail and merchant
+f:RegisterEvent("BANKFRAME_OPENED")
+f:RegisterEvent("MAIL_SHOW")
+-- f:RegisterEvent("MAIL_CLOSED")
+f:RegisterEvent("MERCHANT_SHOW")
+-- f:RegisterEvent("MERCHANT_CLOSED")
+f:SetScript("OnEvent", function()
+    openAllBags()
+end)
