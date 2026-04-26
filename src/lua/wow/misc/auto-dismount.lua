@@ -1,7 +1,6 @@
-----------------------------------------
--- auto dismount
+-- auto dismount & auto stand up
 
-local MOUNTED_BUFF_TEXTURE_KEYWORD = {
+local MOUNTED_BUFF_TEXTURE_KEYWORDS = {
     "_mount_",
     "_qirajicrystal_",
     "ability_bullrush",
@@ -17,19 +16,12 @@ local MOUNTED_BUFF_TEXTURE_KEYWORD = {
     "spell_nature_swiftness"
 }
 
-local function dismountIfMounted()
-    if IsMounted and Dismount then
-        if IsMounted() then
-            Dismount()
-        end
-        return
-    end
-
+local function dismountByCancelBuff()
     for i = 0, 15, 1 do
         local texture = GetPlayerBuffTexture(i)
         if texture then
             texture = string.lower(texture)
-            for _, keyword in ipairs(MOUNTED_BUFF_TEXTURE_KEYWORD) do
+            for _, keyword in ipairs(MOUNTED_BUFF_TEXTURE_KEYWORDS) do
                 if (string.find(texture, keyword)) then
                     CancelPlayerBuff(i)
                 end
@@ -56,30 +48,28 @@ local NOT_WITH_MOUNTED_MESSAGES = {
     SPELL_NOT_SHAPESHIFTED_NOSPACE
 }
 
-local f = CreateFrame("Frame")
-f:RegisterEvent("UI_ERROR_MESSAGE")
-f:SetScript("OnEvent", function()
-    local errorMessage = arg1
-    if errorMessage and Array.contains(NOT_WITH_MOUNTED_MESSAGES, errorMessage) then
-        dismountIfMounted()
-    end
-end)
-
-----------------------------------------
--- auto stand up
-
 local NOT_STANDING_MESSAGES = {
     SPELL_FAILED_NOT_STANDING,
     ERR_CANTATTACK_NOTSTANDING,
     ERR_LOOT_NOTSTANDING,
-    ERR_TEXTNOTSTANDING
+    ERR_TEXTNOTSTANDING or ""
 }
 
 local f = CreateFrame("Frame")
 f:RegisterEvent("UI_ERROR_MESSAGE")
 f:SetScript("OnEvent", function()
     local errorMessage = arg1
-    if errorMessage and Array.contains(NOT_STANDING_MESSAGES, errorMessage) then
-        DoEmote("STAND")
+    if errorMessage then
+        if Array.contains(NOT_WITH_MOUNTED_MESSAGES, errorMessage) then
+            if IsMounted and Dismount then
+                if IsMounted() then
+                    Dismount()
+                end
+            else
+                dismountByCancelBuff()
+            end
+        elseif Array.contains(NOT_STANDING_MESSAGES, errorMessage) then
+            DoEmote("STAND")
+        end
     end
 end)
