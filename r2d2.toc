@@ -39,7 +39,7 @@ src\lua\wow\bag\item-quality-border.lua
 src\lua\wow\bag\available-bag-slots.lua
 
 src\lua\wow\buff\buff-timer.lua
-src\lua\wow\buff\buff-weapon-charges.lua
+src\lua\wow\buff\buff-weapon-enchant-charges.lua
 
 src\lua\wow\chat\chat-edit.lua
 src\lua\wow\chat\chat-layout.lua
