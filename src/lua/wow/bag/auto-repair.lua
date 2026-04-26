@@ -1,40 +1,42 @@
 local logi = Util.logi
 local buildCoinString = Util.buildCoinString
 
-local getBagItemRepairCost = (function()
+local repairBagItem = (function()
     local tooltip = CreateFrame("GameTooltip")
     return function(bagId, slotId)
         local _, repairCost = tooltip:SetBagItem(bagId, slotId)
+        if repairCost and repairCost > 0 then
+            PickupContainerItem(bagId, slotId)
+        end
         return repairCost
     end
 end)()
 
-local function repairAllEquipments()
-    local amount, canRepair = GetRepairAllCost()
+local function repairAllEquippedItemsAndBagItems()
+    local allRepairCost, canRepair = GetRepairAllCost()
     if canRepair then
-        RepairAllItems()
+        RepairAllItems() -- for all equipped items
         ShowRepairCursor()
         for bagId = 0, NUM_BAG_FRAMES, 1 do
             for slotId = 1, GetContainerNumSlots(bagId), 1 do
-                local repairCost = getBagItemRepairCost(bagId, slotId)
+                local repairCost = repairBagItem(bagId, slotId)
                 if repairCost and repairCost > 0 then
-                    amount = amount + repairCost
-                    PickupContainerItem(bagId, slotId)
+                    allRepairCost = allRepairCost + repairCost
                 end
             end
         end
         HideRepairCursor()
     end
-    return amount
+    return allRepairCost
 end
 
 local f = CreateFrame("Frame")
 f:RegisterEvent("MERCHANT_SHOW")
 f:SetScript("OnEvent", function()
     if CanMerchantRepair() then
-        local amount = repairAllEquipments()
-        if amount and amount > 0 then
-            logi("Auto repair costs " .. buildCoinString(amount))
+        local cost = repairAllEquippedItemsAndBagItems()
+        if cost and cost > 0 then
+            logi("Auto repair costs " .. buildCoinString(cost))
         end
     end
 end)

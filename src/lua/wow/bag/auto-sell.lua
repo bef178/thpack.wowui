@@ -2,14 +2,14 @@ local logi = Util.logi
 local buildCoinString = Util.buildCoinString
 
 local getBagItemSellPrice = (function()
-    local sellPrice
+    local amount
     local tooltip = CreateFrame("GameTooltip")
-    tooltip:SetScript("OnTooltipAddMoney", function(...)
-        sellPrice = arg1
+    tooltip:SetScript("OnTooltipAddMoney", function()
+        amount = arg1
     end)
     return function(bagId, slotId)
         tooltip:SetBagItem(bagId, slotId)
-        return sellPrice
+        return amount
     end
 end)()
 
