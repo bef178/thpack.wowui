@@ -1,7 +1,7 @@
 local hookGlobalFunction = Util.hookGlobalFunction
 local buildTimeString = Util.buildTimeString
 
-hookGlobalFunction("BuffFrame_UpdateDuration", "post_hook", function(buffButton, remainingSeconds)
+local function updateBuffTimer(buffButton, remainingSeconds)
     if SHOW_BUFF_DURATIONS ~= "1" then
         return
     end
@@ -15,7 +15,15 @@ hookGlobalFunction("BuffFrame_UpdateDuration", "post_hook", function(buffButton,
         return
     end
 
-    local countdownTextView = _G[buffButton:GetName() .. "Duration"]
-    countdownTextView:SetFont(STANDARD_TEXT_FONT, 12)
-    countdownTextView:SetText(timeString)
-end)
+    local textRegion = _G[buffButton:GetName() .. "Duration"]
+    textRegion:SetFont(STANDARD_TEXT_FONT, 12)
+    textRegion:SetText(timeString)
+end
+
+if hooksecurefunc and AuraButton_UpdateDuration then
+    hooksecurefunc("AuraButton_UpdateDuration", updateBuffTimer)
+end
+
+if BuffFrame_UpdateDuration then
+    hookGlobalFunction("BuffFrame_UpdateDuration", "post_hook", updateBuffTimer)
+end
