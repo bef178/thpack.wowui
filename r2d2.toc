@@ -41,7 +41,7 @@ src\lua\wow\bag\available-bag-slots.lua
 src\lua\wow\buff\buff-timer.lua
 src\lua\wow\buff\buff-weapon-enchant-charges.lua
 
-src\lua\wow\chat\chat-edit.lua
+src\lua\wow\chat\chat-tab.lua
 src\lua\wow\chat\chat-layout.lua
 
 src\lua\wow\map\minimap-clock.lua
