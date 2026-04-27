@@ -7,9 +7,7 @@ local getReagentNameByActionSlotId = (function()
         tooltip:ClearLines()
         tooltip:SetOwner(UIParent, "ANCHOR_NONE")
         tooltip:SetAction(actionSlotId)
-        for _, region in pairs({
-            tooltip:GetRegions()
-        }) do
+        for _, region in pairs({tooltip:GetRegions()}) do
             if region and region:GetObjectType() == "FontString" then
                 local line = region:GetText()
                 local s = String.match(line or "", reagentRegex)
@@ -21,7 +19,7 @@ local getReagentNameByActionSlotId = (function()
     end
 end)()
 
-local function getReagentCountByActionSlotId(actionSlotId)
+local function getNumReagentsByActionSlotId(actionSlotId)
     local reagentName = getReagentNameByActionSlotId(actionSlotId)
     if not reagentName then
         return
@@ -30,9 +28,9 @@ local function getReagentCountByActionSlotId(actionSlotId)
     for bagId = 0, NUM_BAG_FRAMES do
         for slotId = 1, GetContainerNumSlots(bagId) do
             local itemLink = GetContainerItemLink(bagId, slotId)
-            local itemName = itemLink and String.match(itemLink, '%[([^%]]+)%]') or nil
+            local itemName = itemLink and String.match(itemLink, "%[([^%]]+)%]") or nil
             if itemName and itemName == reagentName then
-                local itemTexture, itemCount = GetContainerItemInfo(bagId, slotId)
+                local _, itemCount = GetContainerItemInfo(bagId, slotId)
                 n = n + itemCount
             end
         end
@@ -40,19 +38,24 @@ local function getReagentCountByActionSlotId(actionSlotId)
     return n
 end
 
-hookGlobalFunction("ActionButton_UpdateCount", "post_hook", function(...)
-    local actionSlotId = ActionButton_GetPagedID(this)
-    local reagentCount = getReagentCountByActionSlotId(actionSlotId)
-    local reagentCountText
-    if reagentCount then
-        if reagentCount > 99 then
-            reagentCountText = "*"
+local function showNumReagents(actionButton)
+    local actionSlotId = ActionButton_GetPagedID(actionButton)
+    local n = getNumReagentsByActionSlotId(actionSlotId)
+    if n then
+        local textRegion = _G[actionButton:GetName() .. "Count"]
+        if n > 99 then
+            textRegion:SetText("*")
         else
-            reagentCountText = tostring(reagentCount)
+            textRegion:SetText(n)
         end
-    else
-        reagentCountText = nil
     end
-    local textView = _G[this:GetName() .. "Count"]
-    textView:SetText(reagentCountText)
-end)
+end
+
+if hooksecurefunc then
+    hooksecurefunc("ActionButton_UpdateCount", showNumReagents)
+else
+    hookGlobalFunction("ActionButton_UpdateCount", "post_hook", function()
+        local actionButton = this
+        showNumReagents(actionButton)
+    end)
+end

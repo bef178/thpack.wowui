@@ -2,14 +2,14 @@ ItemUtil = (function()
     local A = {}
 
     function A.findBagItem(name)
-        for bagIndex = 0, NUM_BAG_FRAMES do
-            for slotIndex = 1, GetContainerNumSlots(bagIndex) do
-                local itemLink = GetContainerItemLink(bagIndex, slotIndex)
+        for bagId = 0, NUM_BAG_FRAMES do
+            for slotId = 1, GetContainerNumSlots(bagId) do
+                local itemLink = GetContainerItemLink(bagId, slotId)
                 local itemId = A.parseItemLink(itemLink)
                 local item = A.getItem(itemId)
                 if item and item.itemName and string.lower(item.itemName) == string.lower(name) then
-                    item.bagIndex = bagIndex
-                    item.slotIndex = slotIndex
+                    item.bagId = bagId
+                    item.slotId = slotId
                     return item
                 end
             end
@@ -69,7 +69,7 @@ ItemUtil = (function()
         if not itemId then
             return
         end
-        return itemId, enchantId
+        return itemId, enchantId, suffixId, linkProviderSpecializationId
     end
 
     return A
