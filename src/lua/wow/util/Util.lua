@@ -7,32 +7,14 @@ Util = (function()
         local name = A.addonName .. "Logger"
         local log = _G[name] or DEFAULT_CHAT_FRAME or ChatFrame1
         if not log then
-            log = CreateFrame("ScrollingMessageFrame", name, UIParent, "ChatFrameTemplate")
-            log:SetWidth(400)
-            log:SetHeight(200)
-            log:SetPoint("CENTER", UIParent, "CENTER")
-            log:SetBackdrop({
-                bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-                edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-                tile = true,
-                tileSize = 16,
-                edgeSize = 16,
-                insets = {
-                    left = 4,
-                    right = 4,
-                    top = 4,
-                    bottom = 4
-                }
-            })
-            log:SetBackdropColor(0, 0, 0, 0.8)
-            log:Show()
+            -- TODO build dedicated chat frame
         end
         return log
     end
 
     function A.logi(...)
-        local prefix = "[" .. A.addonName .. "] "
         local a = arg
+        local prefix = "[" .. A.addonName .. "] "
         local log = A.getLoggerChatFrame()
         if not log then
             error(prefix .. "Failed to get logger chat frame")
@@ -43,7 +25,6 @@ Util = (function()
     end
 
     function A.logd(...)
-        local a = arg
         local a = arg
         if Array.size(a) == 0 then
             A.logi("-- 1 - nil: nil")
@@ -59,18 +40,13 @@ Util = (function()
         end
     end
 
+    ------------------------------------------------------------
+
     function A.getResource(resName)
         return "interface\\addons\\" .. A.addonName .. "\\src\\resource\\" .. resName
     end
 
     ------------------------------------------------------------
-
-    function A.getFunctionId(func)
-        if type(func) ~= "function" then
-            error("InvalidArgumentException")
-        end
-        return String.substring(String.match(tostring(func), ": .+$"), 3)
-    end
 
     function A.hookGlobalFunction(funcName, behaviorType, callbackFunc)
         return A.hookMemberFunction(_G, funcName, behaviorType, callbackFunc)
@@ -82,7 +58,7 @@ Util = (function()
             return
         end
 
-        local funcKey = A.getFunctionId(func) .. funcName
+        local funcKey = tostring(func) .. funcName
         funcContainer[funcKey] = func
         if hookType == "pre_hook" then
             funcContainer[funcName] = function(...)
@@ -163,63 +139,104 @@ Util = (function()
 
     ------------------------------------------------------------
 
-    local function buildCoinTextureString(goldAmount, silverAmount, copperAmount)
-        local texture = "Interface\\MoneyFrame\\UI-MoneyIcons"
-        local goldIcon = string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", texture, 0, 25, 0, 100)
-        local silverIcon = string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", texture, 25, 50, 0, 100)
-        local copperIcon = string.format("|T%s:0:0:0:0:64:16:%s:%s:%s:%s|t", texture, 32, 48, 0, 16)
-        if goldAmount > 0 then
-            return string.format("%s%s%s%s%s%s", goldAmount, goldIcon, silverAmount, silverIcon, copperAmount, copperIcon)
-        elseif silverAmount > 0 then
-            return string.format("%s%s%s%s", silverAmount, silverIcon, copperAmount, copperIcon)
-        elseif copperAmount > 0 then
-            return string.format("%s%s", copperAmount, copperIcon)
+    function A.buildClassTextureString(className)
+        local classColor = A.getClassColor(className)
+        if classColor then
+            -- local U25A0 = "■"
+            -- local U2B1B = "⬛"
+            local s = "●"
+            return A.buildColoredString(classColor, s)
         end
     end
 
-    local function buildCoinTextString(goldAmount, silverAmount, copperAmount)
-        if goldAmount > 0 then
-            return string.format("%s Gold %s Silver %s Copper", goldAmount, silverAmount, copperAmount)
-        elseif silverAmount > 0 then
-            return string.format("%s Silver %s Copper", silverAmount, copperAmount)
-        elseif copperAmount > 0 then
-            return string.format("%s Copper", copperAmount)
+    function A.buildClassTextureString240(className)
+        local coords = CLASS_ICON_TCOORDS[className]
+        if coords then
+            return A.buildTextureString240([[Interface\WorldStateFrame\Icons-Classes]], coords[1], coords[2], coords[3], coords[4])
         end
     end
 
-    function A.buildCoinString(amount)
+    local function breakDownCoppers(totalCoppers)
+        local golds = math.floor(totalCoppers / 10000)
+        totalCoppers = totalCoppers - golds * 10000
+        local silvers = math.floor(totalCoppers / 100)
+        local coppers = totalCoppers - silvers * 100
+        return golds, silvers, coppers
+    end
+
+    function A.buildCoinString(totalCoppers)
+        local golds, silvers, coppers = breakDownCoppers(totalCoppers)
+        if golds > 0 then
+            return string.format("%s Gold %s Silver %s Copper", golds, silvers, coppers)
+        elseif silvers > 0 then
+            return string.format("%s Silver %s Copper", silvers, coppers)
+        elseif coppers > 0 then
+            return string.format("%s Copper", coppers)
+        end
+    end
+
+    function A.buildCoinString240(totalCoppers)
         if GetCoinTextureString then
-            return GetCoinTextureString(amount)
+            -- likely since 3.0.2
+            return GetCoinTextureString(totalCoppers)
         end
 
-        local goldAmount = math.floor(amount / 10000)
-        amount = amount - goldAmount * 10000
-        local silverAmount = math.floor(amount / 100)
-        amount = amount - silverAmount * 100
-        local copperAmount = amount
-
-        -- likely vanilla not support texture string
-        return buildCoinTextString(goldAmount, silverAmount, copperAmount)
+        local fileId = [[Interface\MoneyFrame\UI-MoneyIcons]]
+        local goldIcon = A.buildTextureString240(fileId, 0, 0.25, 0, 1)
+        local silverIcon = A.buildTextureString240(fileId, 0.25, 0.5, 0, 1)
+        local copperIcon = A.buildTextureString240(fileId, 0.5, 0.75, 0, 1)
+        -- size 19x19 or 13x13
+        local golds, silvers, coppers = breakDownCoppers(totalCoppers)
+        if golds > 0 then
+            return string.format("%s%s%s%s%s%s", golds, goldIcon, silvers, silverIcon, coppers, copperIcon)
+        elseif silvers > 0 then
+            return string.format("%s%s%s%s", silvers, silverIcon, coppers, copperIcon)
+        elseif coppers > 0 then
+            return string.format("%s%s", coppers, copperIcon)
+        end
     end
 
-    function A.buildTimeString(seconds)
-        if seconds <= 0 then
+    -- `|T` likely since 2.4.0
+    function A.buildTextureString240(fileId, left, right, top, bottom)
+        left = left or 0
+        right = right or 1
+        top = top or 0
+        bottom = bottom or 1
+        -- |T<fileId>:<height>:<width>:<offsetX>:<offsetY>:<textureWidth>:<textureHeight>:<left>:<right>:<top>:<bottom>:<r>:<g>:<b>|t
+        return string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", fileId, left * 100, right * 100, top * 100, bottom * 100)
+    end
+
+    local function breakDownSeconds(totalSeconds)
+        if ChatFrame_TimeBreakDown then
+            return ChatFrame_TimeBreakDown(totalSeconds)
+        end
+        local days = math.floor(totalSeconds / (24 * 60 * 60))
+        totalSeconds = totalSeconds - days * (24 * 60 * 60)
+        local hours = math.floor(totalSeconds / (60 * 60))
+        totalSeconds = totalSeconds - hours * (60 * 60)
+        local minutes = math.floor(totalSeconds / 60)
+        local seconds = totalSeconds - minutes * 60
+        return days, hours, minutes, seconds
+    end
+
+    function A.buildTimeString(totalSeconds)
+        if type(totalSeconds) ~= "number" or totalSeconds <= 0 then
             return
         end
 
-        local d, h, m, s = ChatFrame_TimeBreakDown(seconds)
-        if d > 0 then
-            return string.format("%dd", d)
-        elseif h > 0 then
-            if h > 2 then
-                return string.format("%dh", h)
+        local days, hours, minutes, seconds = breakDownSeconds(totalSeconds)
+        if days > 0 then
+            return string.format("%dd", days)
+        elseif hours > 0 then
+            if hours > 2 then
+                return string.format("%dh", hours)
             else
-                return string.format("%d\'", h * 60 + m)
+                return string.format("%d\'", hours * 60 + minutes)
             end
-        elseif m > 9 then
-            return string.format("%d\'", m)
+        elseif minutes > 9 then
+            return string.format("%d\'", minutes)
         else
-            return string.format("%d\'%02d", m, s)
+            return string.format("%d\'%02d", minutes, seconds)
         end
     end
 
@@ -231,8 +248,6 @@ Util = (function()
         if not className then
             return
         end
-        -- 2.4.3 FrameXML/Fonts.xml
-        -- 7.3.2 SharedXML/Util.lua
         if RAID_CLASS_COLORS then
             local v = RAID_CLASS_COLORS[String.toUpper(className)]
             if v then

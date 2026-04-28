@@ -1,3 +1,5 @@
+local Array = Array
+
 String = (function()
     local String = {}
 
