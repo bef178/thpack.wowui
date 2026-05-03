@@ -62,15 +62,13 @@ src\lua\wow\doll\character-stats.lua
 src\lua\wow\actionbar\shift-drag-action.lua
 src\lua\wow\actionbar\num-reagents.lua
 
-src\lua\wow\tooltip\tooltip-healthbar.lua
-src\lua\wow\tooltip\tooltip-unit.lua
-
 src\lua\wow\misc\bindings.lua
 src\lua\wow\misc\blue-shaman.lua
 src\lua\wow\misc\exp-speed.lua
 src\lua\wow\misc\auto-dismount.lua
 src\lua\wow\misc\crit-swing.lua
 src\lua\wow\misc\kongfu.lua
+src\lua\wow\misc\tooltip-unit.lua
 
 src\lua\wow\blessingbar\blessingbar.lua
 src\lua\wow\blessingbar\aurabar.lua

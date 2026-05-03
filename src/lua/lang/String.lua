@@ -3,6 +3,10 @@ local Array = Array
 String = (function()
     local String = {}
 
+    function String.indexOf(s, pattern, from)
+        return string.find(s, pattern, from, true)
+    end
+
     function String.join(sep, ...)
         local s = arg[1]
         for i = 2, table.getn(arg), 1 do
@@ -30,25 +34,60 @@ String = (function()
         return string.sub(s, i, j)
     end
 
-    function String.split(s, pattern)
-        local startIndex = 1
-        local a = {}
-        while true do
-            local endIndex = string.find(s, pattern, startIndex, true)
-            if endIndex == nil then
-                local s1 = String.substring(s, startIndex)
-                Array.add(a, s1)
-                break
-            end
-            local s1 = String.substring(s, startIndex, endIndex - 1)
-            Array.add(a, s1)
-            startIndex = endIndex + string.len(pattern)
+    function String.split(s, pattern, from)
+        from = from or 1
+        if from < 0 then
+            from = sLen + from + 1
         end
+        if from < 1 then
+            -- [1, 10], -1000 => 1
+            from = 1
+        end
+
+        local sLen = string.len(s)
+        local patternLen = string.len(pattern)
+
+        if patternLen == 0 then
+            local a = {}
+            for i = from, sLen do
+                Array.add(a, string.sub(s, i, i))
+            end
+            return a
+        end
+
+        local sBytes = {}
+        for i = 1, sLen do
+            sBytes[i] = string.sub(s, i, i)
+        end
+        local patternBytes = {}
+        for i = 1, patternLen do
+            patternBytes[i] = string.sub(pattern, i, i)
+        end
+
+        local a = {}
+        local i = from
+        while i <= sLen - patternLen + 1 do
+            local matched = true
+            for j = 1, patternLen do
+                if sBytes[i + j - 1] ~= patternBytes[j] then
+                    matched = false
+                    break
+                end
+            end
+            if matched then
+                Array.add(a, string.sub(s, from, i - 1))
+                from = i + patternLen
+                i = from
+            else
+                i = i + 1
+            end
+        end
+        Array.add(a, string.sub(s, from))
         return a
     end
 
     function String.trim(s)
-        return string.gsub(s, '^%s*(.-)%s*$', '%1')
+        return string.gsub(s, "^%s*(.-)%s*$", "%1")
     end
 
     function String.toLower(s)
