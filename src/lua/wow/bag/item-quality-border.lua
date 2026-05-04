@@ -62,7 +62,7 @@ do
                         local itemLink = GetContainerItemLink(bagId, slot:GetID())
                         local itemId = parseItemLink(itemLink)
                         local item = itemId and getItem(itemId)
-                        local quality = item and item.itemQuality or nil
+                        local quality = item and item.itemRarity or nil
                         renderQuality(slot, quality)
                     end
                 end
@@ -77,7 +77,7 @@ do
                     local itemLink = GetContainerItemLink(-1, i)
                     local itemId = parseItemLink(itemLink)
                     local item = itemId and getItem(itemId)
-                    local quality = item and item.itemQuality or nil
+                    local quality = item and item.itemRarity or nil
                     renderQuality(slot, quality)
                 end
             end
