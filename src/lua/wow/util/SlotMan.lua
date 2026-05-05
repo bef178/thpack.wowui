@@ -8,11 +8,12 @@ SlotMan = (function()
     -- public
     function SlotMan:new()
         local o = {
+            anchor = nil,
+            max_x_slots = 6,
+            slot_style = "rounded_square",
             slot_size = 32,
             slot_margin = 4,
             slot_interactable = true,
-            max_x_slots = 6,
-            anchor = nil,
             slots = {}
         }
 
@@ -25,6 +26,24 @@ SlotMan = (function()
         return setmetatable(o, {
             __index = self
         })
+    end
+
+    -- public
+    function SlotMan:render(slotModels)
+        if slotModels then
+            for i, slotModel in ipairs(slotModels) do
+                local f = self:_getOrCreateSlot(i)
+                f.slotModel = slotModel
+                self:_updateSlotPosition(f, i)
+            end
+            for i = Array.size(slotModels) + 1, Array.size(self.slots), 1 do
+                local f = self.slots[i]
+                f.slotModel = nil
+            end
+        end
+        for _, f in ipairs(self.slots) do
+            self:_renderSlot(f)
+        end
     end
 
     -- public
@@ -44,46 +63,33 @@ SlotMan = (function()
         model.spellTimeToLive = nil
         model.spellTimeToCooldown = nil
         model.spellTargetUnit = nil
+        model.selfBuffed = false
         model.targetBuffed = false
         model.targetDebuffed = false
 
         return model
     end
 
-    -- public
-    function SlotMan:render(slotModels)
-        if slotModels then
-            for i, slotModel in ipairs(slotModels) do
-                if i > Array.size(self.slots) then
-                    local slot = self:_slotNew()
-                    if self.slot_interactable then
-                        self:_slotAttachScripts(slot)
-                    end
-                    Array.add(self.slots, slot)
-                end
-                local slot = self.slots[i]
-                slot.slotModel = slotModel
-                self:_slotUpdatePosition(slot, i - 1)
+    function SlotMan:_getOrCreateSlot(index)
+        for i = Array.size(self.slots) + 1, index do
+            local f = self:_newSlot()
+            if self.slot_interactable then
+                self:_attachSlotScripts(f)
             end
-            for i = Array.size(slotModels) + 1, Array.size(self.slots), 1 do
-                local slot = self.slots[i]
-                slot.slotModel = nil
-            end
+            Array.add(self.slots, f)
         end
-        for _, slot in ipairs(self.slots) do
-            self:_slotRender(slot)
+        return self.slots[index]
+    end
+
+    function SlotMan:_newSlot()
+        if self.slot_style == "rounded_square" then
+            return self:_newRoundedSquareSlot()
+        elseif self.slot_style == "sharp_square" then
+            return self:_newSharpSquareSlot()
         end
     end
 
-    function SlotMan:_slotNew()
-        if self.slot_style == "sharp_square" then
-            return self:_slotNewSharpSquareButton()
-        else
-            return self:_slotNewRoundedSquareButton()
-        end
-    end
-
-    function SlotMan:_slotNewRoundedSquareButton()
+    function SlotMan:_newRoundedSquareSlot()
         local f = CreateFrame("Button", nil, self.anchor)
         f:SetWidth(self.slot_size)
         f:SetHeight(self.slot_size)
@@ -211,8 +217,8 @@ SlotMan = (function()
         return f
     end
 
-    function SlotMan:_slotNewSharpSquareButton()
-        local f = self:_slotNewRoundedSquareButton()
+    function SlotMan:_newSharpSquareSlot()
+        local f = self:_newRoundedSquareSlot()
 
         local backgroundTexture = f:CreateTexture(nil, "BACKGROUND", nil, 1)
         backgroundTexture:SetTexture(getResource("tile32"))
@@ -226,7 +232,7 @@ SlotMan = (function()
         return f
     end
 
-    function SlotMan:_slotRender(f)
+    function SlotMan:_renderSlot(f)
         local model = f.slotModel
         if not model then
             f:Hide()
@@ -316,7 +322,7 @@ SlotMan = (function()
         end
     end
 
-    function SlotMan:_slotAttachScripts(f)
+    function SlotMan:_attachSlotScripts(f)
         local slotMan = self
         f:SetScript("OnHide", function()
             if f.slotModel then
@@ -329,40 +335,40 @@ SlotMan = (function()
             if f.slotModel.onEnter then
                 f.slotModel.onEnter(f)
             end
-            slotMan:_slotRender(f)
+            slotMan:_renderSlot(f)
         end)
         f:SetScript("OnLeave", function()
             f.slotModel.hovered = false
             if f.slotModel.onLeave then
                 f.slotModel.onLeave(f)
             end
-            slotMan:_slotRender(f)
+            slotMan:_renderSlot(f)
         end)
         f:SetScript("OnMouseDown", function()
             f.slotModel.pressed = true
             if f.slotModel.onMouseDown then
                 f.slotModel.onMouseDown(f, arg1)
             end
-            slotMan:_slotRender(f)
+            slotMan:_renderSlot(f)
         end)
         f:SetScript("OnMouseUp", function()
             f.slotModel.pressed = false
             if f.slotModel.onMouseUp then
                 f.slotModel.onMouseUp(f, arg1)
             end
-            slotMan:_slotRender(f)
+            slotMan:_renderSlot(f)
         end)
         f:SetScript("OnClick", function()
             if f.slotModel.onClick then
                 f.slotModel.onClick(f, arg1)
             end
-            slotMan:_slotRender(f)
+            slotMan:_renderSlot(f)
         end)
     end
 
-    function SlotMan:_slotUpdatePosition(f, index)
-        local y = f.slotModel.y or (math.floor(index / self.max_x_slots))
-        local x = f.slotModel.x or (index - y * self.max_x_slots)
+    function SlotMan:_updateSlotPosition(f, index)
+        local y = f.slotModel.y or (math.floor((index - 1) / self.max_x_slots))
+        local x = f.slotModel.x or (index - 1 - y * self.max_x_slots)
         f:ClearAllPoints()
         f:SetPoint("TOPLEFT", self.anchor, "TOPLEFT", x * (self.slot_size + self.slot_margin), y * (self.slot_size + self.slot_margin))
     end
@@ -382,8 +388,5 @@ if debug then
     local model2 = slotManDemo:newSlotModel()
     model2.spellTexture = "Interface//Icons//Spell_Holy_Light"
 
-    slotManDemo:render({
-        model,
-        model2
-    })
+    slotManDemo:render({model, model2})
 end
