@@ -139,16 +139,6 @@ Util = (function()
 
     ------------------------------------------------------------
 
-    function A.buildClassTextureString(className)
-        local classColor = A.getClassColor(className)
-        if classColor then
-            -- local U25A0 = "■"
-            -- local U2B1B = "⬛"
-            local s = "●"
-            return A.buildColoredString(classColor, s)
-        end
-    end
-
     function A.buildClassTextureString240(className)
         local coords = CLASS_ICON_TCOORDS[className]
         if coords then
@@ -204,6 +194,10 @@ Util = (function()
         bottom = bottom or 1
         -- |T<fileId>:<height>:<width>:<offsetX>:<offsetY>:<textureWidth>:<textureHeight>:<left>:<right>:<top>:<bottom>:<r>:<g>:<b>|t
         return string.format("|T%s:0:0:0:0:100:100:%s:%s:%s:%s|t", fileId, left * 100, right * 100, top * 100, bottom * 100)
+    end
+
+    function A.buildSkullTextureString240()
+        return A.buildTextureString240([[Interface\TargetingFrame\UI-TargetingFrame-Skull]])
     end
 
     local function breakDownSeconds(totalSeconds)

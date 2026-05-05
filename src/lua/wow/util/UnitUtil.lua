@@ -10,7 +10,7 @@ UnitUtil = (function()
             local event = event
             if event == "PLAYER_ENTER_COMBAT" then
                 isAttacking = true
-            elseif (event == "PLAYER_LEAVE_COMBAT") then
+            elseif event == "PLAYER_LEAVE_COMBAT" then
                 isAttacking = false
             end
         end)
@@ -190,7 +190,7 @@ UnitUtil = (function()
                     -- only he can attack! (in enemy-occupied territory)
                     return Color.pick("darkorange")
                 end
-            elseif (UnitCanAttack("player", unit)) then
+            elseif UnitCanAttack("player", unit) then
                 -- i feel safe
                 return yellow
             else
@@ -210,6 +210,57 @@ UnitUtil = (function()
             else
                 return yellow
             end
+        end
+    end
+
+    function A.getUnitLevelColor(unit)
+        if UnitCanAttack("player", unit) then
+            local level = UnitLevel(unit)
+            local c = GetCreatureDifficultyColor(level)
+            return Color.fromVertex(c.r, c.g, c.b)
+        else
+            -- Blizzard yellow
+            return Color.fromVertex(1.0, 0.82, 0.0)
+        end
+    end
+
+    function A.getUnitLevelSuffixByUnit(unit)
+        if UnitIsPlayer(unit) then
+            return ""
+        end
+
+        local classification = UnitClassification(unit)
+        if classification == "worldboss" then
+            return "x"
+        elseif classification == "elite" then
+            return "+"
+        elseif classification == "rare" then
+            return "$"
+        elseif classification == "rareelite" then
+            return "*"
+        elseif classification == "trivial" then
+            return "-"
+        elseif false then
+            -- TODO quest mob
+            return "!"
+        end
+        return ""
+    end
+
+    function A.getUnitPowerTypeColor(unit)
+        local powerType = UnitPowerType(unit)
+        if powerType == 0 then
+            return Color.pick("RoyalBlue")
+        elseif powerType == 1 then
+            return Color.pick("FireBrick")
+        elseif powerType == 2 then
+            return Color.pick("Coral")
+        elseif powerType == 3 then
+            return Color.pick("Gold")
+        elseif powerType == 6 then
+            return Color.pick("Turquoise")
+        else
+            return Color.pick("White")
         end
     end
 

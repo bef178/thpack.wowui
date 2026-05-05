@@ -54,6 +54,7 @@ src\lua\wow\unitframe\target-class-icon.lua
 src\lua\wow\unitframe\class-color-on-name-bar.lua
 src\lua\wow\unitframe\unitframe-layout.lua
 src\lua\wow\unitframe\cast-on-name-bar.lua
+src\lua\wow\unitframe\player-energy-tick.lua
 
 src\lua\wow\doll\doll-cloak.lua
 src\lua\wow\doll\doll-rotate.lua
