@@ -48,7 +48,7 @@ CastUtil = (function()
     end
 
     function CastUtil.unregister(key)
-        if typeof(key) == "function" then
+        if type(key) == "function" then
             key = tostring(key)
         end
         CastUtil._subscribers[key] = nil
@@ -316,7 +316,7 @@ CastUtil = (function()
             local spellPeriodicA2 = {"DAMAGE", "BUFFS"}
             for i, v in ipairs(spellPeriodicA1) do
                 for _, v2 in ipairs(spellPeriodicA2) do
-                    local eventName = "CHAT_MSG_SPELL_PERIODIC" .. v .. "_" .. v2
+                    local eventName = "CHAT_MSG_SPELL_PERIODIC_" .. v .. "_" .. v2
                     f:RegisterEvent(eventName)
                 end
             end
@@ -329,23 +329,18 @@ CastUtil = (function()
             local message = arg1
             CastUtil._dispatch(CastUtil.parseChatMsg(message))
         end)
+
+        return f
     end)()
 
     function CastUtil.parseChatMsg(message)
-        return CastUtil._parseChatMsgCombat(message) or CastUtil._parseChatMsgSpell(message)
+        return CastUtil._parseChatMsgSwing(message) or CastUtil._parseChatMsgSpell(message) or CastUtil._parseChatMsgMisc(message)
     end
 
-    function CastUtil._parseChatMsgCombat(message)
-        -- "You miss Expert Training Dummy."
-        -- "You attack. Expert Training Dummy dodges."
-        -- "You attack. Expert Training Dummy parries."
-        -- "You hit Expert Training Dummy for 98. (glancing)"
-        -- "You hit Expert Training Dummy for 87. (36 blocked)"
-        -- "Xxx hit xxx for xxx. (crushing)"
-        -- "You crit Expert Training Dummy for 254."
-        -- "You hit Expert Training Dummy for 111."
-        local target, spellName, amount, trailerMessage
+    function CastUtil._parseChatMsgSwing(message)
+        local source, target, amount, trailerMessage
 
+        -- "You miss Expert Training Dummy."
         target = String.match(message, "You miss (.+)%.")
         if target then
             return {
@@ -361,7 +356,8 @@ CastUtil = (function()
             }
         end
 
-        target = String.match(message, "You attack. (.+) dodges%.")
+        -- "You attack. Expert Training Dummy dodges."
+        target = String.match(message, "You attack%. (.+) dodges%.")
         if target then
             return {
                 timestamp = GetTime(),
@@ -376,7 +372,8 @@ CastUtil = (function()
             }
         end
 
-        target = String.match(message, "You attack. (.+) parries%.")
+        -- "You attack. Expert Training Dummy parries."
+        target = String.match(message, "You attack%. (.+) parries%.")
         if target then
             return {
                 timestamp = GetTime(),
@@ -391,6 +388,10 @@ CastUtil = (function()
             }
         end
 
+        -- "You hit Expert Training Dummy for 98. (glancing)"
+        -- "You hit Expert Training Dummy for 87. (36 blocked)"
+        -- "Xxx hit xxx for xxx. (crushing)"
+        -- "You hit Expert Training Dummy for 111."
         target, amount, trailerMessage = String.match(message, "You hit (.+) for (%d+)%.(.*)")
         if target then
             return Map.merge({
@@ -406,6 +407,7 @@ CastUtil = (function()
             }, CastUtil._parseChatMsgTrailer(trailerMessage) or {})
         end
 
+        -- "You crit Expert Training Dummy for 254."
         target, amount = String.match(message, "You crit (.+) for (%d+)%.")
         if target then
             return {
@@ -413,6 +415,104 @@ CastUtil = (function()
                 origin = message,
                 source = "You",
                 target = target,
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                amount = tonumber(amount),
+                isCritical = true
+            }
+        end
+
+        -- "Helboar misses you."
+        source = String.match(message, "(.+) misses you%.")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isMissed = true
+            }
+        end
+
+        -- "Helboar attacks. You dodge."
+        source = String.match(message, "(.+) attacks%. You dodge%.")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isDodged = true
+            }
+        end
+
+        -- "Helboar attacks. You parry."
+        source = String.match(message, "(.+) attacks%. You parry%.")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isParried = true
+            }
+        end
+
+        -- "Helboar attacks. You absorb all the damage."
+        source = String.match(message, "(.+) attacks%. You absorb all the damage%.")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isAbsorbed = true
+            }
+        end
+
+        -- "Helboar hits you for 54."
+        -- "Helboar hits you for 11. (35 blocked)"
+        source, amount, trailerMessage = String.match(message, "(.+) hits you for (%d+)%.(.*)")
+        if source then
+            return Map.merge({
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = "SWING",
+                spellType = "INSTANT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                amount = tonumber(amount)
+            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {})
+        end
+
+        -- "Helboar crits you for 134."
+        source, amount = String.match(message, "^(.+) crits you for (%d+)%.$")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
                 spellName = "SWING",
                 spellType = "INSTANT",
                 spellStage = "TICK",
@@ -477,7 +577,22 @@ CastUtil = (function()
     end
 
     function CastUtil._parseChatMsgSpell(message)
-        local target, spellName, amount, school, critically, trailerMessage
+        local source, target, spellName, amount, school, reason, trailerMessage
+
+        -- "You fail to cast Judgement: Out of range."
+        spellName, reason = String.match(message, "You fail to cast (.+): (.+)")
+        if spellName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isFailed = true,
+                reason = reason
+            }
+        end
 
         -- "Your Holy Strike missed Expert Training Dummy."
         spellName, target = String.match(message, "Your (.+) missed (.+)%.")
@@ -505,7 +620,7 @@ CastUtil = (function()
                 spellName = spellName,
                 spellStage = "TICK",
                 effect = "DAMAGE",
-                idDodged = true
+                isDodged = true
             }
         end
 
@@ -537,6 +652,21 @@ CastUtil = (function()
                 effect = "DAMAGE",
                 isResisted = true
             }
+        end
+
+        -- "Your Crusader Strike hits Helboar for 258."
+        spellName, target, amount, trailerMessage = String.match(message, "Your (.+) hits (.+) for (%d+)%.(.*)")
+        if spellName then
+            return Map.merge({
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                target = target,
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                amount = tonumber(amount)
+            }, CastUtil._parseChatMsgTrailer(trailerMessage) or {})
         end
 
         -- "Your Holy Strike hits Expert Training Dummy for 228 Holy damage."
@@ -600,6 +730,191 @@ CastUtil = (function()
                 spellStage = "TICK",
                 effect = "HEAL",
                 amount = tonumber(amount)
+            }
+        end
+
+        -- "You reflect 20 Holy damage to Helboar."
+        amount, school, target = String.match(message, "You reflect (%d+) (.+) damage to (.+)%.")
+        if amount then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                target = target,
+                spellName = "REFLECT",
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                amount = tonumber(amount),
+                school = school
+            }
+        end
+
+        -- "Helboar's Fire Nova was resisted."
+        source, spellName = String.match(message, "(.+)'s (.+) was resisted%.")
+        if spellName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                isResisted = true
+            }
+        end
+
+        -- "Helboar's Fire Nova hits you for 315 Fire damage."
+        source, spellName, amount, school = String.match(message, "(.+)'s (.+) hits you for (%d+) (.+) damage%.")
+        if spellName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                target = "You",
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "DAMAGE",
+                amount = tonumber(amount),
+                school = school
+            }
+        end
+
+        -- "Helboar suffers 86 Holy damage from your Consecration."
+        target, amount, school, spellName = String.match(message, "(.+) suffers (%d+) (.+) damage from your (.+)%.")
+        if spellName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                target = target,
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "PERIODIC_DAMAGE",
+                amount = tonumber(amount),
+                school = school
+            }
+        end
+    end
+
+    function CastUtil._parseChatMsgMisc(message)
+        local source, target, spellName, amount, buffName, debuffName
+
+        -- "You gain 59 Mana from Judgement of Wisdom."
+        amount, spellName = String.match(message, "^You gain (%d+) Mana from (.+)%.$")
+        if amount then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                spellName = spellName,
+                spellStage = "TICK",
+                effect = "MANA_GAIN",
+                amount = tonumber(amount)
+            }
+        end
+
+        -- "You gain Zeal."
+        buffName = String.match(message, "^You gain (.+)%.$")
+        if buffName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                spellStage = "TICK",
+                effect = "BUFF_GAIN",
+                buffName = buffName
+            }
+        end
+
+        -- "You gain Zeal (2)."
+        buffName, amount = String.match(message, "^You gain (.+) %((%d+)%)%.$")
+        if buffName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                spellStage = "TICK",
+                effect = "RESOURCE_GAIN",
+                buffName = buffName,
+                amount = tonumber(amount)
+            }
+        end
+
+        -- "Seal of Wisdom fades from you."
+        buffName = String.match(message, "^(.+) fades from you%.$")
+        if buffName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                spellStage = "TICK",
+                effect = "BUFF_GONE",
+                buffName = buffName
+            }
+        end
+
+        -- "Helboar gains Rushing Charge."
+        source, buffName = String.match(message, "^(.+) gains (.+)%.$")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                spellStage = "TICK",
+                effect = "BUFF_GAIN",
+                buffName = buffName
+            }
+        end
+
+        -- "Helboar is afflicted by Judgement of Wisdom."
+        source, debuffName = String.match(message, "^(.+) is afflicted by (.+)%.$")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                spellStage = "TICK",
+                effect = "DEBUFF_GAIN",
+                debuffName = debuffName
+            }
+        end
+
+        -- "Rushing Charge fades from Helboar."
+        buffName, source = String.match(message, "^(.+) fades from (.+)%.$")
+        if buffName then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                spellStage = "TICK",
+                effect = "BUFF_GONE",
+                buffName = buffName
+            }
+        end
+
+        -- "You have slain Helboar!"
+        target = String.match(message, "^You have slain (.+)!$")
+        if target then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = "You",
+                target = target,
+                spellStage = "TICK",
+                effect = "KILL"
+            }
+        end
+
+        -- "Helboar dies."
+        source = String.match(message, "^(.+) dies%.$")
+        if source then
+            return {
+                timestamp = GetTime(),
+                origin = message,
+                source = source,
+                spellStage = "TICK",
+                effect = "DEATH"
             }
         end
     end
@@ -755,7 +1070,7 @@ CastUtil = (function()
                             castBar.flashTextureRegion:SetAlpha(0)
                         end
                         if castBar.nameTextRegion then
-                            castBar.nameTextRegion:Show()
+                            castBar.nameTextRegion:SetText(event.spellName)
                         end
                         castBar:Show()
                     elseif event.spellStage == "CHANGED" then
