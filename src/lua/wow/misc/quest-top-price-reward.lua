@@ -9,7 +9,7 @@ f:SetScript("OnEvent", function()
         if itemLink then
             local itemId = ItemUtil.parseItemLink(itemLink)
             if itemId then
-                local price = ItemUtil.getItem(itemLink).itemRecyclePrice
+                local price = ItemUtil.getItem(itemId).itemRecyclePrice
                 if price and price > topPrice then
                     topPrice = price
                     topPriceIndex = i
@@ -18,6 +18,6 @@ f:SetScript("OnEvent", function()
         end
     end
     if topPriceIndex > 0 then
-        _G["QuestInfoRewardsFrameQuestInfoItem" .. topPriceIndex]:Click()
+        _G["QuestRewardItem" .. topPriceIndex]:Click()
     end
 end)

@@ -34,6 +34,13 @@ for _, tooltip in ipairs({GameTooltip, ItemRefTooltip}) do
     --     tooltipAddItemIdAndPrice(tooltip, ItemUtil.parseItemLink(itemLink))
     -- end)
 
+    hookMemberFunction(tooltip, "SetQuestItem", "post_hook", function(tooltip, aType, aIndex)
+        local itemLink = GetQuestItemLink(aType, aIndex)
+        if itemLink then
+            tooltipAddItemIdAndPrice(tooltip, ItemUtil.parseItemLink(itemLink))
+        end
+    end)
+
     hookMemberFunction(tooltip, "SetHyperlink", "post_hook", function(tooltip, itemString)
         tooltipAddItemIdAndPrice(tooltip, ItemUtil.parseItemString(itemString))
     end)
