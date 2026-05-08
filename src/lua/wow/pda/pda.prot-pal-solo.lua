@@ -19,7 +19,6 @@ end
 -- protection paladin solo aoe
 -- 输出有二。其一为「一键」，其二为奉献
 -- 「一键」只讲光明圣印、智慧圣印、审判及神圣打击；飞锤、驱邪等需随机应变
-
 local build = pda:newBuild()
 build.name = "prot-pal-solo"
 build.description = "prot pal solo aoe, for turtle wow"
@@ -28,7 +27,7 @@ build.slotModels = {}
 function build:createSlotModels()
     Array.clear(build.slotModels)
 
-    for i = 1, 2 do
+    for i = 1, 3 do
         local model = pda:newSlotModel()
         model.onClick = function(f, button)
             if model.spellTimeToCooldown == 0 then
@@ -37,6 +36,8 @@ function build:createSlotModels()
         end
         Array.add(build.slotModels, model)
     end
+    build.slotModels[3].y = -2
+    build.slotModels[3].x = 0
 
     self:updateSlotModels()
 
@@ -44,12 +45,9 @@ function build:createSlotModels()
 end
 
 function build:updateSlotModels()
-    if self.slotModels[1] then
-        self:_updateSlotModel(self.slotModels[1], self:_recommendStrategyCounterAttack())
-    end
-    if self.slotModels[2] then
-        self:_updateSlotModel(self.slotModels[2], self:_recommendConsecration())
-    end
+    self:_updateSlotModel(self.slotModels[1], self:_recommendStrategyCounterAttack())
+    self:_updateSlotModel(self.slotModels[2], self:_recommendConsecration())
+    self:_updateSlotModel(self.slotModels[3], self:_recommendStrategyRighteousnessStrike())
 end
 
 function build:_updateSlotModel(model, recommended)
@@ -78,17 +76,18 @@ function build:_recommendStrategyCounterAttack()
     return build:_recommendOne({
         {build._recommendAura, "retribution"},
         {build._recommendBless, "sanctuary"},
-        {build._recommendWistomSeal},
+        {build._recommendWisdomSeal},
         {build._recommendHolyShield},
-        {build._recommendHolyStrike}
+        {build._recommendStrike}
     })
 end
 
-function build:_recommendStrategyRighteousnessHammer()
+function build:_recommendStrategyRighteousnessStrike()
     return build:_recommendOne({
         {build._recommendAura, "retribution"},
         {build._recommendBless},
-        {build._recommendRighteousnessSeal}
+        {build._recommendRighteousnessSeal},
+        {build._recommendStrike, "Crusader Strike"}
     })
 end
 
@@ -218,7 +217,7 @@ function build._recommendBless(preferredBless)
                 end
             end
             if a then
-                for _, v in pairs(a) do
+                for _, v in ipairs(a) do
                     if v and not buffed(v, "target") then
                         blessSpell = v
                         break
@@ -236,9 +235,9 @@ function build._recommendBless(preferredBless)
     end
 end
 
-function build._recommendWistomSeal()
+function build._recommendWisdomSeal()
     local rigSeal = getPlayerSpell("Seal of Righteousness")
-    local cruSeal = getPlayerSpell("Seal of Crusader")
+    local cruSeal = getPlayerSpell("Seal of the Crusader")
     local wisSeal = getPlayerSpell("Seal of Wisdom")
     local ligSeal = getPlayerSpell("Seal of Light")
     local jusSeal = getPlayerSpell("Seal of Justice")
@@ -362,15 +361,17 @@ end
 
 function build._recommendRighteousnessSeal()
     local rigSeal = getPlayerSpell("Seal of Righteousness")
-    local cruSeal = getPlayerSpell("Seal of Crusader")
+    local cruSeal = getPlayerSpell("Seal of the Crusader")
     local wisSeal = getPlayerSpell("Seal of Wisdom")
     local ligSeal = getPlayerSpell("Seal of Light")
     local jusSeal = getPlayerSpell("Seal of Justice")
     local comSeal = getPlayerSpell("Seal of Command")
-    local jud = getPlayerSpell("Judgement")
-    local holyStrike = getPlayerSpell("Holy Strike")
 
     if not rigSeal then
+        return
+    end
+
+    if not canAttack("target") then
         return
     end
 
@@ -392,22 +393,16 @@ function build._recommendRighteousnessSeal()
             }
         end
     elseif which == 1 then
-        -- in close combat [Holy Strike] is piror to [Judgement]
-        if holyStrike then
-            return {
-                spell = holyStrike,
-                spellTargetUnit = "target",
-                spellTimeToCooldown = getPlayerSpellCooldownTime(holyStrike)
-            }
-        end
-        -- if [Seal of Righteousness] is not ready, don't recommend [Judgement] or may miss the incidental holy damage
-        if jud then
-            return {
-                spell = jud,
-                spellTargetUnit = "target",
-                spellTimeToCooldown = Math.max(getPlayerSpellCooldownTime(jud), getPlayerSpellCooldownTime(rigSeal))
-            }
-        end
+        local rigTimeToCooldown = getPlayerSpellCooldownTime(rigSeal)
+        local jud = getPlayerSpell("Judgement")
+        local judTimeToCooldown = jud and getPlayerSpellCooldownTime(jud) or 999
+
+        -- keep Righteousness Seal always
+        return {
+            spell = jud,
+            spellTargetUnit = "target",
+            spellTimeToCooldown = Math.max(judTimeToCooldown, rigTimeToCooldown)
+        }
     end
 end
 
@@ -423,19 +418,17 @@ function build._recommendHolyShield()
     if proportion < 0.85 then
         if inCombat() or canAttack("target") then
             -- should check both buff time and cooldown time
-            -- due to buff time is always less than or equal to cooldown time
+            -- but buff time is always less than or equal to cooldown time
             -- so, it is OK to ignore buff time
-            if spell then
-                return {
-                    spell = spell,
-                    spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
-                }
-            end
+            return {
+                spell = spell,
+                spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
+            }
         end
     end
 end
 
-function build._recommendHolyStrike(preferredStrike)
+function build._recommendStrike(preferredStrike)
     local holyStrike = getPlayerSpell("Holy Strike")
 
     if preferredStrike == "holy" or preferredStrike == "h" then
@@ -464,28 +457,25 @@ function build._recommendConsecration()
     end
 
     if inCombat() then
-        if spell then
-            return {
-                spell = spell,
-                spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
-            }
-        end
+        return {
+            spell = spell,
+            spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
+        }
     end
 end
 
 pda:register(build)
 
--- for macro
-function pdaPaladinCounterAttack()
+Util.addSlashCommand("pdaPaladinCounterAttack", "/pdapaladincounterattack", function()
     local a = build:_recommendStrategyCounterAttack()
     if a and a.spellTimeToCooldown == 0 then
         cast(a.spell, a.spellTargetUnit)
     end
-end
+end)
 
-function pdaPaladinRighteousHammer()
-    local a = build:_recommendStrategyRighteousnessHammer()
+Util.addSlashCommand("pdaPaladinRighteousStrike", "/pdapaladinrighteousstrike", function()
+    local a = build:_recommendStrategyRighteousnessStrike()
     if a and a.spellTimeToCooldown == 0 then
         cast(a.spell, a.spellTargetUnit)
     end
-end
+end)
