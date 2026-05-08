@@ -89,9 +89,9 @@ function blessingSlotMan:buildSlotModel(blessing, greatBlessing)
 
         model.spellTargetUnit = spellTargetUnit
         model.spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
-        model.spellReadyToCast = model.spellTimeToCooldown == 0
         model.selfBuffed = not (not getUnitBuff("player", spell))
         model.targetBuffed = not (not getUnitBuff("target", spell))
+        model.dim = model.spellTimeToCooldown > 0
     end
 
     return model
@@ -192,7 +192,7 @@ function sealSlotMan:buildSlotModel(sealName)
         model.targetBuffed = not (not getUnitBuff("target", spell))
         model.targetDebuffed = not (not getUnitDebuff("target", spell))
         model.spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
-        model.spellReadyToCast = (model.spellTimeToCooldown == 0)
+        model.dim = model.spellTimeToCooldown > 0
     end
 
     return model

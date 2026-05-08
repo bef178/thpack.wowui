@@ -19,10 +19,6 @@ end
 -- protection paladin solo aoe
 -- 输出有二。其一为「一键」，其二为奉献
 -- 「一键」只讲光明圣印、智慧圣印、审判及神圣打击；飞锤、驱邪等需随机应变
--- 空，表示无须关注。如长CD，无施法材料(含buff、连击点)，或机制不满足(如压制、斩杀)
--- 暗，表示施放条件不具备，但可能即将具备
--- 亮，表示可以施放
--- 高亮，表示应立即施放
 
 local build = pda:newBuild()
 build.name = "prot-pal-solo"
@@ -74,7 +70,7 @@ function build:_updateSlotModel(model, recommended)
     model.spellTexture = recommended.spell.spellTexture
     model.spellTargetUnit = recommended.spellTargetUnit
     model.spellTimeToCooldown = recommended.spellTimeToCooldown
-    model.spellReadyToCast = recommended.spellTimeToCooldown == 0
+    model.dim = recommended.spellTimeToCooldown > 0
     model.glowing = recommended.spellTimeToCooldown < 0.1
 end
 

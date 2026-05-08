@@ -57,11 +57,11 @@ function auraSlotMan:buildSlotModel(spellName)
     end
 
     model.onElapsed = function(elapsed)
-        model.spellReadyToCast = (model.spellTimeToCooldown == 0)
         model.spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
         model.spellTargetUnit = "player"
         model.selfBuffed = not (not getUnitBuff("player", spell))
         model.targetBuffed = not (not getUnitBuff("target", spell))
+        model.dim = model.spellTimeToCooldown > 0
     end
 
     return model

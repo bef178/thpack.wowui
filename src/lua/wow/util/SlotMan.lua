@@ -50,22 +50,26 @@ SlotMan = (function()
     function SlotMan:newSlotModel()
         local model = {}
 
-        model.visible = false
         model.hovered = false
         model.pressed = false
-        model.checked = false -- true iff casting as of action button
-        model.glowing = false
-
-        model.numStacks = nil
 
         model.spellTexture = nil
-        model.spellReadyToCast = false
         model.spellTimeToLive = nil
         model.spellTimeToCooldown = nil
+        model.spellStacks = nil
         model.spellTargetUnit = nil
         model.selfBuffed = false
         model.targetBuffed = false
         model.targetDebuffed = false
+
+        -- 空，无须关注。如长CD，无施法材料(含buff、连击点、物品)，或机制不满足(触发压制视为获得buff)
+        -- 暗，施放条件不具备，但可能即将具备(如斩杀)
+        -- 亮，可以施放
+        -- 高亮，应立即施放
+        model.visible = false
+        model.dim = false
+        model.glowing = false
+        model.casting = false -- 正在读条(如治疗术)或正在排队(如英勇打击)
 
         return model
     end
@@ -138,37 +142,37 @@ SlotMan = (function()
         hoveredTexture:Hide()
         f.hoveredTexture = hoveredTexture
 
-        local selfBuffedSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 4)
-        selfBuffedSpotTexture:SetTexture(getResource("tile32"))
-        selfBuffedSpotTexture:SetVertexColor(0.85, 0.85, 0.3)
-        selfBuffedSpotTexture:SetPoint("TOPLEFT", 4, 2)
-        selfBuffedSpotTexture:SetWidth(4)
-        selfBuffedSpotTexture:SetHeight(4)
-        f.selfBuffedSpotTexture = selfBuffedSpotTexture
+        local selfBuffedTextureRegion = f:CreateTexture(nil, "OVERLAY", nil, 4)
+        selfBuffedTextureRegion:SetTexture(getResource("tile32"))
+        selfBuffedTextureRegion:SetVertexColor(0.85, 0.85, 0.3)
+        selfBuffedTextureRegion:SetPoint("TOPLEFT", 4, 2)
+        selfBuffedTextureRegion:SetWidth(4)
+        selfBuffedTextureRegion:SetHeight(4)
+        f.selfBuffedTextureRegion = selfBuffedTextureRegion
 
-        local selfCastSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 4)
-        selfCastSpotTexture:SetTexture(getResource("tile32"))
-        selfCastSpotTexture:SetVertexColor(0.3, 0.85, 0.85)
-        selfCastSpotTexture:SetPoint("TOPLEFT", 4, -4)
-        selfCastSpotTexture:SetWidth(4)
-        selfCastSpotTexture:SetHeight(4)
-        f.selfCastSpotTexture = selfCastSpotTexture
+        local selfTargetedTextureRegion = f:CreateTexture(nil, "OVERLAY", nil, 4)
+        selfTargetedTextureRegion:SetTexture(getResource("tile32"))
+        selfTargetedTextureRegion:SetVertexColor(0.3, 0.85, 0.85)
+        selfTargetedTextureRegion:SetPoint("TOPLEFT", 4, -4)
+        selfTargetedTextureRegion:SetWidth(4)
+        selfTargetedTextureRegion:SetHeight(4)
+        f.selfTargetedTextureRegion = selfTargetedTextureRegion
 
-        local targetBuffedSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5)
-        targetBuffedSpotTexture:SetTexture(getResource("tile32"))
-        targetBuffedSpotTexture:SetVertexColor(0.3, 0.8, 0)
-        targetBuffedSpotTexture:SetPoint("TOPLEFT", 10, 2)
-        targetBuffedSpotTexture:SetWidth(4)
-        targetBuffedSpotTexture:SetHeight(4)
-        f.targetBuffedSpotTexture = targetBuffedSpotTexture
+        local targetBuffedTextureRegion = f:CreateTexture(nil, "OVERLAY", nil, 5)
+        targetBuffedTextureRegion:SetTexture(getResource("tile32"))
+        targetBuffedTextureRegion:SetVertexColor(0.3, 0.8, 0)
+        targetBuffedTextureRegion:SetPoint("TOPLEFT", 10, 2)
+        targetBuffedTextureRegion:SetWidth(4)
+        targetBuffedTextureRegion:SetHeight(4)
+        f.targetBuffedTextureRegion = targetBuffedTextureRegion
 
-        local targetDebuffedSpotTexture = f:CreateTexture(nil, "OVERLAY", nil, 5)
-        targetDebuffedSpotTexture:SetTexture(getResource("tile32"))
-        targetDebuffedSpotTexture:SetVertexColor(0.85, 0.3, 0.3)
-        targetDebuffedSpotTexture:SetPoint("TOPLEFT", targetBuffedSpotTexture, "TOPLEFT")
-        targetDebuffedSpotTexture:SetWidth(4)
-        targetDebuffedSpotTexture:SetHeight(4)
-        f.targetDebuffedSpotTexture = targetDebuffedSpotTexture
+        local targetDebuffedTextureRegion = f:CreateTexture(nil, "OVERLAY", nil, 5)
+        targetDebuffedTextureRegion:SetTexture(getResource("tile32"))
+        targetDebuffedTextureRegion:SetVertexColor(0.85, 0.3, 0.3)
+        targetDebuffedTextureRegion:SetPoint("TOPLEFT", targetBuffedTextureRegion, "TOPLEFT")
+        targetDebuffedTextureRegion:SetWidth(4)
+        targetDebuffedTextureRegion:SetHeight(4)
+        f.targetDebuffedTextureRegion = targetDebuffedTextureRegion
 
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil)
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"))
@@ -245,7 +249,7 @@ SlotMan = (function()
             return
         end
 
-        if model.checked then
+        if model.casting then
             f.checkedTexture:Show()
         else
             f.checkedTexture:Hide()
@@ -269,44 +273,44 @@ SlotMan = (function()
             f.contentTexture:SetTexture(model.spellTexture)
         end
 
-        -- f.contentTexture:SetDesaturated(not model.spellReadyToCast)
-        if model.spellReadyToCast then
-            f.contentTexture:SetVertexColor(1, 1, 1)
-            f.borderTexture:SetVertexColor(1, 1, 1)
-        else
+        -- f.contentTexture:SetDesaturated(model.dim)
+        if model.dim then
             f.contentTexture:SetVertexColor(0.5, 0.5, 0.5)
-            f.borderTexture:SetVertexColor(1.0, 1.0, 1.0)
+            -- f.borderTexture:SetVertexColor(1, 1, 1)
+        else
+            f.contentTexture:SetVertexColor(1, 1, 1)
+            -- f.borderTexture:SetVertexColor(1, 1, 1)
         end
         -- elseif no_mana then
         --     f.contentTexture:SetVertexColor(0.5, 0.5, 1.0)
         --     f.borderTexture:SetVertexColor(0.5, 0.5, 1.0)
 
         if model.selfBuffed then
-            f.selfBuffedSpotTexture:Show()
+            f.selfBuffedTextureRegion:Show()
         else
-            f.selfBuffedSpotTexture:Hide()
+            f.selfBuffedTextureRegion:Hide()
         end
 
         if model.spellTargetUnit and UnitIsUnit(model.spellTargetUnit, "player") then
-            f.selfCastSpotTexture:Show()
+            f.selfTargetedTextureRegion:Show()
         else
-            f.selfCastSpotTexture:Hide()
+            f.selfTargetedTextureRegion:Hide()
         end
 
         if model.targetBuffed then
-            f.targetBuffedSpotTexture:Show()
+            f.targetBuffedTextureRegion:Show()
         else
-            f.targetBuffedSpotTexture:Hide()
+            f.targetBuffedTextureRegion:Hide()
         end
 
         if model.targetDebuffed then
-            f.targetDebuffedSpotTexture:Show()
+            f.targetDebuffedTextureRegion:Show()
         else
-            f.targetDebuffedSpotTexture:Hide()
+            f.targetDebuffedTextureRegion:Hide()
         end
 
-        if model.numStacks and model.numStacks ~= 1 then
-            f.numStacksText:SetText(model.numStacks)
+        if model.spellStacks and model.spellStacks ~= 1 then
+            f.numStacksText:SetText(model.spellStacks)
         else
             f.numStacksText:SetText(nil)
         end
