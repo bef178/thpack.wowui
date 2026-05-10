@@ -79,6 +79,7 @@ src\lua\wow\blessingbar\aurabar.lua
 
 src\lua\wow\pda\pda.lua
 src\lua\wow\pda\pda.prot-pal-solo.lua
+src\lua\wow\pda\pda.fury-warrior.lua
 
 src\resource\class\
 src\resource\slot\
