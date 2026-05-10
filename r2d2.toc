@@ -73,6 +73,7 @@ src\lua\wow\misc\tooltip-unit.lua
 src\lua\wow\misc\tooltip-item.lua
 src\lua\wow\misc\dedup-error-message.lua
 src\lua\wow\misc\quest-top-price-reward.lua
+src\lua\wow\misc\battleground-scoreboard.lua
 
 src\lua\wow\blessingbar\blessingbar.lua
 src\lua\wow\blessingbar\aurabar.lua

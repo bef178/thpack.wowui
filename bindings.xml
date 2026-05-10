@@ -1,21 +1,28 @@
 <Bindings>
-    <Binding name="TOGGLE_MACRO_FRAME" runOnUp="true" header="r2d2">
-        if (keystate == "down") then
-            if (MacroFrame and MacroFrame:IsShown()) then
-                MacroFrameCloseButton:Click();
+    <Binding name="TOGGLE_MACRO_FRAME" runOnUp="true" header="R2D2">
+        if keystate == "down" then
+            if MacroFrame and MacroFrame:IsShown() then
+                MacroFrameCloseButton:Click()
             else
-                PlaySound("igMainMenuOption");
-                ShowMacroFrame();
+                PlaySound("igMainMenuOption")
+                ShowMacroFrame()
             end
         end
     </Binding>
-    <Binding name="TOGGLE_WORLD_MAP_FRAME" runOnUp="true">
-        if (keystate == "down") then
-            if (not UnitAffectingCombat("player")) then
-                ShowUIPanel(WorldMapFrame);
+    <Binding name="TOGGLE_WORLD_MAP_FRAME" runOnUp="true" header="R2D2">
+        if keystate == "down" then
+            if not UnitAffectingCombat("player") then
+                ShowUIPanel(WorldMapFrame)
             end
         else
-            HideUIPanel(WorldMapFrame);
+            HideUIPanel(WorldMapFrame)
+        end
+    </Binding>
+    <Binding name="TOGGLE_BATTLEGROUND_SCOREBOARD" runOnUp="true" header="R2D2">
+        if keystate == "down" then
+            showBattlegroundScoreboard()
+        else
+            hideBattlegroundScoreboard()
         end
     </Binding>
 </Bindings>

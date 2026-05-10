@@ -1,7 +1,0 @@
-## Interface: {Interface}
-## Title: thpack.scoreboard
-## Description: team fortress styled scoreboard for wow battleground
-## X-BuildDate: {BuildDate}
-
-bindings.xml
-scoreboard.lua
