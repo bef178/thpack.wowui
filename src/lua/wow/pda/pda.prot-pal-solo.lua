@@ -22,9 +22,12 @@ end
 local build = pda:newBuild()
 build.name = "prot-pal-solo"
 build.description = "prot pal solo aoe, for turtle wow"
+build.spells = {}
 build.slotModels = {}
 
 function build:createSlotModels()
+    self:_updateSpells()
+
     Array.clear(build.slotModels)
 
     for i = 1, 3 do
@@ -44,10 +47,37 @@ function build:createSlotModels()
     return build.slotModels
 end
 
+function build:_updateSpells()
+    self.spells.protAura = getPlayerSpell("Devotion Aura")
+    self.spells.retAura = getPlayerSpell("Retribution Aura")
+
+    self.spells.mightBless = getPlayerSpell("Blessing of Might")
+    self.spells.wisBless = getPlayerSpell("Blessing of Wisdom")
+    -- self.spells.lightBless = getPlayerSpell("Blessing of Light")
+    -- self.spells.salvationBless = getPlayerSpell("Blessing of Salvation") -- 拯救祝福
+    self.spells.sanBless = getPlayerSpell("Blessing of Sanctuary") -- 庇护祝福
+    self.spells.kingsBless = getPlayerSpell("Blessing of Kings")
+
+    self.spells.rigSeal = getPlayerSpell("Seal of Righteousness")
+    self.spells.cruSeal = getPlayerSpell("Seal of the Crusader")
+    self.spells.wisSeal = getPlayerSpell("Seal of Wisdom")
+    self.spells.ligSeal = getPlayerSpell("Seal of Light")
+    self.spells.jusSeal = getPlayerSpell("Seal of Justice")
+    self.spells.comSeal = getPlayerSpell("Seal of Command")
+    self.spells.jud = getPlayerSpell("Judgement")
+
+    self.spells.holyStrike = getPlayerSpell("Holy Strike")
+    self.spells.crusaderStrike = getPlayerSpell("Crusader Strike")
+
+    self.spells.holyShield = getPlayerSpell("Holy Shield")
+
+    self.spells.consecration = getPlayerSpell("Consecration")
+end
+
 function build:updateSlotModels()
-    self:_updateSlotModel(self.slotModels[1], self:_recommendStrategyCounterAttack())
+    self:_updateSlotModel(self.slotModels[1], self:_perStrategyCounterAttack())
     self:_updateSlotModel(self.slotModels[2], self:_recommendConsecration())
-    self:_updateSlotModel(self.slotModels[3], self:_recommendStrategyRighteousnessStrike())
+    self:_updateSlotModel(self.slotModels[3], self:_perStrategyRighteousnessStrike())
 end
 
 function build:_updateSlotModel(model, recommended)
@@ -72,56 +102,9 @@ function build:_updateSlotModel(model, recommended)
     model.glowing = recommended.spellTimeToCooldown < 0.1
 end
 
-function build:_recommendStrategyCounterAttack()
-    return build:_recommendOne({
-        {build._recommendAura, "retribution"},
-        {build._recommendBless, "sanctuary"},
-        {build._recommendWisdomSeal},
-        {build._recommendHolyShield},
-        {build._recommendStrike}
-    })
-end
-
-function build:_recommendStrategyRighteousnessStrike()
-    return build:_recommendOne({
-        {build._recommendAura, "retribution"},
-        {build._recommendBless},
-        {build._recommendRighteousnessSeal},
-        {build._recommendStrike, "Crusader Strike"}
-    })
-end
-
-function build:_recommendOne(candidates)
-    if not candidates then
-        return
-    end
-    local best
-    for _, v in ipairs(candidates) do
-        local recommended = v[1](v[2])
-        if recommended then
-            if not best then
-                best = recommended
-                if best.spellTimeToCooldown == 0 then
-                    break
-                end
-            else
-                if best.spellTimeToCooldown > recommended.spellTimeToCooldown then
-                    best = recommended
-                    if best.spellTimeToCooldown == 0 then
-                        break
-                    end
-                end
-            end
-        end
-    end
-    if best then
-        return best
-    end
-end
-
-function build._recommendAura(preferredAura)
-    local protAura = getPlayerSpell("Devotion Aura")
-    local retAura = getPlayerSpell("Retribution Aura")
+function build:_recommendAura()
+    local protAura = build.spells.protAura
+    local retAura = build.spells.retAura
 
     if not protAura and not retAura then
         return
@@ -129,46 +112,28 @@ function build._recommendAura(preferredAura)
 
     local stance = getPlayerActiveStance()
     if not stance then
-        if preferredAura == "retribution" or preferredAura == "ret" or preferredAura == "r" then
-            preferredAura = retAura
-        elseif type(preferredAura) == "string" then
-            preferredAura = getPlayerSpell(preferredAura)
-        end
-        local auraSpell = preferredAura or protAura
-        if auraSpell then
-            return {
-                spell = auraSpell,
-                spellTimeToCooldown = getPlayerSpellCooldownTime(auraSpell)
-            }
-        end
+        local auraSpell = retAura or protAura
+        return {
+            spell = auraSpell,
+            spellTimeToCooldown = getPlayerSpellCooldownTime(auraSpell)
+        }
     end
 end
 
 -- XXX how to get buff source
-function build._recommendBless(preferredBless)
-    local mightBless = getPlayerSpell("Blessing of Might")
-    local wisBless = getPlayerSpell("Blessing of Wisdom")
-    -- local lightBless = getPlayerSpell("Blessing of Light")
-    -- local salvationBless = getPlayerSpell("Blessing of Salvation") -- 拯救祝福
-    local sanBless = getPlayerSpell("Blessing of Sanctuary") -- 庇护祝福
-    local kingsBless = getPlayerSpell("Blessing of Kings")
+function build:_recommendBless(preferredBless)
+    local mightBless = build.spells.mightBless
+    local wisBless = build.spells.wisBless
+    local sanBless = build.spells.sanBless
+    local kingsBless = build.spells.kingsBless
 
-    local playerInCombat = inCombat()
-    local targetAttackable = canAttack("target")
-
-    if not UnitExists("target") or UnitIsUnit("target", "player") or targetAttackable then
+    if not UnitExists("target") or UnitIsUnit("target", "player") or canAttack("target") then
         -- targets myself
 
-        if preferredBless == "sanctuary" or preferredBless == "san" or preferredBless == "s" then
-            preferredBless = sanBless
-        elseif type(preferredBless) == "string" then
-            preferredBless = getPlayerSpell(preferredBless)
-        end
         local blessSpell = preferredBless or mightBless
-
         local buff = buffed(blessSpell)
 
-        if playerInCombat then
+        if inCombat() then
             if not buff or buff.buffTimeToLive < 5 then
                 if blessSpell then
                     return {
@@ -235,14 +200,14 @@ function build._recommendBless(preferredBless)
     end
 end
 
-function build._recommendWisdomSeal()
-    local rigSeal = getPlayerSpell("Seal of Righteousness")
-    local cruSeal = getPlayerSpell("Seal of the Crusader")
-    local wisSeal = getPlayerSpell("Seal of Wisdom")
-    local ligSeal = getPlayerSpell("Seal of Light")
-    local jusSeal = getPlayerSpell("Seal of Justice")
-    local comSeal = getPlayerSpell("Seal of Command")
-    local jud = getPlayerSpell("Judgement")
+function build:_recommendWisdomSeal()
+    local rigSeal = build.spells.rigSeal
+    local cruSeal = build.spells.cruSeal
+    local wisSeal = build.spells.wisSeal
+    local ligSeal = build.spells.ligSeal
+    local jusSeal = build.spells.jusSeal
+    local comSeal = build.spells.comSeal
+    local jud = build.spells.jud
 
     if not wisSeal or not ligSeal then
         return
@@ -267,11 +232,11 @@ function build._recommendWisdomSeal()
     end
 
     if otherSealBuff or ligTargetDebuff and wisTargetDebuff then
-        return build._recommendRighteousnessSeal()
+        return build:_recommendRighteousnessSeal()
     elseif ligTargetDebuff then
         if ligBuff then
             if ligBuff.buffTimeToLive < 2 then
-                -- TODO make recommendation after checking health fraction and mana fraction
+                -- TODO do recommend after checking health fraction and mana fraction
                 if wisSeal then
                     return {
                         spell = wisSeal,
@@ -359,13 +324,14 @@ function build._recommendWisdomSeal()
     end
 end
 
-function build._recommendRighteousnessSeal()
-    local rigSeal = getPlayerSpell("Seal of Righteousness")
-    local cruSeal = getPlayerSpell("Seal of the Crusader")
-    local wisSeal = getPlayerSpell("Seal of Wisdom")
-    local ligSeal = getPlayerSpell("Seal of Light")
-    local jusSeal = getPlayerSpell("Seal of Justice")
-    local comSeal = getPlayerSpell("Seal of Command")
+function build:_recommendRighteousnessSeal()
+    local rigSeal = build.spells.rigSeal
+    local cruSeal = build.spells.cruSeal
+    local wisSeal = build.spells.wisSeal
+    local ligSeal = build.spells.ligSeal
+    local jusSeal = build.spells.jusSeal
+    local comSeal = build.spells.comSeal
+    local jud = build.spells.jud
 
     if not rigSeal then
         return
@@ -392,10 +358,9 @@ function build._recommendRighteousnessSeal()
                 spellTimeToCooldown = getPlayerSpellCooldownTime(rigSeal)
             }
         end
-    elseif which == 1 then
+    elseif jud and which == 1 then
         local rigTimeToCooldown = getPlayerSpellCooldownTime(rigSeal)
-        local jud = getPlayerSpell("Judgement")
-        local judTimeToCooldown = jud and getPlayerSpellCooldownTime(jud) or 999
+        local judTimeToCooldown = getPlayerSpellCooldownTime(jud)
 
         -- keep Righteousness Seal always
         return {
@@ -407,8 +372,8 @@ function build._recommendRighteousnessSeal()
 end
 
 -- TODO check equipped shield
-function build._recommendHolyShield()
-    local spell = getPlayerSpell("Holy Shield")
+function build:_recommendHolyShield()
+    local spell = build.spells.holyShield
 
     if not spell then
         return
@@ -428,29 +393,21 @@ function build._recommendHolyShield()
     end
 end
 
-function build._recommendStrike(preferredStrike)
-    local holyStrike = getPlayerSpell("Holy Strike")
-
-    if preferredStrike == "holy" or preferredStrike == "h" then
-        preferredStrike = holyStrike
-    elseif type(preferredStrike) == "string" then
-        preferredStrike = getPlayerSpell(preferredStrike)
-    end
-    local strike = preferredStrike or holyStrike
-
-    if strike then
+function build:_recommendStrike(preferredStrike)
+    local strikeSpell = preferredStrike or build.spells.holyStrike
+    if strikeSpell then
         if inCombat() or canAttack("target") then
             return {
-                spell = strike,
+                spell = strikeSpell,
                 spellTargetUnit = "target",
-                spellTimeToCooldown = getPlayerSpellCooldownTime(strike)
+                spellTimeToCooldown = getPlayerSpellCooldownTime(strikeSpell)
             }
         end
     end
 end
 
-function build._recommendConsecration()
-    local spell = getPlayerSpell("Consecration")
+function build:_recommendConsecration()
+    local spell = build.spells.consecration
 
     if not spell then
         return
@@ -464,18 +421,64 @@ function build._recommendConsecration()
     end
 end
 
+function build:_oneBest(candidates)
+    if not candidates then
+        return
+    end
+    local best
+    for _, candidate in ipairs(candidates) do
+        if candidate then
+            if not best then
+                best = candidate
+                if best.spellTimeToCooldown == 0 then
+                    break
+                end
+            else
+                if best.spellTimeToCooldown > candidate.spellTimeToCooldown then
+                    best = candidate
+                    if best.spellTimeToCooldown == 0 then
+                        break
+                    end
+                end
+            end
+        end
+    end
+    if best then
+        return best
+    end
+end
+
+function build:_perStrategyCounterAttack()
+    return build:_oneBest({
+        build:_recommendAura(),
+        build:_recommendBless(build.spells.sanBless),
+        build:_recommendWisdomSeal(),
+        build:_recommendHolyShield(),
+        build:_recommendStrike()
+    })
+end
+
+function build:_perStrategyRighteousnessStrike()
+    return build:_oneBest({
+        build:_recommendAura(),
+        build:_recommendBless(),
+        build:_recommendRighteousnessSeal(),
+        build:_recommendStrike(build.spells.crusaderStrike)
+    })
+end
+
 pda:register(build)
 
-Util.addSlashCommand("pdaPaladinCounterAttack", "/pdapaladincounterattack", function()
-    local a = build:_recommendStrategyCounterAttack()
-    if a and a.spellTimeToCooldown == 0 then
-        cast(a.spell, a.spellTargetUnit)
+Util.addSlashCommand("aPdaProtPaladinCounterAttack", "/pdaportpaladincounterattack", function()
+    local o = build:_perStrategyCounterAttack()
+    if o and o.spellTimeToCooldown == 0 then
+        cast(o.spell, o.spellTargetUnit)
     end
 end)
 
-Util.addSlashCommand("pdaPaladinRighteousStrike", "/pdapaladinrighteousstrike", function()
-    local a = build:_recommendStrategyRighteousnessStrike()
-    if a and a.spellTimeToCooldown == 0 then
-        cast(a.spell, a.spellTargetUnit)
+Util.addSlashCommand("aPdaProtPaladinRighteousStrike", "/pdaprotpaladinrighteousstrike", function()
+    local o = build:_perStrategyRighteousnessStrike()
+    if o and o.spellTimeToCooldown == 0 then
+        cast(o.spell, o.spellTargetUnit)
     end
 end)
