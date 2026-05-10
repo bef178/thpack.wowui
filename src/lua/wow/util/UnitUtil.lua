@@ -215,16 +215,25 @@ UnitUtil = (function()
 
     function A.getUnitLevelColor(unit)
         if UnitCanAttack("player", unit) then
-            local level = UnitLevel(unit)
-            local c = GetCreatureDifficultyColor(level)
-            return Color.fromVertex(c.r, c.g, c.b)
+            local diff = UnitLevel(unit) - UnitLevel("player")
+            if diff >= 5 then
+                return Color.fromVertex(1, 0.1, 0.1) -- impossible
+            elseif diff >= 3 then
+                return Color.fromVertex(1, 0.5, 0.25) -- very difficult
+            elseif diff >= -2 then
+                return Color.fromVertex(1, 1, 0) -- difficult
+            elseif -diff <= GetQuestGreenRange() then
+                return Color.fromVertex(0.25, 0.75, 0.25) -- standard
+            else
+                return Color.fromVertex(0.5, 0.5, 0.5) -- trivial
+            end
         else
             -- Blizzard yellow
             return Color.fromVertex(1.0, 0.82, 0.0)
         end
     end
 
-    function A.getUnitLevelSuffixByUnit(unit)
+    function A.getUnitLevelSuffix(unit)
         if UnitIsPlayer(unit) then
             return ""
         end
