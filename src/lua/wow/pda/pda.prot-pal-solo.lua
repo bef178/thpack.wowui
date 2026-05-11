@@ -450,20 +450,20 @@ end
 
 function build:_perStrategyCounterAttack()
     return build:_oneBest({
-        build:_recommendAura(),
-        build:_recommendBless(build.spells.sanBless),
-        build:_recommendWisdomSeal(),
-        build:_recommendHolyShield(),
-        build:_recommendStrike()
+        build:_recommendAura() or false,
+        build:_recommendBless(build.spells.sanBless) or false,
+        build:_recommendWisdomSeal() or false,
+        build:_recommendHolyShield() or false,
+        build:_recommendStrike() or false
     })
 end
 
 function build:_perStrategyRighteousnessStrike()
     return build:_oneBest({
-        build:_recommendAura(),
-        build:_recommendBless(),
-        build:_recommendRighteousnessSeal(),
-        build:_recommendStrike(build.spells.crusaderStrike)
+        build:_recommendAura() or false,
+        build:_recommendBless() or false,
+        build:_recommendRighteousnessSeal() or false,
+        build:_recommendStrike(build.spells.crusaderStrike) or false
     })
 end
 

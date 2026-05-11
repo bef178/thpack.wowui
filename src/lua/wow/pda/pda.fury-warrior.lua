@@ -409,10 +409,10 @@ end
 
 function build:_perStrategyFury()
     return self:_oneBest({
-        self:_recommendBloodthirst(),
-        self:_recommendWhirlwind(),
-        self:_recommendBattleShout(),
-        self:_recommendHamstring()
+        self:_recommendBloodthirst() or false,
+        self:_recommendWhirlwind() or false,
+        self:_recommendBattleShout() or false,
+        self:_recommendHamstring() or false
     })
 end
 
@@ -420,8 +420,8 @@ pda:register(build)
 
 Util.addSlashCommand("aPdaFuryWarrior", "/pdafurywarrior", function()
     local o = build:_oneBest({
-        build:_recommendOverpower(),
-        build:_perStrategyFury()
+        build:_recommendOverpower() or false,
+        build:_perStrategyFury() or false
     })
     if o and o.spellTimeToCooldown == 0 then
         cast(o.spell, o.spellTargetUnit)
