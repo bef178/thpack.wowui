@@ -3,6 +3,7 @@ local getPlayerSpellCooldownTime = UnitUtil.getPlayerSpellCooldownTime
 local buffed = UnitUtil.buffed
 local inCombat = UnitUtil.inCombat
 local canAttack = UnitUtil.canAttack
+local debuffed = UnitUtil.debuffed
 local getUnitHp = UnitUtil.getUnitHp
 local getPlayerActiveStance = UnitUtil.getPlayerActiveStance
 local cast = UnitUtil.cast
@@ -49,6 +50,20 @@ local function getFlurryTalentRankAndTexture()
         end
     end
     return 0
+end
+
+local function isSpellQueued(spell)
+    if not spell or not spell.spellTexture then
+        return false
+    end
+    for slot = 1, 120 do
+        if HasAction(slot) and GetActionTexture(slot) == spell.spellTexture then
+            if IsCurrentAction(slot) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 -- fury warrior dungeon/raid rotation
@@ -102,7 +117,7 @@ function build:createSlotModels()
 
     Array.clear(build.slotModels)
 
-    for i = 1, 4 do
+    for i = 1, 5 do
         local model = pda:newSlotModel()
         model.onClick = function(f, button)
             if model.spellTimeToCooldown == 0 then
@@ -111,6 +126,8 @@ function build:createSlotModels()
         end
         Array.add(build.slotModels, model)
     end
+    build.slotModels[5].y = 2
+    build.slotModels[5].x = 0
 
     self:updateSlotModels()
 
@@ -118,6 +135,10 @@ function build:createSlotModels()
 end
 
 function build:_updateSpells()
+    self.spells.heroicstrike = getPlayerSpell("Heroic Strike")
+    self.spells.charge = getPlayerSpell("Charge")
+    self.spells.rend = getPlayerSpell("Rend")
+    self.spells.thunderclap = getPlayerSpell("Thunder Clap")
     self.spells.overpower = getPlayerSpell("Overpower")
     self.spells.revenge = getPlayerSpell("Revenge")
     self.spells.bloodthirst = getPlayerSpell("Bloodthirst")
@@ -132,6 +153,7 @@ function build:updateSlotModels()
     self:_updateSlotModel(self.slotModels[2], self:_recommendOverpower())
     self:_updateSlotModel(self.slotModels[3], self:_recommendRevenge())
     self:_updateSlotModel(self.slotModels[4], self:_recommendExecute())
+    self:_updateSlotModel(self.slotModels[5], self:_perStrategySolo())
 end
 
 function build:_updateSlotModel(model, recommended)
@@ -151,10 +173,130 @@ function build:_updateSlotModel(model, recommended)
     model.spell = recommended.spell
     model.spellTexture = recommended.spell.spellTexture
     model.spellTargetUnit = recommended.spellTargetUnit
+    model.spellTimeToLive = recommended.spellTimeToLive
     model.spellTimeToCooldown = recommended.spellTimeToCooldown
     model.spellStacks = recommended.spellStacks
+    model.pinned = recommended.pinned
     model.dim = recommended.dim or recommended.spellTimeToCooldown > 0
     model.glowing = recommended.glowing
+end
+
+function build:_recommendHeroicStrike()
+    local spell = self.spells.heroicstrike
+    if not spell then
+        return
+    end
+
+    if not canAttack("target") then
+        return
+    end
+
+    local level = UnitLevel("player")
+    if level < 10 then
+        if UnitMana("player") < 40 then
+            return
+        end
+    else
+        if UnitMana("player") < 70 then
+            return
+        end
+    end
+
+    if isSpellQueued(spell) then
+        return
+    end
+
+    return {
+        spell = spell,
+        spellTargetUnit = "target",
+        spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
+        -- TODO inRange
+    }
+end
+
+-- in battle stance, not in combat
+function build:_recommendCharge()
+    local spell = self.spells.charge
+    if not spell then
+        return
+    end
+
+    if inCombat() or not canAttack("target") then
+        return
+    end
+
+    local stance = getPlayerActiveStance()
+    local inBattleStance = stance and stance.stanceIndex == 1
+    local canChangeStance = getStanceCooldownRemainingSeconds(1) == 0
+    if not inBattleStance and not canChangeStance then
+        return
+    end
+
+    return {
+        spell = spell,
+        spellTargetUnit = "target",
+        spellTimeToCooldown = getPlayerSpellCooldownTime(spell),
+        pinned = not inBattleStance and canChangeStance
+        -- TODO inRange
+    }
+end
+
+-- in battle/defensive stance, 10 rage
+function build:_recommendRend()
+    local spell = self.spells.rend
+    if not spell then
+        return
+    end
+
+    if not canAttack("target") or UnitMana("player") < 10 then
+        return
+    end
+
+    local stance = getPlayerActiveStance()
+    local inGoodStance = stance and (stance.stanceIndex == 1 or stance.stanceIndex == 2)
+    local canChangeStance = getStanceCooldownRemainingSeconds(1) == 0
+    if not inGoodStance and not canChangeStance then
+        return
+    end
+
+    if debuffed(spell, "target") then
+        return
+    end
+
+    return {
+        spell = spell,
+        spellTargetUnit = "target",
+        spellTimeToCooldown = getPlayerSpellCooldownTime(spell),
+        pinned = not inGoodStance and canChangeStance
+    }
+end
+
+function build:_recommendThunderClap()
+    local spell = self.spells.thunderclap
+    if not spell then
+        return
+    end
+
+    if not inCombat() or not canAttack("target") then
+        return
+    end
+
+    local level = UnitLevel("player")
+    if level < 10 then
+        if UnitMana("player") < 40 then
+            return
+        end
+    else
+        if UnitMana("player") < 70 then
+            return
+        end
+    end
+
+    return {
+        spell = spell,
+        spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
+        -- TODO inRange
+    }
 end
 
 function build:_recommendOverpower()
@@ -397,14 +539,14 @@ function build:_recommendBattleShout()
     end
 
     if inCombat() then
-        if buffTtl < 2 then
+        if buffTtl < 5 then
             return {
                 spell = spell,
                 spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
             }
         end
     else
-        if buffTtl < 10 then
+        if buffTtl < 20 then
             return {
                 spell = spell,
                 spellTimeToCooldown = getPlayerSpellCooldownTime(spell)
@@ -447,13 +589,21 @@ function build:_perStrategyFury()
     })
 end
 
+function build:_perStrategySolo()
+    return self:_oneBest({
+        self:_recommendBattleShout() or false,
+        self:_recommendCharge() or false,
+        self:_recommendRend() or false,
+        self:_recommendOverpower() or false,
+        self:_recommendHeroicStrike() or false,
+        self:_recommendThunderClap() or false
+    })
+end
+
 pda:register(build)
 
-Util.addSlashCommand("aPdaFuryWarrior", "/pdafurywarrior", function()
-    local o = build:_oneBest({
-        build:_recommendOverpower() or false,
-        build:_perStrategyFury() or false
-    })
+Util.addSlashCommand("aPdaWarriorSolo", "/pdawarriorsolo", function()
+    local o = build:_perStrategySolo()
     if o and o.spellTimeToCooldown == 0 then
         cast(o.spell, o.spellTargetUnit)
     end

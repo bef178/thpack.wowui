@@ -174,6 +174,14 @@ SlotMan = (function()
         targetDebuffedTextureRegion:SetHeight(4)
         f.targetDebuffedTextureRegion = targetDebuffedTextureRegion
 
+        local pinnedTextureRegion = f:CreateTexture(nil, "OVERLAY", nil, 5)
+        pinnedTextureRegion:SetTexture(getResource("tile32"))
+        pinnedTextureRegion:SetVertexColor(0.85, 0.1, 0.1)
+        pinnedTextureRegion:SetPoint("TOPLEFT", 22, -4)
+        pinnedTextureRegion:SetWidth(4)
+        pinnedTextureRegion:SetHeight(4)
+        f.pinnedTextureRegion = pinnedTextureRegion
+
         local timeToLiveBar = CreateFrame("StatusBar", nil, f, nil)
         timeToLiveBar:SetStatusBarTexture(getResource("tile32"))
         timeToLiveBar:SetStatusBarColor(0, 1, 0, 0.85)
@@ -307,6 +315,12 @@ SlotMan = (function()
             f.targetDebuffedTextureRegion:Show()
         else
             f.targetDebuffedTextureRegion:Hide()
+        end
+
+        if model.pinned then
+            f.pinnedTextureRegion:Show()
+        else
+            f.pinnedTextureRegion:Hide()
         end
 
         if model.spellStacks and model.spellStacks ~= 1 then
