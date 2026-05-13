@@ -374,7 +374,7 @@ SlotMan = (function()
         local y = f.slotModel.y or (math.floor((index - 1) / self.max_x_slots))
         local x = f.slotModel.x or (index - 1 - y * self.max_x_slots)
         f:ClearAllPoints()
-        f:SetPoint("TOPLEFT", self.anchor, "TOPLEFT", x * (self.slot_size + self.slot_margin), y * (self.slot_size + self.slot_margin))
+        f:SetPoint("TOPLEFT", self.anchor, "TOPLEFT", x * (self.slot_size + self.slot_margin), -y * (self.slot_size + self.slot_margin))
     end
 
     return SlotMan

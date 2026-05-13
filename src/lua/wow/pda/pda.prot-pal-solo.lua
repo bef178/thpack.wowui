@@ -39,7 +39,7 @@ function build:createSlotModels()
         end
         Array.add(build.slotModels, model)
     end
-    build.slotModels[3].y = -2
+    build.slotModels[3].y = 2
     build.slotModels[3].x = 0
 
     self:updateSlotModels()
