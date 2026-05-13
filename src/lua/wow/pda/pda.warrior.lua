@@ -28,13 +28,33 @@ local function getMainHandWeaponDph()
     return minDph - apDph, maxDph - apDph
 end
 
+local function getFlurryTalentRankAndTexture()
+    local tabIndex = 2
+    for i = 1, GetNumTalents(tabIndex) do
+        local name, texture, _, _, rank = GetTalentInfo(tabIndex, i)
+        if name == "Flurry" then
+            return rank, texture
+        end
+    end
+    return 0
+end
+
 -- fury warrior dungeon/raid rotation
---
 local build = pda:newBuild()
 build.name = "fury-warrior"
 build.description = "fury warrior dungeon/raid rotation"
 build.spells = {}
 build.slotModels = {}
+
+build._flurryTalentRank = 0
+build._flurryTalentTexture = nil
+
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
+f:RegisterEvent("CHARACTER_POINTS_CHANGED")
+f:SetScript("OnEvent", function()
+    build._flurryTalentRank, build._flurryTalentTexture = getFlurryTalentRankAndTexture()
+end)
 
 build._overpowerBuffs = {}
 build._revengeBuffs = {}
@@ -300,12 +320,11 @@ function build:_recommendHamstring()
         return
     end
 
-    local talentName, talentFileId, _, _, talentRank = GetTalentInfo(2, 16)
-    if not talentName or talentName ~= "Flurry" or talentRank == 0 then
+    if self._flurryTalentRank == 0 then
         return
     end
 
-    if buffed({spellTexture = talentFileId}) then
+    if buffed({spellTexture = self._flurryTalentTexture}) then
         return
     end
 
