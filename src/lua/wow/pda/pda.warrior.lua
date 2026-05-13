@@ -22,6 +22,15 @@ local function getStanceCooldownEndTime(stanceIndex)
     return 0
 end
 
+local function getStanceCooldownRemainingSeconds(stanceIndex)
+    local seconds = getStanceCooldownEndTime(stanceIndex) - GetTime()
+    if seconds < 0 then
+        return 0
+    else
+        return seconds
+    end
+end
+
 local function getMainHandWeaponDph()
     local base, posBuff, negBuff = UnitAttackPower("player")
     local ap = base + posBuff + negBuff
@@ -178,7 +187,7 @@ function build:_recommendOverpower()
     local stance = getPlayerActiveStance()
     local inBattleStance = stance and stance.stanceIndex == 1
 
-    if not inBattleStance and getStanceCooldownEndTime(1) - now > 0.1 then
+    if not inBattleStance and getStanceCooldownRemainingSeconds(1) > 0.1 then
         return
     end
 
@@ -226,7 +235,7 @@ function build:_recommendRevenge()
     local stance = getPlayerActiveStance()
     local inDefensiveStance = stance and stance.stanceIndex == 2
 
-    if not inDefensiveStance and getStanceCooldownEndTime(2) - now > 0.1 then
+    if not inDefensiveStance and getStanceCooldownRemainingSeconds(2) > 0.1 then
         return
     end
 
