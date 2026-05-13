@@ -15,8 +15,11 @@ if classType ~= "WARRIOR" then
 end
 
 local function getStanceCooldownEndTime(stanceIndex)
-    local startTime, duration, isReady = GetShapeshiftFormCooldown(stanceIndex)
-    return isReady and 0 or (startTime + duration)
+    local startTime, duration, _ = GetShapeshiftFormCooldown(stanceIndex)
+    if duration and duration > 0 then
+        return startTime + duration
+    end
+    return 0
 end
 
 local function getMainHandWeaponDph()
