@@ -46,7 +46,7 @@ FlatUnitFrame = (function()
         uf.nameFrame = nameFrame
 
         local nameTextRegion = uf:CreateFontString(nil, "BACKGROUND")
-        nameTextRegion:SetFont(STANDARD_TEXT_FONT, 12, "OUTLINE")
+        nameTextRegion:SetFont(STANDARD_TEXT_FONT, 10, "OUTLINE")
         nameTextRegion:SetShadowOffset(0, 0)
         nameTextRegion:SetJustifyH("CENTER")
         nameTextRegion:SetPoint("BOTTOM", uf, "BOTTOM", 0, 8)
@@ -78,34 +78,47 @@ FlatUnitFrame = (function()
     end
 
     function FlatUnitFrame._invalidateNameFrame(nameFrame, unit)
-        if not nameFrame or not unit then
+        if not unit then
+            return
+        end
+
+        local name = GetUnitName(unit)
+        local nameColor = UnitUtil.getUnitNameColor(unit)
+
+        local level
+        do
+            local playerLevel = UnitLevel("player")
+            local unitLevel = UnitLevel(unit)
+            local unitLevelSuffix = UnitUtil.getUnitLevelSuffix(unit)
+            if unitLevel == -1 then
+                level = "??"
+            elseif playerLevel == MAX_PLAYER_LEVEL and unitLevel == MAX_PLAYER_LEVEL and unitLevelSuffix == "" then
+                level = ""
+            else
+                level = unitLevel .. unitLevelSuffix
+            end
+        end
+
+        FlatUnitFrame._renderNameFrame(nameFrame, name, nameColor, level, UnitUtil.getUnitLevelColor(unit))
+    end
+
+    function FlatUnitFrame._renderNameFrame(nameFrame, name, nameColor, level, levelColor)
+        if not nameFrame or not name then
             return
         end
 
         if nameFrame.nameTextRegion then
             local nameTextRegion = nameFrame.nameTextRegion
-            if UnitIsUnit(unit, "player") then
-                nameTextRegion:SetText()
-            else
-                local name = GetUnitName(unit)
-                local nameColor = UnitUtil.getUnitNameColor(unit)
-                nameTextRegion:SetText(name)
-                nameTextRegion:SetVertexColor(Color.toVertex(nameColor))
-            end
+            nameTextRegion:SetText(name)
+            nameTextRegion:SetVertexColor(Color.toVertex(nameColor))
         end
 
         if nameFrame.levelTextRegion then
             local levelTextRegion = nameFrame.levelTextRegion
-            local playerLevel = UnitLevel("player")
-            local unitLevel = UnitLevel(unit)
-            local unitLevelSuffix = UnitUtil.getUnitLevelSuffix(unit)
-            if unitLevel == -1 then
-                levelTextRegion:SetText("??")
-            elseif playerLevel == MAX_PLAYER_LEVEL and unitLevel == MAX_PLAYER_LEVEL and unitLevelSuffix == "" then
+            if not level or level == "" then
                 levelTextRegion:SetText()
             else
-                levelTextRegion:SetText(unitLevel .. unitLevelSuffix)
-                local levelColor = UnitUtil.getUnitLevelColor(unit)
+                levelTextRegion:SetText(level)
                 levelTextRegion:SetVertexColor(Color.toVertex(levelColor))
             end
         end
@@ -162,48 +175,59 @@ FlatUnitFrame = (function()
     end
 
     function FlatUnitFrame._invalidateHealthBar(healthBar, unit)
-        if not healthBar or not unit then
+        if not unit then
             return
         end
 
-        local health = UnitHealth(unit)
-        local maxHealth = UnitHealthMax(unit)
-        if not maxHealth or maxHealth == 0 then
-            maxHealth = 1
+        local fraction
+        do
+            local health = UnitHealth(unit)
+            local maxHealth = UnitHealthMax(unit)
+            if not maxHealth or maxHealth == 0 then
+                maxHealth = 1
+            end
+            fraction = health / maxHealth
         end
-        local fraction = health / maxHealth
+
+        local barColor
+        do
+            if UnitIsPlayer(unit) then
+                local _, classType = UnitClass(unit)
+                barColor = getClassColor(classType)
+            else
+                barColor = UnitUtil.getUnitNameColor(unit)
+            end
+        end
+
+        FlatUnitFrame._renderHealthBar(healthBar, fraction, barColor, UnitAffectingCombat("player"))
+    end
+
+    function FlatUnitFrame._renderHealthBar(healthBar, fraction, barColor, inCombat)
+        if not healthBar then
+            return
+        end
+
+        fraction = fraction or 0
         if fraction < 0.001 then
             fraction = 0
         elseif fraction > 0.999 then
             fraction = 1
         end
         healthBar:SetValue(fraction)
+        healthBar:SetStatusBarColor(Color.toVertex(barColor))
 
-        if UnitIsPlayer(unit) and UnitIsEnemy("player", unit) then
-            local _, classType = UnitClass(unit)
-            local classColor = getClassColor(classType)
-            if classColor then
-                healthBar:SetStatusBarColor(Color.toVertex(classColor))
-            else
-                local nameColor = UnitUtil.getUnitNameColor(unit)
-                healthBar:SetStatusBarColor(Color.toVertex(nameColor))
-            end
-        else
-            local nameColor = UnitUtil.getUnitNameColor(unit)
-            healthBar:SetStatusBarColor(Color.toVertex(nameColor))
-        end
-
+        local valueTextRegion = healthBar.valueTextRegion
         if healthBar.valueTextRegion then
             local valueTextRegion = healthBar.valueTextRegion
-            if fraction == 1 and not UnitAffectingCombat("player") then
+            if fraction == 1 and not inCombat then
                 valueTextRegion:SetText()
             else
                 if fraction < 0.01 then
                     local value = math.floor(fraction * 1000) / 10
-                    valueTextRegion:SetText(value)
+                    valueTextRegion:SetText(value .. "%")
                 else
                     local value = math.floor(fraction * 100)
-                    valueTextRegion:SetText(value)
+                    valueTextRegion:SetText(value .. "%")
                 end
                 if fraction > 0.5 then
                     valueTextRegion:SetVertexColor(0, 1, 0)
@@ -237,13 +261,20 @@ FlatUnitFrame = (function()
     end
 
     function FlatUnitFrame._invalidateSelectionFrame(selectionFrame, unit)
-        if not selectionFrame or not unit then
+        if not unit then
+            return
+        end
+
+        FlatUnitFrame._renderSelectionFrame(selectionFrame, UnitIsUnit(unit, "target"))
+    end
+
+    function FlatUnitFrame._renderSelectionFrame(selectionFrame, isSelected)
+        if not selectionFrame then
             return
         end
 
         if selectionFrame.selectionTexture then
             local selectionTexture = selectionFrame.selectionTexture
-            local isSelected = UnitIsUnit(unit, "target")
             if isSelected then
                 selectionTexture:SetVertexColor(1, 1, 1, 0.2)
                 selectionTexture:Show()
@@ -321,81 +352,10 @@ FlatUnitFrame = (function()
         uf:Hide()
     end
 
-    -- data-driven invalidate (for nameplates without unit token)
-    function FlatUnitFrame._refreshNameFrame(nameFrame, name, nameColor, level, levelColor)
-        if not nameFrame or not name then
-            return
-        end
-
-        if nameFrame.nameTextRegion then
-            local nameTextRegion = nameFrame.nameTextRegion
-            nameTextRegion:SetText(name)
-            nameTextRegion:SetVertexColor(Color.toVertex(nameColor))
-        end
-
-        if nameFrame.levelTextRegion then
-            local levelTextRegion = nameFrame.levelTextRegion
-            if not level or level == "" then
-                levelTextRegion:SetText()
-            else
-                levelTextRegion:SetText(level)
-                levelTextRegion:SetVertexColor(Color.toVertex(levelColor))
-            end
-        end
-    end
-
-    function FlatUnitFrame._refreshHealthBar(healthBar, fraction, barColor, inCombat)
-        if not healthBar then
-            return
-        end
-
-        fraction = fraction or 0
-        if fraction < 0.001 then
-            fraction = 0
-        elseif fraction > 0.999 then
-            fraction = 1
-        end
-        healthBar:SetValue(fraction)
-        healthBar:SetStatusBarColor(Color.toVertex(barColor))
-
-        local valueTextRegion = healthBar.valueTextRegion
-        if valueTextRegion then
-            local percentage = math.floor(fraction * 100)
-            if percentage == 100 and not inCombat then
-                valueTextRegion:SetText()
-            else
-                valueTextRegion:SetText(percentage)
-                if fraction > 0.5 then
-                    valueTextRegion:SetVertexColor(0, 1, 0)
-                elseif fraction > 0.215 then
-                    valueTextRegion:SetVertexColor(1, 0.82, 0)
-                else
-                    valueTextRegion:SetVertexColor(1, 0, 0)
-                end
-            end
-        end
-    end
-
-    function FlatUnitFrame._refreshSelectionFrame(selectionFrame, isTarget)
-        if not selectionFrame then
-            return
-        end
-
-        if selectionFrame.selectionTexture then
-            local selectionTexture = selectionFrame.selectionTexture
-            if isTarget then
-                selectionTexture:SetVertexColor(1, 1, 1, 0.2)
-                selectionTexture:Show()
-            else
-                selectionTexture:Hide()
-            end
-        end
-    end
-
     function FlatUnitFrame.refresh(uf, data)
-        FlatUnitFrame._refreshNameFrame(uf.nameFrame, data.name, data.nameColor, data.level, data.levelColor)
-        FlatUnitFrame._refreshHealthBar(uf.healthBar, data.fraction, data.barColor, data.inCombat)
-        FlatUnitFrame._refreshSelectionFrame(uf.selectionFrame, data.isTarget)
+        FlatUnitFrame._renderNameFrame(uf.nameFrame, data.name, data.nameColor, data.level, data.levelColor)
+        FlatUnitFrame._renderHealthBar(uf.healthBar, data.fraction, data.barColor, data.inCombat)
+        FlatUnitFrame._renderSelectionFrame(uf.selectionFrame, data.isTarget)
     end
 
     return FlatUnitFrame

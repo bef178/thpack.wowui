@@ -82,6 +82,9 @@ src\lua\wow\pda\pda.lua
 src\lua\wow\pda\pda.prot-pal-solo.lua
 src\lua\wow\pda\pda.warrior.lua
 
+src\lua\wow\flatplate\FlatUnitFrame.lua
+src\lua\wow\flatplate\FlatPlate.lua
+
 src\resource\font\impact.ttf
 src\resource\class\
 src\resource\slot\
