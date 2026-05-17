@@ -172,7 +172,7 @@ UnitUtil = (function()
     -- UnitSelectionColor()
     A.getUnitNameColor = function(unit)
         if not UnitPlayerControlled(unit) and UnitIsTapped(unit) then
-            return Color.pick("darkgray")
+            return Color.pick("DarkGray")
         end
 
         -- tuned color as text fore color
@@ -188,7 +188,7 @@ UnitUtil = (function()
                     return red
                 else
                     -- only he can attack! (in enemy-occupied territory)
-                    return Color.pick("darkorange")
+                    return Color.pick("DarkOrange")
                 end
             elseif UnitCanAttack("player", unit) then
                 -- i feel safe
